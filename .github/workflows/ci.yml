@@ -23,6 +23,8 @@ jobs:
           persist-credentials: false
       - name: Compile
         run: make -j2
+      - name: Test
+        run: make -j2 test
 
   mirror:
     needs: build

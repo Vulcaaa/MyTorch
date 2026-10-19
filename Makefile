@@ -1,6 +1,7 @@
 GENERATOR = my_torch_generator
 ANALYZER = my_torch_analyzer
 CXX = g++
+PYTHON = python3
 CPPFLAGS = -Iinclude -MMD -MP
 CXXFLAGS = -std=c++17 -Wall -Wextra -Werror
 
@@ -10,7 +11,10 @@ ANALYZER_SRC = $(wildcard src/analyzer/*.cpp)
 COMMON_OBJ = $(COMMON_SRC:src/%.cpp=build/%.o)
 GENERATOR_OBJ = $(GENERATOR_SRC:src/%.cpp=build/%.o)
 ANALYZER_OBJ = $(ANALYZER_SRC:src/%.cpp=build/%.o)
-DEP = $(COMMON_OBJ:.o=.d) $(GENERATOR_OBJ:.o=.d) $(ANALYZER_OBJ:.o=.d)
+TEST_SRC = $(wildcard tests/*.cpp)
+TEST_OBJ = $(TEST_SRC:tests/%.cpp=build/tests/%.o)
+TEST_BIN = $(TEST_SRC:tests/%.cpp=build/tests/%_tests)
+DEP = $(COMMON_OBJ:.o=.d) $(GENERATOR_OBJ:.o=.d) $(ANALYZER_OBJ:.o=.d) $(TEST_OBJ:.o=.d)
 
 all: $(GENERATOR) $(ANALYZER)
 
@@ -24,6 +28,17 @@ build/%.o: src/%.cpp
 	mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
+build/tests/%.o: tests/%.cpp
+	mkdir -p $(dir $@)
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
+
+build/tests/%_tests: build/tests/%.o $(COMMON_OBJ)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+test: all $(TEST_BIN)
+	@set -e; for executable in $(TEST_BIN); do ./$$executable; done
+	$(PYTHON) tests/cli.py
+
 clean:
 	rm -rf build
 
@@ -36,4 +51,5 @@ re:
 
 -include $(DEP)
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re test
+.SECONDARY: $(TEST_OBJ)
