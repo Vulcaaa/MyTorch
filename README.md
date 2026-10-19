@@ -11,16 +11,25 @@ Requires GNU Make and a C++17 compiler (GCC by default).
 
 ```sh
 make
+./my_torch_generator --help
 ./my_torch_analyzer --help
 ```
 
-`make clean` removes object files, `make fclean` also removes the executable, and
-`make re` rebuilds from scratch. Sources are in `src/`; build files are in `build/`.
+`make` builds both executables. Use `make my_torch_generator` or
+`make my_torch_analyzer` to build one executable.
+`make clean` removes object files, `make fclean` also removes both executables, and
+`make re` rebuilds from scratch. Build files are in `build/`.
+
+- `include/mytorch/`: shared module headers.
+- `src/neural/`: shared network, model I/O and configuration implementation.
+- `src/generator/`: network generator entry point.
+- `src/analyzer/`: training and prediction entry point.
 
 ## Current status
 
-The build system, help command and CI are ready. Training, prediction and the
-neural network module are not implemented yet. Unsupported invocations report an
+The build system, both help commands and CI are ready. The shared module files
+are placeholders. Generation, training and prediction are not implemented yet.
+Unsupported invocations report an
 error on stderr and return 84.
 
 ## CI and Epitech synchronization
