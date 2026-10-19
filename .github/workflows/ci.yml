@@ -1,0 +1,48 @@
+name: Build and mirror
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Compile
+        run: make -j2
+
+  mirror:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && github.repository == 'Vulcaaa/MyTorch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout the validated commit
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Push main to Epitech
+        env:
+          EPITECH_REPO_URL: git@github.com:EpitechPGE3-2026/G-CNA-501-MPL-5-1-mytorch-1.git
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H github.com >> ~/.ssh/known_hosts
+          git push "$EPITECH_REPO_URL" HEAD:refs/heads/main
