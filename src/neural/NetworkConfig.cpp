@@ -1,0 +1,1 @@
+#include "mytorch/NetworkConfig.hpp"
