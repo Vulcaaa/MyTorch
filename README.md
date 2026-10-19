@@ -25,12 +25,49 @@ make
 - `src/generator/`: network generator entry point.
 - `src/analyzer/`: training and prediction entry point.
 
-## Current status
+The generator writes `<config-name>_<number>.nn` files in the current directory,
+starting at 1 and skipping occupied names (including directories and symbolic
+links). Repeated runs and configurations with the same base name use the next
+available number.
 
-The build system, both help commands and CI are ready. The shared module files
-are placeholders. Generation, training and prediction are not implemented yet.
-Unsupported invocations report an
-error on stderr and return 84.
+## Model serialization
+
+`ModelSerializer` saves and loads JSON models, regardless of the file extension:
+
+```cpp
+#include "mytorch/ModelSerializer.hpp"
+
+ModelSerializer::save(network, "model.nn");
+NeuralNetwork restored = ModelSerializer::load("model.nn");
+```
+
+The format contains `"format": "mytorch"`, `"version": 1`, the complete
+`config`, and a `layers` array containing the weights and biases of each parameter
+layer. Weight rows correspond to neurons, and columns correspond to their inputs.
+Loading restores the saved parameters without random initialization. JSON number
+output preserves the precision needed to recover the original `double` values.
+
+Invalid configuration, incompatible dimensions, non-numeric or non-finite
+parameters, unsupported versions, and file errors throw `std::runtime_error`
+with the file path. Run `make test` to check serialization and invalid input handling.
+
+The JSON parser is nlohmann/json v3.11.3, included in `include/nlohmann/`
+under the MIT license. No download is required to build.
+
+## Tests
+
+Run `make test` (requires Python 3 for the executable tests). This runs the C++
+tests for configuration parsing, Xavier/He initialization, network construction,
+and model serialization, followed by end-to-end checks of the generator and the
+analyzer's help command. Training and prediction are not yet
+implemented and are not tested. All test files are created in temporary directories.
+The same suite runs in CI.
+
+## Implementation status
+
+The shared module supports configuration parsing, weight initialization, and JSON
+model serialization. The generator and analyzer entry points are still under
+development; training and prediction are not implemented yet.
 
 ## CI and Epitech synchronization
 
