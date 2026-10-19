@@ -1,16 +1,24 @@
-NAME = my_torch_analyzer
+GENERATOR = my_torch_generator
+ANALYZER = my_torch_analyzer
 CXX = g++
 CPPFLAGS = -Iinclude -MMD -MP
 CXXFLAGS = -std=c++17 -Wall -Wextra -Werror
 
-SRC = src/main.cpp
-OBJ = $(SRC:src/%.cpp=build/%.o)
-DEP = $(OBJ:.o=.d)
+COMMON_SRC = $(wildcard src/neural/*.cpp)
+GENERATOR_SRC = $(wildcard src/generator/*.cpp)
+ANALYZER_SRC = $(wildcard src/analyzer/*.cpp)
+COMMON_OBJ = $(COMMON_SRC:src/%.cpp=build/%.o)
+GENERATOR_OBJ = $(GENERATOR_SRC:src/%.cpp=build/%.o)
+ANALYZER_OBJ = $(ANALYZER_SRC:src/%.cpp=build/%.o)
+DEP = $(COMMON_OBJ:.o=.d) $(GENERATOR_OBJ:.o=.d) $(ANALYZER_OBJ:.o=.d)
 
-all: $(NAME)
+all: $(GENERATOR) $(ANALYZER)
 
-$(NAME): $(OBJ)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(OBJ) $(LDLIBS) -o $@
+$(GENERATOR): $(COMMON_OBJ) $(GENERATOR_OBJ)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+$(ANALYZER): $(COMMON_OBJ) $(ANALYZER_OBJ)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 build/%.o: src/%.cpp
 	mkdir -p $(dir $@)
@@ -20,7 +28,7 @@ clean:
 	rm -rf build
 
 fclean: clean
-	rm -f $(NAME)
+	rm -f $(GENERATOR) $(ANALYZER)
 
 re:
 	$(MAKE) fclean
