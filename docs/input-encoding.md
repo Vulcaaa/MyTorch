@@ -161,8 +161,8 @@ l’ordre de sortie **`[Nothing, Check, Checkmate]`** défini dans
 [output-encoding.md](output-encoding.md). Un modèle dont les dimensions ne
 correspondent pas doit être refusé explicitement.
 
-La configuration d’exemple contient encore 768 entrées : sa première taille devra
-passer à **777** pour utiliser cet encodage. Les anciens modèles à 768 entrées
+La configuration d’exemple contient **777 entrées et 3 sorties**, conformément
+à ce contrat. Les anciens modèles à 768 entrées
 doivent être régénérés avec une configuration compatible, puis entraînés pour
 ce contrat.
 
