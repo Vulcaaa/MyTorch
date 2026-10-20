@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mytorch/NetworkConfig.hpp"
+#include "NetworkConfig.hpp"
 #include <cstddef>
 #include <vector>
 

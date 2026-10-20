@@ -1,4 +1,4 @@
-#include "mytorch/ModelSerializer.hpp"
+#include "neural/ModelSerializer.hpp"
 
 #include <nlohmann/json.hpp>
 #include <cassert>

@@ -37,7 +37,7 @@ Run either executable with `--help` for its command-line options.
 
 ## Development
 
-Shared network code is in `src/neural/`, with public headers in `include/mytorch/`.
+Shared network code is in `src/neural/`, with headers beside their source files.
 The two programs are in `src/generator/` and `src/analyzer/`; example configurations
 and tests are in `configs/` and `tests/`.
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mytorch/NeuralNetwork.hpp"
+#include "NeuralNetwork.hpp"
 #include <string>
 
 class ModelSerializer {

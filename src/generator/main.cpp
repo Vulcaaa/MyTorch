@@ -6,8 +6,8 @@
 #include <string>
 #include <string_view>
 
-#include "mytorch/NeuralNetwork.hpp"
-#include "mytorch/ModelSerializer.hpp"
+#include "neural/NeuralNetwork.hpp"
+#include "neural/ModelSerializer.hpp"
 
 namespace {
 
