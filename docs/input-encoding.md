@@ -3,13 +3,21 @@
 Le réseau reçoit une liste de nombres. L’encodeur transforme une position FEN
 en cette liste, toujours dans le même ordre.
 
-Ce document décrit la base proposée pour l’issue #1 : la position des pièces.
-Les informations supplémentaires de la FEN restent à valider ensemble.
+Le contrat retenu pour l’issue #1 contient **777 entrées**, dans cet ordre :
+
+| Indices du tableau | Information | Nombre de valeurs |
+| --- | --- | --- |
+| 0 à 767 | Position des pièces | 768 |
+| 768 | Joueur au trait | 1 |
+| 769 à 776 | Colonne de la cible de prise en passant | 8 |
+
+Tous les indices commencent à zéro. Les droits de roque et les compteurs de
+coups ne sont pas encodés dans ce contrat.
 
 ## 1. Une case = 12 valeurs
 
 Chaque case possède 12 emplacements : un par type de pièce et par couleur.
-L’ordre proposé est le suivant :
+L’ordre est le suivant :
 
 | Indice | Pièce | Symbole FEN |
 | --- | --- | --- |
@@ -63,7 +71,39 @@ Pour retrouver une valeur dans ce tableau :
 indice dans le tableau = numéro de la case × 12 + indice de la pièce
 ```
 
-## 3. Exemple du dataset
+## 3. Ajouter le joueur au trait
+
+Le deuxième champ de la FEN indique qui doit jouer. On le place juste après
+les 768 valeurs des pièces :
+
+| Champ FEN | Joueur au trait | `inputs[768]` |
+| --- | --- | --- |
+| `w` | Blancs | `0` |
+| `b` | Noirs | `1` |
+
+Ce nombre représente une catégorie, pas la force d’un joueur.
+
+## 4. Ajouter la cible de prise en passant
+
+Le quatrième champ de la FEN contient `-` ou une case cible, comme `d6`.
+On réserve **8 valeurs**, une par colonne de `a` à `h` :
+
+```text
+Colonne :   a   b   c   d   e   f   g   h
+Indice :   769 770 771 772 773 774 775 776
+
+Aucune :   [0   0   0   0   0   0   0   0]   ← champ « - »
+Cible d6 : [0   0   0   1   0   0   0   0]   ← inputs[772] = 1
+```
+
+La rangée cible se déduit du joueur au trait : **6 si les blancs jouent**, **3 si
+les noirs jouent**. Ainsi, `d6` avec `w` et `d3` avec `b` activent le même indice,
+mais `inputs[768]` les distingue. Une cible sur une rangée incompatible est invalide.
+
+On encode la cible indiquée dans la FEN. Sa présence ne garantit pas qu’une prise
+en passant est effectivement légale : l’encodeur n’a pas à calculer ce coup.
+
+## 5. Exemple du dataset
 
 Première ligne de `dataset/check/10_pieces.txt` :
 
@@ -88,10 +128,21 @@ Pièce :  R   ·   ·   k   ·   ·   ·   ·
 
 On continue de la même façon jusqu’à `h1`.
 
-## 4. Donner les valeurs au réseau
+Dans cette ligne, le deuxième champ est `b` et le quatrième est `-` :
 
 ```text
-Ligne du dataset → extraire la FEN → encoder les pièces → tableau d’entrées
+inputs[0..767]   = encodage des pièces décrit ci-dessus
+inputs[768]      = 1                  ← noirs au trait
+inputs[769..776] = [0 0 0 0 0 0 0 0]  ← aucune cible de prise en passant
+```
+
+Le tableau complet contient donc **768 + 1 + 8 = 777 valeurs**.
+
+## 6. Donner les valeurs au réseau
+
+```text
+Ligne du dataset → extraire la FEN → encoder pièces + trait + en passant
+                                 → tableau de 777 valeurs → réseau
 ```
 
 Le tableau est construit en mémoire, puis transmis au réseau. Il n’est pas
@@ -102,11 +153,21 @@ la configuration et les paramètres du modèle, pas les positions du dataset.
 être ajouté aux entrées. Pour nos trois classes, on retient ici `Check` et on
 ignore le suffixe de couleur.
 
-## À valider avant de terminer l’issue #1
+## Compatibilité avec le code actuel
 
-Les 768 valeurs décrivent uniquement les pièces. Il faut encore fixer l’encodage
-du **joueur au trait** (`w` ou `b`, le deuxième champ FEN) et décider des autres
-informations à conserver, notamment la prise en passant.
+Ce document définit le contrat ; l’encodeur n’est pas encore implémenté.
+L’analyseur accepte uniquement les modèles à **777 entrées et 3 sorties**, avec
+l’ordre de sortie **`[Nothing, Check, Checkmate]`** défini dans
+[output-encoding.md](output-encoding.md). Un modèle dont les dimensions ne
+correspondent pas doit être refusé explicitement.
 
-Le nombre total d’entrées sera fixé après ces décisions. La configuration
-d’exemple contient actuellement 768 entrées ; elle devra suivre le contrat final.
+La configuration d’exemple contient encore 768 entrées : sa première taille devra
+passer à **777** pour utiliser cet encodage. Les anciens modèles à 768 entrées
+doivent être régénérés avec une configuration compatible, puis entraînés pour
+ce contrat.
+
+Le générateur reste générique : il utilise les dimensions de la configuration
+fournie et n’impose pas le contrat échecs. Aucun identifiant d’encodage
+supplémentaire n’est ajouté au format des modèles pour cette issue ; les
+dimensions seules ne permettent pas de vérifier l’ordre des classes, qui doit
+être respecté lors de l’entraînement et de la prédiction.
