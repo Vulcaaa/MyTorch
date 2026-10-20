@@ -50,7 +50,6 @@ int main(int argc, char **argv)
                 const auto outputFile = nextOutputFile(baseName, fileIndex);
                 NeuralNetwork neuralNetwork(config);
                 ModelSerializer::save(neuralNetwork, outputFile);
-                // Use a different, reproducible initialization for the next model.
                 ++config.seed;
             }
         }
