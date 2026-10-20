@@ -14,9 +14,10 @@ namespace {
 std::string nextOutputFile(const std::string &baseName, std::size_t &index)
 {
     while (true) {
-        const auto filename = baseName + "_" + std::to_string(index++) + ".nn";
+        const auto filename = std::filesystem::path("models") /
+            (baseName + "_" + std::to_string(index++) + ".nn");
         if (!std::filesystem::exists(filename) && !std::filesystem::is_symlink(filename))
-            return filename;
+            return filename.string();
     }
 }
 
@@ -29,7 +30,8 @@ int main(int argc, char **argv)
             << "    ./my_torch_generator config_file_1 nb_1 [config_file_2 nb_2...]\n"
             << "DESCRIPTION\n"
             << "    config_file_i    Configuration file describing a neural network.\n"
-            << "    nb_i             Number of neural networks to generate.\n";
+            << "    nb_i             Number of neural networks to generate.\n"
+            << "    Models are saved in models/ under the current directory.\n";
         return 0;
     }
     try {
@@ -44,6 +46,7 @@ int main(int argc, char **argv)
                 throw std::invalid_argument("network count must be a positive integer");
 
             NetworkConfig config = loadNetworkConfig(config_file);
+            std::filesystem::create_directories("models");
             const auto baseName = std::filesystem::path(config_file).stem().string();
             std::size_t fileIndex = 1;
             for (int y = 0; y < nb; y++) {

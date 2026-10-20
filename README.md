@@ -29,8 +29,9 @@ Generate three networks from the example configuration:
 ./my_torch_generator configs/basic_network.conf 3
 ```
 
-Models are saved in the current directory as `basic_network_1.nn`,
-`basic_network_2.nn`, and `basic_network_3.nn`. Existing names are skipped.
+Models are saved in `models/` under the current directory as `basic_network_1.nn`,
+`basic_network_2.nn`, and `basic_network_3.nn`. The folder is created automatically
+and ignored by Git. Existing names are skipped.
 The configuration controls the network architecture and initialization seed.
 
 Run either executable with `--help` for its command-line options.
