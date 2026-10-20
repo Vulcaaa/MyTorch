@@ -42,5 +42,10 @@ Shared network code is in `src/neural/`, with headers beside their source files.
 The two programs are in `src/generator/` and `src/analyzer/`; example configurations
 and tests are in `configs/` and `tests/`.
 
+C++ handles network computation and the command-line programs. Python handles
+CLI tests and will provide dataset preparation, experiment orchestration, and
+result analysis through Makefile targets. See the [architecture guide](docs/architecture.md)
+for component responsibilities, data flow, and the testing strategy.
+
 Run `make test` to execute the test suite (requires Python 3). CI builds and tests
 the project, then synchronizes successful pushes on `main` to the Epitech repository.
