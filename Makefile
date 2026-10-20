@@ -38,6 +38,12 @@ build/tests/%_tests: build/tests/%.o $(COMMON_OBJ)
 build/tests/Encoding_tests: build/tests/Encoding.o build/chess/Encoding.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
+build/tests/AnalyzerArguments_tests: build/tests/AnalyzerArguments.o build/analyzer/Arguments.o
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+build/tests/AnalyzerSaving_tests: build/tests/AnalyzerSaving.o build/analyzer/Training.o $(COMMON_OBJ)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
 test: all $(TEST_BIN)
 	@set -e; for executable in $(TEST_BIN); do ./$$executable; done
 	$(PYTHON) tests/cli.py
