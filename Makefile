@@ -14,7 +14,7 @@ ANALYZER_OBJ = $(ANALYZER_SRC:src/%.cpp=build/%.o)
 TEST_SRC = $(wildcard tests/*.cpp)
 TEST_OBJ = $(TEST_SRC:tests/%.cpp=build/tests/%.o)
 TEST_BIN = $(TEST_SRC:tests/%.cpp=build/tests/%_tests)
-DEP = $(COMMON_OBJ:.o=.d) $(GENERATOR_OBJ:.o=.d) $(ANALYZER_OBJ:.o=.d) $(TEST_OBJ:.o=.d)
+DEP = $(COMMON_OBJ:.o=.d) $(GENERATOR_OBJ:.o=.d) $(ANALYZER_OBJ:.o=.d) $(TEST_OBJ:.o=.d) build/chess/Encoding.d
 
 all: $(GENERATOR) $(ANALYZER)
 
@@ -33,6 +33,15 @@ build/tests/%.o: tests/%.cpp
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 build/tests/%_tests: build/tests/%.o $(COMMON_OBJ)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+build/tests/Encoding_tests: build/tests/Encoding.o build/chess/Encoding.o
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+build/tests/AnalyzerArguments_tests: build/tests/AnalyzerArguments.o build/analyzer/Arguments.o
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+build/tests/AnalyzerSaving_tests: build/tests/AnalyzerSaving.o build/analyzer/Training.o $(COMMON_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 test: all $(TEST_BIN)
