@@ -1,86 +1,81 @@
-# Architecture du projet
+# Project architecture
 
-Cette architecture constitue une première proposition et pourra être ajustée au fil du développement et des échanges de l’équipe.
+This is the proposed architecture and may evolve during development.
 
-MyTorch utilise **C++17 pour les calculs du réseau et les exécutables**, et
-**Python pour préparer les données, piloter les expériences et analyser les
-résultats**. Le Makefile est le point d'entrée commun pour compiler le projet
-et lancer les tests ou les scripts.
+MyTorch uses **C++17 for network computation and executables**, and **Python for
+dataset preparation, experiment orchestration, and result analysis**. The
+Makefile is the common entry point for builds, tests, and scripts.
 
-## Les différentes parties
+## Components
 
-| Partie | Langage | Rôle |
+| Component | Language | Responsibility |
 | --- | --- | --- |
-| `src/neural/` | C++ | Réseau générique : configuration, initialisation, sauvegarde/chargement, puis propagation et apprentissage. |
-| `src/chess/` | C++ | Lecture des positions FEN, encodage numérique et lecture des labels du dataset. |
-| `src/generator/` | C++ | Exécutable `my_torch_generator` : création de modèles à partir de configurations. |
-| `src/analyzer/` | C++ | Exécutable `my_torch_analyzer` : orchestration des modes entraînement et prédiction. |
-| `scripts/` (prévu) | Python | Préparation des datasets, lancement des expériences, métriques et graphiques. |
-| `tests/` | C++ et Python | Tests des fonctions et des exécutables. |
+| `src/neural/` | C++ | Generic network: configuration, initialization, serialization, then forward propagation and training. |
+| `src/chess/` | C++ | FEN parsing, feature encoding, and dataset label handling. |
+| `src/generator/` | C++ | `my_torch_generator`: create models from configuration files. |
+| `src/analyzer/` | C++ | `my_torch_analyzer`: coordinate training and prediction. |
+| `scripts/` (planned) | Python | Prepare datasets, run experiments, compute metrics, and plot results. |
+| `tests/` | C++ and Python | Function tests and executable tests. |
 
-Le module réseau manipule des vecteurs numériques sans connaître les règles
-d'échecs ou la notation FEN. La partie échecs transforme les données selon les
-contrats d'[entrée](input-encoding.md) et de [sortie](output-encoding.md).
-L'analyseur relie ces deux parties.
+The network module operates on numeric vectors without knowledge of chess or
+FEN. The chess module implements the [input](data-encoding.md) and
+[output](output-encoding.md) contracts. The analyzer connects both modules.
 
-## Circulation des données prévue
+## Planned data flow
 
-Pour l'entraînement :
-
-```text
-Datasets sources → préparation Python → fichiers train / validation / test
-Fichier de configuration → générateur C++ → modèle initial
-Modèle initial + données → analyseur C++ --train → modèle entraîné
-Résultats des expériences → analyse Python → métriques et graphiques
-```
-
-Pour la prédiction :
+Training:
 
 ```text
-Fichier FEN → lecture et encodage C++ → réseau C++ → classes affichées
+Source datasets → Python preparation → train / validation / test files
+Configuration → C++ generator → initial model
+Initial model + data → C++ analyzer --train → trained model
+Experiment results → Python analysis → metrics and plots
 ```
 
-Les scripts Python appellent les exécutables avec `subprocess` et échangent
-avec eux par fichiers et sorties de commandes. Aucun binding entre les deux
-langages n'est nécessaire. Les boucles de calcul et les mises à jour des poids
-restent dans le module C++ ; Python organise les expériences autour.
+Prediction:
 
-## Tests
+```text
+FEN file → C++ parsing and encoding → C++ network → class predictions
+```
 
-- **C++** : tester directement les fonctions, notamment l'encodage, les calculs
-  des couches, les gradients et la sauvegarde/chargement. Utiliser des exemples
-  dont les résultats attendus sont connus.
-- **Python** : lancer les exécutables et vérifier leurs arguments, stdout,
-  stderr, codes de retour et fichiers produits. Couvrir aussi le parcours
-  génération, entraînement, sauvegarde puis prédiction lorsqu'il sera disponible.
+Python scripts invoke the executables through `subprocess`, exchanging files
+and command output. Language bindings are unnecessary. Computation and weight
+updates stay in C++; Python organizes the experiments.
 
-Les deux niveaux se complètent : un test C++ vérifie un calcul précis, un test
-Python vérifie le comportement du programme complet. Il n'est pas nécessaire
-de reproduire chaque test dans les deux langages.
+## Testing
 
-## Makefile et scripts
+- **C++:** test functions directly, including encoding, layer calculations,
+  gradients, and serialization, using known expected results.
+- **Python:** run the executables and check arguments, stdout, stderr, exit
+  codes, and generated files. Cover generation, training, saving, and prediction
+  together once that workflow is available.
 
-Commandes disponibles :
+These levels cover calculations and executable behavior respectively; tests
+need not be duplicated across languages.
 
-- `make` : compiler les deux exécutables C++.
-- `make test` : lancer les tests C++ et les tests des exécutables en Python.
-- `make clean`, `make fclean`, `make re` : nettoyer et reconstruire.
+## Build and scripts
 
-Les futurs scripts seront également lancés par le Makefile, avec des cibles
-comme `make dataset` et `make benchmark`. **Ces deux cibles n'existent pas encore.**
-Les commandes Python utiliseront la variable `PYTHON` du Makefile, déjà définie
-à `python3`. Les dépendances tierces éventuelles seront déclarées dans un fichier
-dédié et utilisées dans un environnement virtuel.
+| Command | Purpose |
+| --- | --- |
+| `make` | Build both C++ executables |
+| `make test` | Run C++ tests and Python executable tests |
+| `make clean` | Remove build artifacts |
+| `make fclean` | Also remove executables |
+| `make re` | Clean and rebuild |
 
-Les outils seront des scripts `.py` versionnés. Les expériences devront conserver
-les configurations, seeds, commandes et références des données utilisées pour
-permettre leur reproduction. Les datasets d'entraînement devront rester
-disponibles pour la soutenance, sans obligation de les versionner.
+Future scripts will have Makefile targets such as `make dataset` and
+`make benchmark`; **these targets do not exist yet**. Python commands will use
+the `PYTHON` variable, which defaults to `python3`. Third-party dependencies
+will be declared in a dedicated file and installed in a virtual environment.
 
-## État actuel
+Scripts will be versioned `.py` files. Experiments must retain configurations,
+seeds, commands, and dataset references for reproducibility. Training datasets
+must remain available for the project defense, without requiring Git tracking.
 
-La génération, l'initialisation et la sauvegarde/chargement des réseaux sont
-implémentées. Les tests C++ et les tests CLI Python sont lancés par `make test`.
-Les contrats d'encodage et certaines interfaces sont déclarés ; l'encodage FEN,
-la propagation, l'entraînement et la prédiction restent à implémenter, ainsi que
-les scripts Python de préparation et d'évaluation.
+## Current status
+
+Model generation, initialization, serialization, and FEN encoding are implemented.
+C++ tests and Python CLI tests run through `make test`.
+
+Analyzer integration, forward propagation, training, prediction, and Python
+preparation and evaluation scripts remain to be implemented.
