@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mytorch/NetworkConfig.hpp"
+#include "NetworkConfig.hpp"
 #include <cstddef>
 #include <vector>
 
@@ -17,6 +17,7 @@ struct Layer {
 class NeuralNetwork {
     public:
         explicit NeuralNetwork(const NetworkConfig &config);
+        std::vector<double> predict(const std::vector<double>& inputs) const;
 
     private:
         friend class ModelSerializer;

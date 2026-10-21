@@ -1,4 +1,4 @@
-#include "mytorch/NetworkConfig.hpp"
+#include "neural/NetworkConfig.hpp"
 #include "TestSupport.hpp"
 
 #include <fstream>

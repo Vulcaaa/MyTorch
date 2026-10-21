@@ -2,7 +2,7 @@ GENERATOR = my_torch_generator
 ANALYZER = my_torch_analyzer
 CXX = g++
 PYTHON = python3
-CPPFLAGS = -Iinclude -MMD -MP
+CPPFLAGS = -Isrc -Iinclude -MMD -MP
 CXXFLAGS = -std=c++17 -Wall -Wextra -Werror
 
 COMMON_SRC = $(wildcard src/neural/*.cpp)

@@ -69,3 +69,6 @@ Testing/
 # MyTorch executables
 /my_torch_analyzer
 /my_torch_generator
+
+# Generated models
+/models/

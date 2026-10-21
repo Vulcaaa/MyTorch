@@ -1,4 +1,4 @@
-#include "mytorch/NetworkConfig.hpp"
+#include "NetworkConfig.hpp"
 
 #include <charconv>
 #include <cmath>

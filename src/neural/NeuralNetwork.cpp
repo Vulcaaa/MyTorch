@@ -1,5 +1,5 @@
-#include "mytorch/NeuralNetwork.hpp"
-#include "mytorch/Initializer.hpp"
+#include "NeuralNetwork.hpp"
+#include "Initializer.hpp"
 #include <stdexcept>
 #include <utility>
 
