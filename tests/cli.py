@@ -129,7 +129,36 @@ class CommandLineTests(unittest.TestCase):
                 self.assertIn(config, result.stderr)
                 self.assertEqual(list(self.models.glob("*.nn")), [])
 
+    def analyzer_model(self):
+        path = self.work / "chess.conf"
+        path.write_text(CONFIG.replace("layers=3,2,1", "layers=777,3")
+                        .replace("output_activation=sigmoid", "output_activation=softmax"))
+        self.generate(path.name, "1")
+        return "models/chess_1.nn"
+
+    def test_prediction_order_labels_and_model_preservation(self):
+        model_path = self.work / self.analyzer_model()
+        model = json.loads(model_path.read_text())
+        weights = [[0.0] * 777 for _ in range(3)]
+        weights[1][768] = 4.0  # Black to move selects Check.
+        model["layers"] = [{"weights": weights, "biases": [1.0, -1.0, 0.0]}]
+        model_path.write_text(json.dumps(model))
+        original = model_path.read_bytes()
+        positions = self.work / "positions.txt"
+        positions.write_text(
+            "8/8/8/8/8/8/8/8 b - - 0 1 Nothing\n"
+            "8/8/8/8/8/8/8/8 w - - 0 1 Checkmate\n"
+            "8/8/8/8/8/8/8/8 b - - 0 1\n"
+        )
+        result = self.run_command("my_torch_analyzer", "--predict",
+                                  str(model_path), positions.name)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "Check\nNothing\nCheck\n")
+        self.assertEqual(result.stderr, "")
+        self.assertEqual(model_path.read_bytes(), original)
+
     def test_analyzer_dataset_errors(self):
+        model = self.analyzer_model()
         fen = "8/8/8/8/8/8/8/8 w - - 0 1"
         path = self.work / "chess positions.txt"
         cases = [
@@ -147,7 +176,7 @@ class CommandLineTests(unittest.TestCase):
                     if contents is not None:
                         path.write_text(contents)
                     result = self.run_command(
-                        "my_torch_analyzer", mode, "network.conf", path.name,
+                        "my_torch_analyzer", mode, model, path.name,
                     )
                     self.assertEqual(result.returncode, 84)
                     self.assertEqual(result.stdout, "")
@@ -155,10 +184,11 @@ class CommandLineTests(unittest.TestCase):
                     self.assertIn(diagnostic, result.stderr)
 
     def test_analyzer_requires_training_labels(self):
+        model = self.analyzer_model()
         path = self.work / "positions.txt"
         path.write_text("\n8/8/8/8/8/8/8/8 w - - 0 1")
         result = self.run_command(
-            "my_torch_analyzer", "--train", "network.conf", path.name,
+            "my_torch_analyzer", "--train", model, path.name,
         )
         self.assertEqual(result.returncode, 84)
         self.assertEqual(result.stdout, "")
@@ -166,6 +196,7 @@ class CommandLineTests(unittest.TestCase):
 
     @unittest.skipUnless(os.name == "posix", "requires POSIX file permissions")
     def test_analyzer_unreadable_dataset(self):
+        model = self.analyzer_model()
         path = self.work / "unreadable.txt"
         path.write_text("8/8/8/8/8/8/8/8 w - - 0 1 Nothing")
         path.chmod(0)
@@ -173,7 +204,7 @@ class CommandLineTests(unittest.TestCase):
             if os.access(path, os.R_OK):
                 self.skipTest("current user can bypass file permissions")
             result = self.run_command(
-                "my_torch_analyzer", "--predict", "network.conf", path.name,
+                "my_torch_analyzer", "--predict", model, path.name,
             )
             self.assertEqual(result.returncode, 84)
             self.assertEqual(result.stdout, "")
