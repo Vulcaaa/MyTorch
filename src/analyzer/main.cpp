@@ -1,9 +1,31 @@
 #include <iostream>
 #include <string_view>
 
-int main(int argc, char **argv)
+#include "Arguments.hpp"
+#include "../neural/NetworkConfig.hpp"
+#include "../neural/NeuralNetwork.hpp"
+#include "../chess/Dataset.hpp"
+
+int runAnalyzer(AnalyzerArguments arguments)
 {
-    if (argc == 2 && std::string_view(argv[1]) == "--help") {
+    NetworkConfig config = loadNetworkConfig(arguments.loadFile);
+    NeuralNetwork neuralNetwork(config);
+
+    const auto mode = arguments.mode == AnalyzerMode::Train
+        ? DatasetMode::Training : DatasetMode::Prediction;
+    const Dataset dataset = loadDataset(arguments.chessFile, mode);
+
+    if (arguments.mode == AnalyzerMode::Predict) {
+        // code
+    } else if (arguments.mode == AnalyzerMode::Train) {
+        // code
+    }
+    return 0;
+}
+
+int main(int ac, char** av)
+{
+    if (ac == 2 && std::string_view(av[1]) == "--help") {
         std::cout << "USAGE\n"
                   << "\t./my_torch_analyzer [--predict | --train [--save SAVEFILE]] LOADFILE CHESSFILE\n\n"
                   << "Train a neural network or classify chess positions in FEN format.\n"
@@ -11,7 +33,10 @@ int main(int argc, char **argv)
         return 0;
     }
 
-    std::cerr << "MyTorch: training and prediction are not implemented yet.\n"
-              << "Run ./my_torch_analyzer --help for usage.\n";
-    return 84;
+    try {
+        return runAnalyzer(parseAnalyzerArguments(ac, av));
+    } catch (const std::exception& error) {
+        std::cerr << "MyTorch: " << error.what() << '\n';
+        return 84;
+    }
 }
