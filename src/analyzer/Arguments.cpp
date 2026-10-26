@@ -3,14 +3,14 @@
 #include <stdexcept>
 #include <string>
 
-AnalyzerArguments parseAnalyzerArguments(int argc, const char* const argv[])
+AnalyzerArguments parseAnalyzerArguments(int ac, const char* const av[])
 {
-    if (argc < 4) {
+    if (ac < 4) {
         throw std::invalid_argument("expected --predict or --train, LOADFILE and CHESSFILE");
     }
 
     AnalyzerArguments arguments;
-    const std::string mode = argv[1];
+    const std::string mode = av[1];
     if (mode == "--predict") {
         arguments.mode = AnalyzerMode::Predict;
     } else if (mode == "--train") {
@@ -20,25 +20,25 @@ AnalyzerArguments parseAnalyzerArguments(int argc, const char* const argv[])
     }
 
     int next = 2;
-    if (std::string(argv[next]) == "--save") {
+    if (std::string(av[next]) == "--save") {
         if (arguments.mode != AnalyzerMode::Train) {
             throw std::invalid_argument("--save is only valid with --train");
         }
-        if (argc != 6) {
+        if (ac != 6) {
             throw std::invalid_argument("expected --train --save SAVEFILE LOADFILE CHESSFILE");
         }
-        arguments.saveFile = argv[3];
+        arguments.saveFile = av[3];
         if (arguments.saveFile.empty()) {
             throw std::invalid_argument("SAVEFILE must not be empty");
         }
         next = 4;
     }
 
-    if (argc != next + 2) {
+    if (ac != next + 2) {
         throw std::invalid_argument("expected exactly LOADFILE and CHESSFILE after options");
     }
-    arguments.loadFile = argv[next];
-    arguments.chessFile = argv[next + 1];
+    arguments.loadFile = av[next];
+    arguments.chessFile = av[next + 1];
 
     for (const auto& path : {arguments.loadFile, arguments.chessFile, arguments.saveFile}) {
         if (path.rfind("--", 0) == 0) {

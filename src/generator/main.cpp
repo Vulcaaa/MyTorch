@@ -23,9 +23,9 @@ std::string nextOutputFile(const std::string &baseName, std::size_t &index)
 
 } // namespace
 
-int main(int argc, char **argv)
+int main(int ac, char **av)
 {
-    if (argc == 2 && std::string_view(argv[1]) == "--help") {
+    if (ac == 2 && std::string_view(av[1]) == "--help") {
         std::cout << "USAGE\n"
             << "    ./my_torch_generator config_file_1 nb_1 [config_file_2 nb_2...]\n"
             << "DESCRIPTION\n"
@@ -35,11 +35,11 @@ int main(int argc, char **argv)
         return 0;
     }
     try {
-        if (argc < 3 || (argc - 1) % 2 != 0)
+        if (ac < 3 || (ac - 1) % 2 != 0)
             throw std::invalid_argument("expected pairs of configuration file and count");
-        for (int i = 1; i < argc; i += 2) {
-            const std::string config_file = argv[i];
-            const std::string_view count = argv[i + 1];
+        for (int i = 1; i < ac; i += 2) {
+            const std::string config_file = av[i];
+            const std::string_view count = av[i + 1];
             int nb = 0;
             const auto parsed = std::from_chars(count.data(), count.data() + count.size(), nb);
             if (parsed.ec != std::errc{} || parsed.ptr != count.data() + count.size() || nb <= 0)
