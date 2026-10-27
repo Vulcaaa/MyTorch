@@ -22,7 +22,7 @@ class NeuralNetwork {
     private:
         friend class ModelSerializer;
 
-        // Restore validated parameters without random initialization.
+        std::vector<std::vector<double>> forward(const std::vector<double> &inputs) const;
         NeuralNetwork(NetworkConfig config, std::vector<Layer> layers);
 
         NetworkConfig _config;

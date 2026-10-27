@@ -1,7 +1,10 @@
-#include "NeuralNetwork.hpp"
-#include "Initializer.hpp"
 #include <stdexcept>
 #include <utility>
+#include <iostream>
+
+#include "NeuralNetwork.hpp"
+#include "Activation.hpp"
+#include "Initializer.hpp"
 
 NeuralNetwork::NeuralNetwork(const NetworkConfig& config) : _config(config)
 {
@@ -18,6 +21,46 @@ NeuralNetwork::NeuralNetwork(const NetworkConfig& config) : _config(config)
         _layers.emplace_back(config.layers[i - 1], config.layers[i]);
         initialization::initialize(_layers.back(), method, rng);
     }
+}
+
+std::vector<std::vector<double>> NeuralNetwork::forward(
+    const std::vector<double> &inputs) const
+{
+    if (_layers.empty()) {
+        std::cerr << "Error: NeuralNetwork requires at least one parameter layer.\n";
+        return {};
+    }
+    std::vector<std::vector<double>> activations{inputs};
+
+    for (const auto &layer : _layers) {
+        const auto &current_inputs = activations.back();
+        std::vector<double> results(layer.weights.size());
+
+        for (std::size_t j = 0; j < layer.weights.size(); ++j) {
+            const auto &weights = layer.weights[j];
+            if (current_inputs.size() != weights.size()) {
+                std::cerr << "Error: Mismatched number of inputs for neuron.\n";
+                return {};
+            }
+            double sum = layer.biases[j];
+            for (std::size_t k = 0; k < weights.size(); ++k)
+                sum += current_inputs[k] * weights[k];
+            results[j] = sum;
+        }
+        const bool isOutput = (&layer == &_layers.back());
+        applyActivation(results, isOutput ? _config.output_activation : _config.hidden_activation);
+        activations.push_back(std::move(results));
+    }
+    return activations;
+}
+
+std::vector<double> NeuralNetwork::predict(const std::vector<double>& inputs) const
+{
+    const auto activations = forward(inputs);
+
+    if (activations.empty())
+        throw std::runtime_error("Forward pass failed.");
+    return activations.back();
 }
 
 NeuralNetwork::NeuralNetwork(NetworkConfig config, std::vector<Layer> layers)
