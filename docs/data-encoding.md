@@ -75,6 +75,17 @@ before calling `encodeFEN`. Labels never enter the input vector.
 For example, `Check White` maps to `[0, 1, 0]`; see
 [output encoding](output-encoding.md).
 
+`loadDataset(path, DatasetMode::Prediction)` returns a `Dataset`, a vector of
+`DatasetSample` objects in file order. Each sample holds `inputs` and an optional
+`target`: a missing label is represented by `std::nullopt`, never by `Nothing`.
+Prediction accepts both six-field FEN lines and labeled lines.
+Use `DatasetMode::Training` to require a label for every position.
+
+The loader skips blank lines and accepts whitespace-separated fields, including
+Windows line endings. It rejects unknown labels, extra fields, and malformed
+FENs with the file path and physical line number. Missing files, read errors,
+and files containing no positions are also rejected.
+
 Chess models require **777 inputs and 3 outputs**, ordered
 `[Nothing, Check, Checkmate]`. Models with 768 inputs must be regenerated and
 trained for this layout. Dimensions alone cannot verify feature or class order.

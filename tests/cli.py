@@ -1,6 +1,7 @@
 """End-to-end checks for the generator and the analyzer's current CLI."""
 
 import json
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -127,6 +128,58 @@ class CommandLineTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 84)
                 self.assertIn(config, result.stderr)
                 self.assertEqual(list(self.models.glob("*.nn")), [])
+
+    def test_analyzer_dataset_errors(self):
+        fen = "8/8/8/8/8/8/8/8 w - - 0 1"
+        path = self.work / "chess positions.txt"
+        cases = [
+            (None, "cannot open dataset"),
+            ("", "no positions"),
+            (" \t\n\r\n", "no positions"),
+            ("\n8/8/8 w - - 0 1 Nothing", ":2: FEN:"),
+            ("\n" + fen + " Unknown", ":2: unknown label"),
+            (fen + " Check White extra", ":1: unexpected data"),
+        ]
+        for mode in ("--predict", "--train"):
+            for contents, diagnostic in cases:
+                with self.subTest(mode=mode, contents=contents):
+                    path.unlink(missing_ok=True)
+                    if contents is not None:
+                        path.write_text(contents)
+                    result = self.run_command(
+                        "my_torch_analyzer", mode, "network.conf", path.name,
+                    )
+                    self.assertEqual(result.returncode, 84)
+                    self.assertEqual(result.stdout, "")
+                    self.assertIn(path.name, result.stderr)
+                    self.assertIn(diagnostic, result.stderr)
+
+    def test_analyzer_requires_training_labels(self):
+        path = self.work / "positions.txt"
+        path.write_text("\n8/8/8/8/8/8/8/8 w - - 0 1")
+        result = self.run_command(
+            "my_torch_analyzer", "--train", "network.conf", path.name,
+        )
+        self.assertEqual(result.returncode, 84)
+        self.assertEqual(result.stdout, "")
+        self.assertIn("positions.txt:2: missing training label", result.stderr)
+
+    @unittest.skipUnless(os.name == "posix", "requires POSIX file permissions")
+    def test_analyzer_unreadable_dataset(self):
+        path = self.work / "unreadable.txt"
+        path.write_text("8/8/8/8/8/8/8/8 w - - 0 1 Nothing")
+        path.chmod(0)
+        try:
+            if os.access(path, os.R_OK):
+                self.skipTest("current user can bypass file permissions")
+            result = self.run_command(
+                "my_torch_analyzer", "--predict", "network.conf", path.name,
+            )
+            self.assertEqual(result.returncode, 84)
+            self.assertEqual(result.stdout, "")
+            self.assertIn("unreadable.txt: cannot open dataset", result.stderr)
+        finally:
+            path.chmod(0o600)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
