@@ -12,14 +12,13 @@ is still in development. No neural network framework is used.
 
 ## Build
 
-Requires GNU Make and a C++17 compiler (GCC by default).
+Requires GNU Make and a C++17 compiler (GCC by default); tests also require Python 3.
 
-```sh
-make
-```
-
-Use `make clean` to remove object files, `make fclean` to also remove the
-executables, or `make re` to rebuild everything.
+- `make` — build both programs
+- `make test` — build and run all tests
+- `make clean` — remove build files
+- `make fclean` — remove build files and executables
+- `make re` — rebuild everything
 
 ## Usage
 
@@ -40,23 +39,25 @@ Classify positions from a FEN dataset using a saved model:
 ./my_torch_analyzer --predict models/basic_network_1.nn positions.txt
 ```
 
-The analyzer prints one of `Nothing`, `Check`, or `Checkmate` per position, in
-file order. A newly generated model has not been trained, so its predictions
-are only useful for checking the command. See the [chess data guide](docs/data-encoding.md#prediction-command)
-for the input format and model requirements.
+The analyzer prints one class (`Nothing`, `Check`, or `Checkmate`) per position,
+in order. A generated model is untrained, so its predictions are only
+illustrative. See the [chess data guide](docs/data-encoding.md#prediction-command)
+for input and model requirements.
 
 Run either executable with `--help` for its command-line options.
 
 ## Development
 
-Shared network code is in `src/neural/`, with headers beside their source files.
-The two programs are in `src/generator/` and `src/analyzer/`; example configurations
-and tests are in `configs/` and `tests/`.
+- `src/neural/` — shared neural network code (headers beside sources)
+- `src/generator/` — model generator
+- `src/analyzer/` — chess analyzer
+- `configs/` — example configurations
+- `tests/` — tests
 
 C++ handles network computation and the command-line programs. Python handles
 CLI tests and will provide dataset preparation, experiment orchestration, and
 result analysis through Makefile targets. See the [architecture guide](docs/architecture.md)
 for component responsibilities, data flow, and the testing strategy.
 
-Run `make test` to execute the test suite (requires Python 3). CI builds and tests
-the project, then synchronizes successful pushes on `main` to the Epitech repository.
+CI builds and tests the project, then synchronizes successful pushes on `main`
+to the Epitech repository.
