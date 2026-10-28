@@ -21,7 +21,8 @@ class Position:
     conflicting: bool = False
 
 
-def _parse(line: str) -> tuple[str, str, tuple[str, str, str]]:
+def parse_labeled_fen(line: str) -> tuple[str, str, tuple[str, str, str]]:
+    """Validate a labeled row and return its FEN, class, and model input key."""
     fields = line.split()
     if len(fields) < 7:
         raise ValueError("expected six FEN fields and a label")
@@ -121,7 +122,7 @@ def clean_dataset(source_dir: str | Path = "dataset", output_dir: str | Path | N
                 source_counts[source]["records"] += 1
                 reference = {"file": source, "line": line_number}
                 try:
-                    fen, label, key = _parse(line)
+                    fen, label, key = parse_labeled_fen(line)
                 except ValueError as error:
                     rejected.append({**reference, "reason": str(error)})
                     source_counts[source]["rejected"] += 1
