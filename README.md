@@ -57,8 +57,9 @@ Run either executable with `--help` for its command-line options.
 C++ handles network computation and the command-line programs. Python handles
 CLI tests and dataset preparation through the
 [cleaning notebook](notebooks/clean_dataset.ipynb). See the
-[architecture guide](docs/architecture.md) for component responsibilities,
-data flow, and the testing strategy.
+[dataset cleaning guide](docs/dataset-cleaning.md) for its rules and outputs,
+and the [architecture guide](docs/architecture.md) for component
+responsibilities, data flow, and the testing strategy.
 
 CI builds and tests the project, then synchronizes successful pushes on `main`
 to the Epitech repository.

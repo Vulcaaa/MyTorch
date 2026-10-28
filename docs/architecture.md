@@ -65,8 +65,8 @@ need not be duplicated across languages.
 
 Dataset cleaning is launched through
 [`notebooks/clean_dataset.ipynb`](../notebooks/clean_dataset.ipynb), which calls
-`scripts/clean_dataset.py`. The notebook reads `dataset/` and writes results to
-`dataset/processed/`. Other Python commands may be added later.
+`scripts/clean_dataset.py`. The notebook reads `dataset/raw/` and writes results
+to `dataset/processed/`. Other Python commands may be added later.
 
 Scripts will be versioned `.py` files. Experiments must retain configurations,
 seeds, commands, and dataset references for reproducibility. Training datasets

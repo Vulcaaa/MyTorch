@@ -80,3 +80,4 @@ __pycache__/
 /dataset/splits/
 
 *.txt
+!/dataset/raw/**/*.txt
