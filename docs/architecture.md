@@ -14,7 +14,7 @@ Makefile handles builds and tests; the notebook launches dataset cleaning.
 | `src/chess/` | C++ | FEN parsing, feature encoding, and dataset label handling. |
 | `src/generator/` | C++ | `my_torch_generator`: create models from configuration files. |
 | `src/analyzer/` | C++ | `my_torch_analyzer`: coordinate training and prediction. |
-| `scripts/` | Python | Clean datasets; later run experiments, compute metrics, and plot results. |
+| `scripts/` | Python | Clean and split datasets; later run experiments, compute metrics, and plot results. |
 | `tests/` | C++ and Python | Function tests and executable tests. |
 
 The network module operates on numeric vectors without knowledge of chess or
@@ -38,9 +38,9 @@ Prediction:
 FEN file → C++ parsing and encoding → C++ network → class predictions
 ```
 
-Python scripts invoke the executables through `subprocess`, exchanging files
-and command output. Language bindings are unnecessary. Computation and weight
-updates stay in C++; Python organizes the experiments.
+Experiment scripts will invoke the executables through `subprocess`, exchanging
+files and command output. Language bindings are unnecessary. Computation and
+weight updates stay in C++; Python organizes the experiments.
 
 ## Testing
 
@@ -66,7 +66,9 @@ need not be duplicated across languages.
 Dataset cleaning is launched through
 [`notebooks/clean_dataset.ipynb`](../notebooks/clean_dataset.ipynb), which calls
 `scripts/clean_dataset.py`. The notebook reads `dataset/raw/` and writes results
-to `dataset/processed/`. Other Python commands may be added later.
+to `dataset/processed/`. `notebooks/split_dataset.ipynb` then writes
+train/validation/test files to `dataset/splits/`. Other Python commands may be
+added later.
 
 Scripts will be versioned `.py` files. Experiments must retain configurations,
 seeds, commands, and dataset references for reproducibility. Training datasets
@@ -78,5 +80,5 @@ Model generation, initialization, serialization, FEN encoding, dataset loading,
 forward propagation, and analyzer prediction are implemented. C++ tests and
 Python CLI tests run through `make test`.
 
-Dataset cleaning is implemented. Training, dataset splitting, and evaluation
-scripts remain to be implemented.
+Dataset cleaning and splitting are implemented. Training and evaluation scripts
+remain to be implemented.
