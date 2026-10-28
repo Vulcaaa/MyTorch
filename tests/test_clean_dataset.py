@@ -35,6 +35,8 @@ class CleanDatasetTests(unittest.TestCase):
             self.assertEqual(report["duplicates"], 1)
             self.assertEqual(report["conflicting_records"], 3)
             self.assertEqual(report["by_class"], {"Nothing": 1, "Check": 0, "Checkmate": 0})
+            self.assertEqual(report["by_source"]["raw/a.txt"], {"records": 4, "retained": 1, "rejected": 1})
+            self.assertEqual(report["by_source"]["raw/b.txt"], {"records": 2, "retained": 1, "rejected": 0})
             self.assertEqual(report["rejected"][0]["file"], "raw/a.txt")
             self.assertEqual(report["rejected"][0]["line"], 3)
             self.assertEqual(

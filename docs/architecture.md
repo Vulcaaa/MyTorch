@@ -4,7 +4,7 @@ This is the proposed architecture and may evolve during development.
 
 MyTorch uses **C++17 for network computation and executables**, and **Python for
 dataset preparation, experiment orchestration, and result analysis**. The
-Makefile is the common entry point for builds, tests, and scripts.
+Makefile handles builds and tests; the notebook launches dataset cleaning.
 
 ## Components
 
@@ -14,7 +14,7 @@ Makefile is the common entry point for builds, tests, and scripts.
 | `src/chess/` | C++ | FEN parsing, feature encoding, and dataset label handling. |
 | `src/generator/` | C++ | `my_torch_generator`: create models from configuration files. |
 | `src/analyzer/` | C++ | `my_torch_analyzer`: coordinate training and prediction. |
-| `scripts/` (planned) | Python | Prepare datasets, run experiments, compute metrics, and plot results. |
+| `scripts/` | Python | Clean datasets; later run experiments, compute metrics, and plot results. |
 | `tests/` | C++ and Python | Function tests and executable tests. |
 
 The network module operates on numeric vectors without knowledge of chess or
@@ -63,10 +63,10 @@ need not be duplicated across languages.
 | `make fclean` | Also remove executables |
 | `make re` | Clean and rebuild |
 
-Future scripts will have Makefile targets such as `make dataset` and
-`make benchmark`; **these targets do not exist yet**. Python commands will use
-the `PYTHON` variable, which defaults to `python3`. Third-party dependencies
-will be declared in a dedicated file and installed in a virtual environment.
+Dataset cleaning is launched through
+[`notebooks/clean_dataset.ipynb`](../notebooks/clean_dataset.ipynb), which calls
+`scripts/clean_dataset.py`. The notebook reads `dataset/` and writes results to
+`dataset/processed/`. Other Python commands may be added later.
 
 Scripts will be versioned `.py` files. Experiments must retain configurations,
 seeds, commands, and dataset references for reproducibility. Training datasets
@@ -78,4 +78,5 @@ Model generation, initialization, serialization, FEN encoding, dataset loading,
 forward propagation, and analyzer prediction are implemented. C++ tests and
 Python CLI tests run through `make test`.
 
-Training and Python preparation and evaluation scripts remain to be implemented.
+Dataset cleaning is implemented. Training, dataset splitting, and evaluation
+scripts remain to be implemented.

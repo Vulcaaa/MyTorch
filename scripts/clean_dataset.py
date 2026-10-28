@@ -107,20 +107,24 @@ def clean_dataset(source_dir: str | Path = "dataset", output_dir: str | Path | N
     files = _source_files(source_dir, output_dir)
     positions: dict[tuple[str, str, str], Position] = {}
     rejected: list[dict[str, object]] = []
+    source_counts: dict[str, dict[str, int]] = {}
     records = 0
 
     for path in files:
         source = path.relative_to(source_dir).as_posix()
+        source_counts[source] = {"records": 0, "retained": 0, "rejected": 0}
         with path.open("r", encoding="utf-8") as stream:
             for line_number, line in enumerate(stream, 1):
                 if not line.strip():
                     continue
                 records += 1
+                source_counts[source]["records"] += 1
                 reference = {"file": source, "line": line_number}
                 try:
                     fen, label, key = _parse(line)
                 except ValueError as error:
                     rejected.append({**reference, "reason": str(error)})
+                    source_counts[source]["rejected"] += 1
                     continue
                 reference["label"] = label
                 existing = positions.get(key)
@@ -138,11 +142,15 @@ def clean_dataset(source_dir: str | Path = "dataset", output_dir: str | Path | N
     ]
     classes = Counter(position.label for position in accepted)
     duplicates = sum(len(position.sources) - 1 for position in accepted)
+    for position in accepted:
+        for source in {str(ref["file"]) for ref in position.sources}:
+            source_counts[source]["retained"] += 1
     report = {
         "files": [path.relative_to(source_dir).as_posix() for path in files],
         "records": records,
         "accepted": len(accepted),
         "by_class": {label: classes[label] for label in ("Nothing", "Check", "Checkmate")},
+        "by_source": source_counts,
         "duplicates": duplicates,
         "conflicting_records": sum(len(group["sources"]) for group in conflicts),
         "rejected": rejected,
