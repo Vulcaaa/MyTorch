@@ -141,6 +141,7 @@ class CommandLineTests(unittest.TestCase):
         model = json.loads(model_path.read_text())
         weights = [[0.0] * 777 for _ in range(3)]
         weights[1][768] = 4.0  # Black to move selects Check.
+        weights[2][769] = 5.0  # En passant on file a selects Checkmate.
         model["layers"] = [{"weights": weights, "biases": [1.0, -1.0, 0.0]}]
         model_path.write_text(json.dumps(model))
         original = model_path.read_bytes()
@@ -149,13 +150,55 @@ class CommandLineTests(unittest.TestCase):
             "8/8/8/8/8/8/8/8 b - - 0 1 Nothing\n"
             "8/8/8/8/8/8/8/8 w - - 0 1 Checkmate\n"
             "8/8/8/8/8/8/8/8 b - - 0 1\n"
+            "8/8/8/8/8/8/8/8 w - a6 0 1\n"
         )
         result = self.run_command("my_torch_analyzer", "--predict",
                                   str(model_path), positions.name)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout, "Check\nNothing\nCheck\n")
+        self.assertEqual(result.stdout, "Check\nNothing\nCheck\nCheckmate\n")
         self.assertEqual(result.stderr, "")
         self.assertEqual(model_path.read_bytes(), original)
+
+    def test_analyzer_rejects_incompatible_model_before_loading_dataset(self):
+        model_path = self.work / self.analyzer_model()
+        model = json.loads(model_path.read_text())
+        for inputs, outputs in ((768, 3), (777, 2), (768, 2)):
+            model["config"]["layers"] = [inputs, outputs]
+            model["layers"] = [{"weights": [[0.0] * inputs for _ in range(outputs)],
+                                "biases": [0.0] * outputs}]
+            model_path.write_text(json.dumps(model))
+            for mode in ("--predict", "--train"):
+                with self.subTest(inputs=inputs, outputs=outputs, mode=mode):
+                    result = self.run_command("my_torch_analyzer", mode,
+                                              str(model_path), "missing.txt")
+                    self.assertEqual(result.returncode, 84)
+                    self.assertEqual(result.stdout, "")
+                    self.assertIn("requires 777 inputs and 3 outputs", result.stderr)
+                    self.assertIn(f"got {inputs} inputs and {outputs} outputs", result.stderr)
+                    self.assertNotIn("cannot open dataset", result.stderr)
+
+    def test_prediction_rejects_missing_or_invalid_model(self):
+        model_path = self.work / self.analyzer_model()
+        valid_model = json.loads(model_path.read_text())
+        invalid_weights = json.loads(json.dumps(valid_model))
+        invalid_weights["layers"][0]["weights"][0].pop()
+        cases = (
+            (None, "cannot open model for reading"),
+            ("{invalid json", "invalid model JSON"),
+            (json.dumps(invalid_weights), "incorrect number of weights per neuron"),
+        )
+        for contents, diagnostic in cases:
+            with self.subTest(diagnostic=diagnostic):
+                model_path.unlink(missing_ok=True)
+                if contents is not None:
+                    model_path.write_text(contents)
+                result = self.run_command("my_torch_analyzer", "--predict",
+                                          str(model_path), "missing.txt")
+                self.assertEqual(result.returncode, 84)
+                self.assertEqual(result.stdout, "")
+                self.assertIn(str(model_path), result.stderr)
+                self.assertIn(diagnostic, result.stderr)
+                self.assertNotIn("cannot open dataset", result.stderr)
 
     def test_analyzer_dataset_errors(self):
         model = self.analyzer_model()

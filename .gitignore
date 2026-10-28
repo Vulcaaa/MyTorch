@@ -72,3 +72,5 @@ Testing/
 
 # Generated models
 /models/
+
+*.txt

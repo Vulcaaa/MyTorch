@@ -74,8 +74,8 @@ must remain available for the project defense, without requiring Git tracking.
 
 ## Current status
 
-Model generation, initialization, serialization, and FEN encoding are implemented.
-C++ tests and Python CLI tests run through `make test`.
+Model generation, initialization, serialization, FEN encoding, dataset loading,
+forward propagation, and analyzer prediction are implemented. C++ tests and
+Python CLI tests run through `make test`.
 
-Analyzer integration, forward propagation, training, prediction, and Python
-preparation and evaluation scripts remain to be implemented.
+Training and Python preparation and evaluation scripts remain to be implemented.
