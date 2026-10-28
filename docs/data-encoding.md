@@ -91,6 +91,29 @@ Chess models require **777 inputs and 3 outputs**, ordered
 trained for this layout. Dimensions alone cannot verify feature or class order.
 The `.nn` file stores model configuration and parameters, not input positions.
 
-The generator remains generic. FEN encoding is implemented; analyzer integration,
-training, and prediction are pending. The analyzer must reject incompatible
-model dimensions when integrated.
+The generator remains generic. The analyzer checks that a loaded chess model has
+777 inputs and 3 outputs before reading the dataset. Training is not yet
+implemented.
+
+## Prediction command
+
+Use a saved chess model and a text file containing one six-field FEN per line:
+
+```text
+8/8/8/8/8/8/8/8 w - - 0 1
+8/8/8/8/8/8/8/8 b - - 0 1 Check
+```
+
+The optional label after a FEN is accepted but does not affect the prediction.
+Blank lines are skipped. The encoder validates FEN fields, but does not check
+whether a position is legal chess.
+
+```sh
+./my_torch_analyzer --predict models/basic_network_1.nn positions.txt
+```
+
+The command prints one class per nonblank line in the same order. It returns 0
+on success, or 84 with a diagnostic on stderr for invalid arguments, models,
+or datasets. A newly generated model is untrained; its class outputs have no
+established predictive quality. See [output encoding](output-encoding.md) for
+the class mapping.

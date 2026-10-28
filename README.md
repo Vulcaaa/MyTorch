@@ -5,10 +5,10 @@ chess positions as **check**, **checkmate**, or **neither**, using FEN notation.
 It combines a reusable neural network module with two command-line programs:
 
 - `my_torch_generator`: creates neural networks from configuration files.
-- `my_torch_analyzer`: will train models and classify chess positions.
+- `my_torch_analyzer`: classifies chess positions; training is planned.
 
-Network generation, saving, and loading are implemented. Training and prediction
-are still in development. No neural network framework is used.
+Network generation, saving, loading, and prediction are implemented. Training
+is still in development. No neural network framework is used.
 
 ## Build
 
@@ -33,6 +33,17 @@ Models are saved in `models/` under the current directory as `basic_network_1.nn
 `basic_network_2.nn`, and `basic_network_3.nn`. The folder is created automatically
 and ignored by Git. Existing names are skipped.
 The configuration controls the network architecture and initialization seed.
+
+Classify positions from a FEN dataset using a saved model:
+
+```sh
+./my_torch_analyzer --predict models/basic_network_1.nn positions.txt
+```
+
+The analyzer prints one of `Nothing`, `Check`, or `Checkmate` per position, in
+file order. A newly generated model has not been trained, so its predictions
+are only useful for checking the command. See the [chess data guide](docs/data-encoding.md#prediction-command)
+for the input format and model requirements.
 
 Run either executable with `--help` for its command-line options.
 
