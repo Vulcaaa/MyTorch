@@ -52,6 +52,7 @@ build/tests/AnalyzerSaving_tests: build/tests/AnalyzerSaving.o build/analyzer/Tr
 test: all $(TEST_BIN)
 	@set -e; for executable in $(TEST_BIN); do ./$$executable; done
 	$(PYTHON) tests/cli.py
+	$(PYTHON) -m unittest discover -s tests -p 'test_*.py'
 
 clean:
 	rm -rf build
