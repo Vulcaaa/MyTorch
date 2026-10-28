@@ -18,6 +18,8 @@ class NeuralNetwork {
     public:
         explicit NeuralNetwork(const NetworkConfig &config);
         std::vector<double> predict(const std::vector<double>& inputs) const;
+        std::size_t inputSize() const { return _config.layers.front(); }
+        std::size_t outputSize() const { return _config.layers.back(); }
 
     private:
         friend class ModelSerializer;

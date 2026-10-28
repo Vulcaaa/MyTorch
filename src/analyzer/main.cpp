@@ -2,12 +2,21 @@
 #include <array>
 #include <iostream>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 
 #include "Arguments.hpp"
 #include "NeuralNetwork.hpp"
 #include "Dataset.hpp"
 #include "ModelSerializer.hpp"
+
+void validateChessModel(const NeuralNetwork& nn)
+{
+    if (nn.inputSize() != 777 || nn.outputSize() != 3)
+        throw std::invalid_argument("chess model requires 777 inputs and 3 outputs; got "
+            + std::to_string(nn.inputSize()) + " inputs and "
+            + std::to_string(nn.outputSize()) + " outputs");
+}
 
 int runPrediction(const NeuralNetwork& nn, const Dataset& dataset)
 {
@@ -17,8 +26,6 @@ int runPrediction(const NeuralNetwork& nn, const Dataset& dataset)
 
     for (const auto& sample : dataset) {
         const auto scores = nn.predict(sample.inputs);
-        if (scores.size() != classes.size())
-            throw std::invalid_argument("prediction requires exactly three output scores");
         const auto best = std::max_element(scores.begin(), scores.end());
         std::cout << classes[best - scores.begin()] << '\n';
     }
@@ -28,6 +35,7 @@ int runPrediction(const NeuralNetwork& nn, const Dataset& dataset)
 int runAnalyzer(AnalyzerArguments arguments)
 {
     NeuralNetwork nn = ModelSerializer::load(arguments.loadFile);
+    validateChessModel(nn);
 
     const auto mode = arguments.mode == AnalyzerMode::Train
         ? DatasetMode::Training : DatasetMode::Prediction;

@@ -157,6 +157,24 @@ class CommandLineTests(unittest.TestCase):
         self.assertEqual(result.stderr, "")
         self.assertEqual(model_path.read_bytes(), original)
 
+    def test_analyzer_rejects_incompatible_model_before_loading_dataset(self):
+        model_path = self.work / self.analyzer_model()
+        model = json.loads(model_path.read_text())
+        for inputs, outputs in ((768, 3), (777, 2), (768, 2)):
+            model["config"]["layers"] = [inputs, outputs]
+            model["layers"] = [{"weights": [[0.0] * inputs for _ in range(outputs)],
+                                "biases": [0.0] * outputs}]
+            model_path.write_text(json.dumps(model))
+            for mode in ("--predict", "--train"):
+                with self.subTest(inputs=inputs, outputs=outputs, mode=mode):
+                    result = self.run_command("my_torch_analyzer", mode,
+                                              str(model_path), "missing.txt")
+                    self.assertEqual(result.returncode, 84)
+                    self.assertEqual(result.stdout, "")
+                    self.assertIn("requires 777 inputs and 3 outputs", result.stderr)
+                    self.assertIn(f"got {inputs} inputs and {outputs} outputs", result.stderr)
+                    self.assertNotIn("cannot open dataset", result.stderr)
+
     def test_analyzer_dataset_errors(self):
         model = self.analyzer_model()
         fen = "8/8/8/8/8/8/8/8 w - - 0 1"
