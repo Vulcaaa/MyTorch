@@ -48,6 +48,9 @@ Run either executable with `--help` for its command-line options.
 
 ## Development
 
+See the [evaluation and evidence plan](docs/evaluation-plan.md) for the planned
+measurements, experiment protocol, and defense deliverables.
+
 - `src/neural/` — shared neural network code (headers beside sources)
 - `src/generator/` — model generator
 - `src/analyzer/` — chess analyzer
