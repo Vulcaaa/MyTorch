@@ -1,166 +1,171 @@
-# MyTorch — Project roadmap
+# MyTorch — Feuille de route
 
-Build, train, and justify a neural network that classifies chess positions as
-**Nothing · Check · Checkmate**. This checklist covers implementation,
-experiments, documentation, and delivery within the project deadline.
+Créer, entraîner et justifier un réseau de neurones qui classe les positions
+d’échecs en **Nothing · Check · Checkmate**. Cette liste couvre le développement,
+les expériences, la documentation et la livraison dans le temps disponible.
 
-**Reading key:** ☑ available · ☐ to complete or verify · ◇ optional.
-An implemented feature still needs evidence in the final demonstration.
+**Légende :** ☑ réalisé, même en PR non fusionnée · ☐ restant ou à confirmer · ◇ optionnel.
+Les cases suivent le travail réalisé ; la fusion et la livraison restent des étapes distinctes.
 
 ```mermaid
 flowchart LR
-    A[Define the problem] --> B[Prepare data]
-    A --> C[Build the neural module]
-    B --> D[Train and validate]
+    A[Définir le problème] --> B[Préparer les données]
+    A --> C[Construire le module neuronal]
+    B --> D[Entraîner et valider]
     C --> D
-    D --> E[Compare choices and costs]
-    E --> F[Freeze model and test]
-    F --> G[Deliver and demonstrate]
+    D --> E[Comparer les choix et les coûts]
+    E --> F[Figer le modèle et tester]
+    F --> G[Livrer et démontrer]
 ```
 
-## At a glance
+## Vue d’ensemble
 
-| Axis | Current position | Next outcome |
+| Axe | État actuel | Prochain résultat attendu |
 | --- | --- | --- |
-| Problem and design | Input/output contracts documented | Explain choices and limits |
-| Data | Cleaning and splitting prepared in separate PRs | Integrate and freeze reference datasets |
-| Neural module | Generation, save/load, and prediction available | Finish and verify backpropagation |
-| Training | CLI integration incomplete | Train, validate, stop, and save a usable model |
-| Prediction quality | Prediction CLI available | Metrics, baseline, confusion matrix |
-| Experiments and costs | Comparisons pending | Measured architecture and training choices |
-| Documentation and delivery | Guides available; results pending | Reproducible report and trained model |
+| Problème et conception | Contrats d’entrée/sortie documentés | Justifier les choix liés à l’apprentissage |
+| Données | Nettoyage, découpage et rapports réalisés ; PR ouvertes | Fusionner et figer les données de référence |
+| Module neuronal | Génération, sauvegarde, chargement et prédiction disponibles | Terminer et vérifier la rétropropagation |
+| Entraînement | Intégration de la commande incomplète | Entraîner, valider, arrêter et sauvegarder |
+| Qualité des prédictions | Commande de prédiction disponible | Métriques, référence et matrice de confusion |
+| Expériences et coûts | Comparaisons à réaliser | Mesurer les compromis et choisir un modèle |
+| Documentation et livraison | Guides existants ; résultats à produire | Rapport reproductible et modèle entraîné |
 
-## 1 · Problem and design
+## 1 · Problème et conception
 
-- [x] Define FEN features, class order, and prediction behavior.
-- [x] Separate the generic C++ neural module from chess-specific processing.
-- [ ] Explain architecture, language split, activations, initialization, and loss.
-- [ ] State limits: position classification is not a chess-playing engine;
-      format validation does not establish chess legality or label correctness.
+- [x] Définir les caractéristiques FEN, l’ordre des classes et la prédiction.
+- [x] Séparer le module neuronal C++ générique du traitement des échecs.
+- [x] Documenter l’architecture et la répartition des responsabilités C++/Python.
+- [ ] Justifier les activations, l’initialisation et la fonction de perte retenues.
+- [x] Préciser les limites : classer une position ne signifie pas jouer aux échecs ;
+      vérifier le format ne garantit ni la légalité ni la justesse du label.
 
-**Show:** a system diagram and a short decision table: choice → reason → tradeoff.
+**À présenter :** schéma du système et tableau choix → raison → compromis.
 
-## 2 · Data quality and preparation
+## 2 · Qualité et préparation des données
 
-- [ ] Integrate cleaning/splitting; inspect malformed rows, duplicates, and conflicts.
-- [ ] Record sources, permission/license information, and counts by class.
-- [ ] Freeze reproducible train/validation/test files; retain seed and input hashes.
-- [ ] Verify no identical model-visible inputs occur across splits.
-- [ ] Preserve raw data and explain sampling, label, and class-distribution limits.
+- [x] Réaliser le nettoyage et le découpage ; traiter les lignes invalides,
+      les doublons et les conflits de labels. **Prêt en PR, non fusionné.**
+- [x] Produire la provenance des positions, les rapports et les effectifs par classe.
+- [x] Générer des fichiers train/validation/test reproductibles avec graine et empreinte d’entrée.
+- [x] Vérifier l’absence d’entrées visibles par le modèle communes aux différents jeux.
+- [x] Conserver les données brutes sans les modifier.
+- [ ] Fusionner les travaux et figer les jeux de référence pour les expériences.
+- [ ] Documenter l’origine externe des données, leurs licences et droits d’utilisation.
+- [ ] Expliquer les limites des labels, de l’échantillonnage et de la distribution des classes.
 
 | Train | Validation | Test |
 | --- | --- | --- |
-| Update weights | Choose settings, checkpoint, and model | Final measurement after choices are frozen |
-| Optional balancing here only | Original distribution | Original distribution; no tuning |
+| Mettre à jour les poids | Choisir réglages, point de sauvegarde et modèle | Mesurer le modèle final après gel des choix |
+| Équilibrage éventuel ici uniquement | Distribution d’origine | Distribution d’origine ; aucun réglage dessus |
 
-**Show:** data flow `raw → cleaned → splits`, class-count table, preparation report.
+**À présenter :** flux `brut → nettoyé → jeux séparés`, effectifs et rapport de préparation.
 
-## 3 · Neural module and training correctness
+## 3 · Module neuronal et validité de l’entraînement
 
-- [x] Generate concrete networks; initialize, save, load, and predict.
-- [ ] Complete backpropagation: compatible loss/output, derivatives, gradients,
-      weight/bias updates, and invalid-parameter checks.
-- [ ] Check gradients with finite differences and updates against known values.
-- [ ] Demonstrate decreasing loss on a small deterministic learning problem.
-- [ ] Connect `--train`: epochs, batch size, learning rate, seeded sample order.
-- [ ] Verify both save modes, reloadable trained models, and failure diagnostics.
+- [x] Générer des réseaux concrets ; initialiser, sauvegarder, charger et prédire.
+- [x] Préparer et tester la fonction de sauvegarde vers le fichier source ou un autre fichier.
+- [ ] Terminer la rétropropagation : perte/sortie compatibles, dérivées, gradients,
+      mise à jour des poids/biais et rejet des paramètres invalides.
+- [ ] Vérifier les gradients par différences finies et les mises à jour sur des valeurs connues.
+- [ ] Montrer une baisse de perte sur un petit problème déterministe.
+- [ ] Brancher `--train` : époques, taille des lots, taux d’apprentissage et ordre reproductible.
+- [ ] Vérifier le parcours complet d’entraînement : deux modes de sauvegarde,
+      rechargement du modèle entraîné et diagnostics d’erreur.
 
-**Show:** meaningful correctness checks and a generate → train → save → reload demo.
+**À présenter :** vérifications des calculs et démonstration générer → entraîner → sauvegarder → recharger.
 
-## 4 · Learning behavior and overfitting
+## 4 · Apprentissage et surapprentissage
 
-- [ ] Save per-epoch train/validation loss, classification metrics, and elapsed time.
-- [ ] Keep validation inference separate from gradient updates.
-- [ ] Implement validation-based early stopping and restore the best checkpoint.
-- [ ] Declare maximum epochs, patience, minimum improvement, and loss aggregation.
-- [ ] Inspect divergence, stagnation, instability, or class collapse if observed.
+- [ ] Enregistrer par époque les pertes train/validation, les métriques et le temps écoulé.
+- [ ] Garantir que la validation ne met jamais à jour les poids.
+- [ ] Implémenter l’arrêt anticipé sur validation et restaurer la meilleure sauvegarde.
+- [ ] Fixer le nombre maximal d’époques, la patience, l’amélioration minimale et le calcul de la perte moyenne.
+- [ ] Examiner les problèmes réellement observés : divergence, stagnation, instabilité ou classe unique prédite.
 
-**Show:** train/validation curves with best and stopping epochs marked.
-Splitting helps detect overfitting; stopping/restoration provides active control.
+**À présenter :** courbes train/validation avec meilleure époque et époque d’arrêt.
+Le découpage aide à détecter le surapprentissage ; l’arrêt et la restauration agissent dessus.
 
-## 5 · Prediction quality
+## 5 · Qualité des prédictions
 
-| Measure | What it tells us |
+| Mesure | Ce qu’elle indique |
 | --- | --- |
-| Accuracy | Fraction of all positions classified correctly |
-| Precision / recall / F1 per class | False alarms, missed cases, and class-level quality |
-| Macro-F1 | Equal-weight summary across the three classes |
-| Class counts and confusion matrix | Evidence size and the mistakes being made |
+| Exactitude globale — accuracy | Proportion de positions correctement classées |
+| Précision / rappel / F1 par classe | Fausses alertes, cas manqués et qualité par classe |
+| Macro-F1 | Moyenne des F1 donnant le même poids aux trois classes |
+| Effectifs et matrice de confusion | Nombre d’exemples et nature des erreurs |
 
-- [ ] Build the evaluator; verify metrics on hand-computed examples.
-- [ ] Reject missing/extra predictions, unknown classes, and failed processes.
-- [ ] Compare with an always-majority-class baseline defined from train data.
-- [ ] Export numerical results and a readable confusion matrix.
-- [ ] Inspect representative errors; distinguish observations from hypotheses.
+- [ ] Créer le script d’évaluation ; vérifier les métriques sur des exemples calculés à la main.
+- [ ] Rejeter les prédictions manquantes/en trop, les classes inconnues et les exécutions échouées.
+- [ ] Comparer à une référence prédisant toujours la classe majoritaire du train.
+- [ ] Exporter les résultats numériques et une matrice de confusion lisible.
+- [ ] Examiner des erreurs représentatives ; distinguer observations et hypothèses.
 
-**Show:** baseline/model table, confusion matrix, and a few explained mistakes.
-Use validation macro-F1 to select models; declare tie-breakers before comparing.
-Accuracy alone can hide failure on a minority class.
+**À présenter :** tableau référence/modèle, matrice de confusion et quelques erreurs expliquées.
+Sélectionner sur la macro-F1 de validation ; fixer les critères de départage avant comparaison.
+L’accuracy seule peut masquer l’échec sur une classe minoritaire.
 
-## 6 · Hyperparameters, alternatives, and costs
+## 6 · Hyperparamètres, alternatives et coûts
 
-Keep datasets and comparison rules fixed. Change one factor at a time initially;
-record every attempted setting, including failed runs. Limit the experiment
-budget before starting and repeat finalists with several seeds if time permits.
+Conserver les mêmes données et règles de comparaison. Changer d’abord un facteur
+à la fois et enregistrer tous les essais, y compris les échecs. Fixer un budget
+avant les expériences ; répéter les finalistes avec plusieurs graines si possible.
 
-| Comparison | Minimum useful experiment | Record |
+| Comparaison | Expérience minimale utile | À relever |
 | --- | --- | --- |
-| Model architecture | Reference versus one smaller network | Layer widths, activations, parameter count, validation quality |
-| Learning settings | Small learning-rate comparison; batch sizes if supported | Loss curves, stability, epochs, validation quality |
-| Practical alternative | Original versus balanced training data | Per-class recall, macro-F1, extra computation, accept/reject decision |
-| Training cost | Same hardware and declared stopping policy | Total/epoch time, processed samples, environment and seeds |
-| Prediction cost | Same input file; repeat short timings | Median runtime, positions/second, inclusion of loading/parsing |
-| Model footprint | Compare candidate models | Parameter count and saved file size; memory only if measured |
+| Architecture | Réseau de référence contre un réseau plus petit | Couches, activations, paramètres, qualité en validation |
+| Réglages d’apprentissage | Quelques taux d’apprentissage ; tailles de lots si disponibles | Courbes, stabilité, époques, qualité en validation |
+| Alternative concrète | Train original contre train équilibré | Rappel par classe, macro-F1, surcoût, décision motivée |
+| Coût d’entraînement | Même matériel et règle d’arrêt déclarée | Temps total/par époque, exemples traités, environnement et graines |
+| Coût de prédiction | Même fichier ; mesures courtes répétées | Temps médian, positions/seconde, inclusion du chargement et du décodage FEN |
+| Taille du modèle | Comparaison des candidats | Nombre de paramètres, taille du fichier ; mémoire si mesurée |
 
-**Show:** comparison table and quality-versus-cost chart; explain the selected
-compromise. Repeated training rows change work per epoch: compare processed
-samples and time too. A measured negative result is a useful decision.
+**À présenter :** tableau comparatif et graphique qualité/coût ; expliquer le compromis retenu.
+Répéter des positions augmente le travail par époque : comparer aussi le temps et
+les exemples traités. Un résultat négatif mesuré permet également de justifier un choix.
 
-## 7 · Experiment journal and documentation
+## 7 · Journal d’expériences et documentation
 
-- [ ] Keep a run manifest: commit, commands, settings, seeds, data hashes,
-      environment, stopping policy, checkpoint, and artifact locations.
-- [ ] Retain numerical histories behind charts; label axes, units, and runs.
-- [ ] Keep a brief journal for meaningful problems and decisions:
+- [ ] Tenir une fiche par exécution : commit, commandes, réglages, graines,
+      empreintes des données, environnement, arrêt, sauvegarde et résultats.
+- [ ] Conserver les valeurs derrière les graphiques ; indiquer axes, unités et expériences.
+- [ ] Tenir un journal court des problèmes et décisions significatifs :
 
-| Run / observation | Hypothesis | Check or change | Before → after | Decision / limit |
+| Exécution / observation | Hypothèse | Vérification ou changement | Avant → après | Décision / limite |
 | --- | --- | --- | --- | --- |
-| Fill from actual experiments | Suspected cause | Controlled investigation | Measured evidence | Keep, reject, or investigate |
+| À remplir pendant les expériences | Cause supposée | Investigation contrôlée | Mesures obtenues | Conserver, rejeter ou approfondir |
 
-**Documents to finish:**
+| Document | Déjà disponible | À compléter |
+| --- | --- | --- |
+| Guide des données | Contrats ; guides de nettoyage/découpage en PR | Origines, droits, distributions et limites |
+| Guide d’entraînement | À rédiger | Commande, réglages, perte, mises à jour, arrêt et sauvegarde |
+| Rapport d’expériences | À produire | Protocole, essais, courbes, coûts, alternatives, problèmes et choix final |
+| README | Compilation, génération et prédiction | Entraînement, modèle livré et liens vers les résultats |
 
-| Document | Content |
+## 8 · Modèle final et soutenance
+
+- [ ] Sélectionner sur validation, figer les réglages, puis évaluer le modèle final sur test.
+- [ ] Livrer et pousser un modèle entraîné nommé `my_torch_network…`.
+- [ ] Vérifier que le fichier livré se charge et prédit une classe par entrée, dans l’ordre.
+- [ ] Conserver scripts, configurations, commandes et données d’entraînement pour la reproduction.
+- [ ] Démontrer l’indépendance du module, la génération, l’entraînement, la sauvegarde et la prédiction.
+- [ ] Justifier les choix par des mesures, avec les limites et les essais infructueux.
+
+**Preuves attendues :** modèle fonctionnel, commandes reproductibles, résultats
+chiffrés, graphiques lisibles et compromis justifiés. Le barème fourni décrit un
+état passé : démontrer l’état actuel sans présenter du travail prévu comme réalisé.
+
+## Ordre de travail avant le rendu
+
+| Quand | Priorité |
 | --- | --- |
-| Data guide | Sources, preparation, distributions, permissions, limits |
-| Training guide | Working command, settings, loss, updates, stopping and saving |
-| Experiment report | Protocol, tried settings, curves, costs, alternatives, problems, final rationale |
-| README | Build, train/predict entry points, delivered model, links to detailed guides |
+| Maintenant, pendant la rétropropagation | Fusionner les données ; préparer évaluateur, référence, format des résultats et réglages d’essai |
+| Dès que l’entraînement fonctionne | Petit cas de vérification, puis modèle de référence ; examiner courbes et arrêt |
+| Après une référence stable | Comparer quelques architectures/réglages et une alternative concrète |
+| Dernière passe | Figer le modèle, mesurer qualité/coûts finaux, terminer le rapport et vérifier les livrables |
 
-## 8 · Final model and defense
+**◇ Après l’essentiel uniquement :** parallélisation, recherches plus larges,
+optimiseurs supplémentaires, calibration ou classes supplémentaires. Priorité à
+un modèle entraîné fonctionnel, documenté et reproductible.
 
-- [ ] Select on validation, freeze settings, then evaluate the final model on test.
-- [ ] Deliver and push a trained model named `my_torch_network…`.
-- [ ] Verify the exact delivered file loads and predicts one class per input in order.
-- [ ] Preserve scripts, configurations, commands, and training data for reproduction.
-- [ ] Demonstrate module independence, generation, training, save/load, and prediction.
-- [ ] Explain choices using measurements, including limits and unsuccessful attempts.
-
-**Defense evidence:** working model + reproducible commands + numerical results
-+ readable charts + justified tradeoffs. The earlier assessment describes a
-past state; demonstrate current behavior without claiming credit for planned work.
-
-## Execution order before the deadline
-
-| When | Focus |
-| --- | --- |
-| Now, while backpropagation is pending | Integrate data work; prepare evaluator, baseline, result format, and experiment settings |
-| Once training works | Run a small correctness case, then a reference chess model; inspect curves and stopping |
-| After a stable reference | Compare a bounded set of architectures/settings and one practical alternative |
-| Final pass | Freeze model, measure test quality/costs, finish report, verify delivered artifacts |
-
-**◇ Only after the essentials:** parallel training, larger searches, additional
-optimizers, calibration, or extra chess classes. Do not sacrifice a working,
-documented, reproducible trained model for optional features.
-
-Existing foundations: [architecture](architecture.md),
-[input contract](data-encoding.md), [output contract](output-encoding.md).
+Fondations existantes : [architecture](architecture.md),
+[contrat d’entrée](data-encoding.md), [contrat de sortie](output-encoding.md).
