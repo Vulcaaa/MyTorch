@@ -48,8 +48,8 @@ Run either executable with `--help` for its command-line options.
 
 ## Development
 
-See the [evaluation and evidence plan](docs/evaluation-plan.md) for the planned
-measurements, experiment protocol, and defense deliverables.
+See the [project roadmap](docs/project-roadmap.md) for the implementation,
+training, experiment, and defense checklist.
 
 - `src/neural/` — shared neural network code (headers beside sources)
 - `src/generator/` — model generator
