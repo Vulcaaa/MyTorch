@@ -66,6 +66,10 @@ vcpkg_installed/
 Testing/
 .cache/
 
+# Python bytecode
+__pycache__/
+*.py[cod]
+
 # MyTorch executables
 /my_torch_analyzer
 /my_torch_generator
