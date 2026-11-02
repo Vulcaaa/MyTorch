@@ -25,7 +25,7 @@ Source datasets remain unchanged. The reader maps labels as follows:
 Color suffixes are ignored. Unknown labels must raise an error rather than
 default to `Nothing`.
 
-Example from `dataset/check/10_pieces.txt`:
+Example from `dataset/raw/check/10_pieces.txt`:
 
 ```text
 8/8/R2k4/4r1p1/8/5K2/5P2/8 b - - 7 59 Check White
