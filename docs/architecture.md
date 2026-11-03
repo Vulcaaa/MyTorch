@@ -4,7 +4,7 @@ This is the proposed architecture and may evolve during development.
 
 MyTorch uses **C++17 for network computation and executables**, and **Python for
 dataset preparation, experiment orchestration, and result analysis**. The
-Makefile is the common entry point for builds, tests, and scripts.
+Makefile handles builds, tests, and experiments; notebooks launch dataset preparation.
 
 ## Components
 
@@ -14,8 +14,8 @@ Makefile is the common entry point for builds, tests, and scripts.
 | `src/chess/` | C++ | FEN parsing, feature encoding, and dataset label handling. |
 | `src/generator/` | C++ | `my_torch_generator`: create models from configuration files. |
 | `src/analyzer/` | C++ | `my_torch_analyzer`: coordinate training and prediction. |
-| `scripts/` | Python | Orchestrate experiments, evaluate models, and aggregate comparable runs; dataset preparation is planned. |
-| `notebooks/` | Python | Plot evaluation reports and compare validation runs. |
+| `scripts/` | Python | Clean/split datasets, orchestrate experiments, evaluate models, and aggregate comparable runs. |
+| `notebooks/` | Python | Launch dataset preparation, inspect evaluation reports, and compare validation runs. |
 | `tests/` | C++ and Python | Function tests and executable tests. |
 
 The network module operates on numeric vectors without knowledge of chess or
@@ -65,7 +65,12 @@ need not be duplicated across languages.
 | `make fclean` | Also remove executables |
 | `make re` | Clean and rebuild |
 
-Dataset preparation remains planned; `make dataset` does not exist yet.
+Dataset cleaning is launched through
+[`notebooks/clean_dataset.ipynb`](../notebooks/clean_dataset.ipynb), which calls
+`scripts/clean_dataset.py` to read `dataset/raw/` and write `dataset/processed/`.
+[`notebooks/split_dataset.ipynb`](../notebooks/split_dataset.ipynb) then writes
+train/validation/test files to `dataset/splits/`. `make dataset` does not exist.
+
 Experiment commands use `CONFIG` (defaults to `configs/experiment.json`),
 `OUTPUT` (required new directory) and optional `OPTIONS`. Python commands use
 the `PYTHON` variable, which defaults to `python3`. Third-party dependencies
@@ -85,5 +90,5 @@ The Python evaluation script computes classification metrics through the analyze
 see the [evaluation guide](evaluation.md). `evaluation.ipynb` inspects one model's
 report; `comparison.ipynb` compares individual validation runs and configuration
 statistics independently. `experiment.py` prepares/runs the configuration-by-seed
-plan, reusing `evaluate.py` and `comparison.py`. The backend training adapter and
-Python preparation scripts remain to be implemented.
+plan, reusing `evaluate.py` and `comparison.py`. Dataset cleaning and splitting
+are implemented. The backend training adapter remains to be implemented.

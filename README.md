@@ -65,9 +65,12 @@ training, experiment, and defense checklist.
 - `tests/` — tests
 
 C++ handles network computation and the command-line programs. Python handles
-CLI tests, experiment orchestration, and result analysis; dataset preparation
-is planned. See the [architecture guide](docs/architecture.md)
-for component responsibilities, data flow, and the testing strategy.
+CLI tests, dataset preparation, experiment orchestration, and result analysis.
+Prepare data with the [cleaning notebook](notebooks/clean_dataset.ipynb) and
+[split notebook](notebooks/split_dataset.ipynb). See the
+[cleaning guide](docs/dataset-cleaning.md),
+[split guide](docs/dataset-splitting.md), and
+[architecture guide](docs/architecture.md) for details.
 
 CI builds and tests the project, then synchronizes successful pushes on `main`
 to the Epitech repository.
