@@ -14,7 +14,7 @@ Makefile is the common entry point for builds, tests, and scripts.
 | `src/chess/` | C++ | FEN parsing, feature encoding, and dataset label handling. |
 | `src/generator/` | C++ | `my_torch_generator`: create models from configuration files. |
 | `src/analyzer/` | C++ | `my_torch_analyzer`: coordinate training and prediction. |
-| `scripts/` | Python | Evaluate models and validate comparable runs; dataset preparation and experiment orchestration are planned. |
+| `scripts/` | Python | Orchestrate experiments, evaluate models, and aggregate comparable runs; dataset preparation is planned. |
 | `notebooks/` | Python | Plot evaluation reports and compare validation runs. |
 | `tests/` | C++ and Python | Function tests and executable tests. |
 
@@ -60,12 +60,14 @@ need not be duplicated across languages.
 | --- | --- |
 | `make` | Build both C++ executables |
 | `make test` | Run C++ tests and Python executable tests |
+| `make experiment OUTPUT=PATH OPTIONS=--prepare` | Freeze an experiment and generate initial models; full execution awaits training integration |
 | `make clean` | Remove build artifacts |
 | `make fclean` | Also remove executables |
 | `make re` | Clean and rebuild |
 
-Future scripts will have Makefile targets such as `make dataset` and
-`make benchmark`; **these targets do not exist yet**. Python commands will use
+Dataset preparation remains planned; `make dataset` does not exist yet.
+Experiment commands use `CONFIG` (defaults to `configs/experiment.json`),
+`OUTPUT` (required new directory) and optional `OPTIONS`. Python commands use
 the `PYTHON` variable, which defaults to `python3`. Third-party dependencies
 will be declared in a dedicated file and installed in a virtual environment.
 
@@ -80,6 +82,8 @@ forward propagation, and analyzer prediction are implemented. C++ tests and
 Python CLI tests run through `make test`.
 
 The Python evaluation script computes classification metrics through the analyzer;
-see the [evaluation guide](evaluation.md). The notebook plots reports and compares
-individual validation runs. Training, Python preparation scripts, and experiment
-orchestration remain to be implemented.
+see the [evaluation guide](evaluation.md). `evaluation.ipynb` inspects one model's
+report; `comparison.ipynb` compares individual validation runs and configuration
+statistics independently. `experiment.py` prepares/runs the configuration-by-seed
+plan, reusing `evaluate.py` and `comparison.py`. The backend training adapter and
+Python preparation scripts remain to be implemented.

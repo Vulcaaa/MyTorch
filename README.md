@@ -48,7 +48,10 @@ Run either executable with `--help` for its command-line options.
 
 Evaluate a saved model on labeled positions with
 `python3 scripts/evaluate.py MODEL DATASET --output results/RUN`.
-See the [evaluation guide](docs/evaluation.md) for metrics and report formats.
+Prepare a configuration/seed experiment with
+`make experiment OUTPUT=results/experiments/preparation OPTIONS=--prepare`.
+Full experiments await the training backend. See the
+[evaluation guide](docs/evaluation.md) for the workflow and two analysis notebooks.
 
 ## Development
 
@@ -62,8 +65,8 @@ training, experiment, and defense checklist.
 - `tests/` — tests
 
 C++ handles network computation and the command-line programs. Python handles
-CLI tests and will provide dataset preparation, experiment orchestration, and
-result analysis through Makefile targets. See the [architecture guide](docs/architecture.md)
+CLI tests, experiment orchestration, and result analysis; dataset preparation
+is planned. See the [architecture guide](docs/architecture.md)
 for component responsibilities, data flow, and the testing strategy.
 
 CI builds and tests the project, then synchronizes successful pushes on `main`

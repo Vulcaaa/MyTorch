@@ -1,60 +1,107 @@
-# Model evaluation
+# Evaluation workflow
 
-## Run
+## One experiment, one configuration file
 
-Requires Python 3 and `make`; no Python packages are needed.
+Edit [configs/experiment.json](../configs/experiment.json): it defines the network
+configurations, common training settings, dataset paths, and seeds **once**.
+Paths in this file are relative to its directory. The supplied compact/reference
+pair is an initial capacity comparison, not a tuned grid or a final choice.
+
+While training is unavailable, prepare all initial models:
 
 ```sh
-make
-python3 scripts/evaluate.py MODEL DATASET --output results/RUN
+make experiment OUTPUT=results/experiments/preparation OPTIONS=--prepare
 ```
 
-Use a saved `.nn` model, a labeled [FEN dataset](data-encoding.md), and a new
-output directory for each run. The script calls `my_torch_analyzer --predict`
-and compares predictions with labels in input order. Invalid input, analyzer
-failure, or mismatched prediction counts stop evaluation without a report.
+This generates one model per configuration/seed, freezes the plan and file hashes,
+and writes a manifest and an empty-results summary. It performs **no training or
+evaluation**. `training.command` and `training.settings` intentionally remain null.
+
+After agreeing on and connecting the [training interface](training-integration.md):
+
+```sh
+make experiment OUTPUT=results/experiments/comparison-01
+```
+
+The same command now generates, trains, evaluates on validation, and summarizes.
+Use `CONFIG=PATH` for another experiment file. Each output directory must be new;
+there is no automatic resume. Start a new experiment after changing the plan.
 
 ## Read the results
 
-| File | Contents |
+| Goal | Notebook | Setting |
+| --- | --- | --- |
+| Compare configurations, variability across seeds, costs, and available training curves | [comparison.ipynb](../notebooks/comparison.ipynb) | `EXPERIMENT`: experiment output directory |
+| Inspect one model's class scores and confusion matrix | [evaluation.ipynb](../notebooks/evaluation.ipynb) | `RUN`: its `runs/CONFIG/seed-SEED/evaluation` directory |
+
+Each notebook runs independently; neither trains nor predicts. Use the project's
+`.venv` kernel. Install dependencies there with
+`python -m pip install -r notebooks/requirements.txt`.
+
+The comparison notebook can still compare standalone validation reports with
+`EXPERIMENT = None` and `RUNS`. Without an experiment plan, it cannot infer seeds
+or group configurations. This mode is for individual-run inspection.
+
+An experiment retains:
+
+- `experiment.json`: frozen plan, datasets/class counts, source and binary hashes,
+  machine information, run states, and errors.
+- `summary.json`: configuration means/sample standard deviations and completed
+  run details. The notebook recomputes it from the reports rather than trusting a stale cache.
+- `runs/CONFIG/seed-SEED/`: network/training settings, initial/trained models,
+  generation/training commands and logs, elapsed training time, model size,
+  optional history, and evaluation reports.
+
+Failed experiments retain completed runs and logs. Partial groups show missing
+seeds; they cannot establish a leading configuration. A singleton has no estimated
+standard deviation. Preparing models does not produce quality scores.
+
+## Evaluate one model independently
+
+```sh
+python3 scripts/evaluate.py MODEL DATASET --output results/RUN
+```
+
+Use a saved `.nn` model, a labeled [FEN dataset](data-encoding.md), and a new output
+directory. This command remains the entry point for the selected model's final
+test evaluation, and for inspecting an existing model without retraining.
+
+| Report | Contents |
 | --- | --- |
-| `metrics.json` | Accuracy, macro F1, precision/recall/F1 and sample count per class; command, file paths, SHA-256 hashes, and elapsed prediction time. |
-| `predictions.csv` | Dataset line number, actual class, predicted class. |
-| `confusion_matrix.csv` | Actual classes in rows, predictions in columns: `Nothing`, `Check`, `Checkmate`. |
+| `metrics.json` | Accuracy, macro F1, precision/recall/F1 and support per class; artifact hashes, prediction command and elapsed time. |
+| `predictions.csv` | Original dataset line number, actual class, predicted class. |
+| `confusion_matrix.csv` | Actual classes in rows, predictions in columns: Nothing, Check, Checkmate. |
 
-Check per-class recall and F1 alongside accuracy to expose missed classes.
-Off-diagonal matrix cells show which classes are confused. Undefined metrics
-are zero; macro F1 averages all three classes, including absent ones.
-Elapsed time includes analyzer startup, loading, parsing, and prediction.
-
-For charts, open [the evaluation notebook](../notebooks/evaluation.ipynb), select
-`RUN`, and run all cells. Install its dependencies with
-`python3 -m pip install -r notebooks/requirements.txt` in your virtual environment.
-It reads saved results without rerunning predictions.
+Undefined scores are zero. Macro F1 includes all three classes. Prediction time
+includes startup, model loading, parsing, inference, and output capture; training
+time includes the training command's startup/loading. These are single elapsed
+measurements, not isolated speed benchmarks.
 
 ## Comparison protocol v1
 
-| Rule | Decision |
-| --- | --- |
-| Data | Train on `train.txt`; compare on the unchanged `validation.txt`. Use `test.txt` only after selection. Retain split metadata and sources. |
-| Compatibility | Same validation SHA-256, analyzer SHA-256, class order, and class supports. All three classes must be represented. |
-| Primary metric | Macro F1, giving each class equal weight. Inspect per-class F1/recall and confusion counts as well. |
-| Run ordering | Highest macro F1 first; exact ties use highest worst-class recall. Equal scores remain tied regardless of display order. |
-| Training seeds | 42, 43, 44 for every configuration; retain each run, including poor results. |
-| Configuration choice | Compare mean macro F1 and sample standard deviation across all three seeds. Exact mean ties use mean worst-class recall. No choice from incomplete seed sets. |
-| Timing | Same machine/build and no concurrent heavy work. Current elapsed time is a single measurement including loading; do not use it to break score ties. |
-| Traceability | Retain training command, configuration, seed, train/validation hashes, model, and logs alongside each evaluation. |
+1. Use prepared, disjoint train/validation/test splits. Train on train; compare on
+   validation. Keep the test set out of the experiment file and reserve it for the
+   final selected model. Retain datasets and split metadata for the defense.
+2. Freeze the configuration grid, training budget, optimizer, and checkpoint rule
+   before comparing. Common settings apply to every run; only declared network
+   options and seeds vary. The training backend remains responsible for applying
+   the requested seed to initialization and training randomness.
+3. Use every seed listed in the experiment file for every configuration. Seeds
+   override the base network file's default. Repeating prediction on one model
+   does not measure training variability. Never discard a poor seed.
+4. Rank configurations by mean validation macro F1; exact ties use mean
+   worst-class recall. Report sample standard deviation and inspect per-class
+   scores/confusions. Equal scores remain tied. These statistics are descriptive,
+   not proof of significance. A single-seed exploratory experiment cannot establish
+   a leading configuration.
+5. Use the same validation SHA-256, analyzer SHA-256, class order and supports.
+   Compare costs on the same machine without concurrent heavy work. Do not use
+   single-run timing to break score ties. All planned configurations must finish
+   all planned seeds before the summary identifies leaders.
+6. Freeze the selected configuration **and the rule for choosing its delivered
+   model** before test evaluation. Do not cherry-pick a seed or tune using test
+   results. The runner reports leaders; it does not choose/export a final model.
 
-In the notebook, fill `RUNS` with validation run directory names. The table and
-per-class charts compare individual runs; compatibility checks reject mixed data
-or builds. Seed aggregation is not implemented yet. `RUN1` is a test-set pipeline
-check with an untrained model, so exclude it from tuning.
-
-**Before training comparisons:** agree with Gustave on the small configuration
-grid, optimizer, training budget, and checkpoint rule. Those depend on the training
-interface and are not fixed here. Keep these settings common except for the
-parameter being compared, and freeze them before inspecting validation results.
-
-Generated models are untrained: evaluating them checks the pipeline only.
-Training comparisons, seed aggregation, curves, and final model delivery remain;
-the evaluation script does not orchestrate training or record its configuration.
+Training commands/settings, checkpoint selection and history emission still need
+to be agreed with Gustave. Final training comparisons, test results, interpretation,
+and model delivery remain open parts of issue #8.
