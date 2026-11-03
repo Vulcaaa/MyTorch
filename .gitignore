@@ -68,6 +68,7 @@ Testing/
 
 # Python bytecode
 __pycache__/
+.venv/
 *.py[cod]
 
 # MyTorch executables
@@ -77,4 +78,9 @@ __pycache__/
 # Generated models
 /models/
 
+# Generated evaluation reports
+/results/
+
 *.txt
+!/notebooks/requirements.txt
+.ipynb_checkpoints/
