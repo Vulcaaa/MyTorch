@@ -2,6 +2,7 @@ GENERATOR = my_torch_generator
 ANALYZER = my_torch_analyzer
 CXX = g++
 PYTHON = python3
+CONFIG ?= configs/experiment.json
 CPPFLAGS = -Isrc -Isrc/chess/ -Isrc/neural/ -Iinclude -MMD -MP
 CXXFLAGS = -std=c++17 -Wall -Wextra -Werror
 
@@ -52,6 +53,14 @@ build/tests/AnalyzerSaving_tests: build/tests/AnalyzerSaving.o build/analyzer/Tr
 test: all $(TEST_BIN)
 	@set -e; for executable in $(TEST_BIN); do ./$$executable; done
 	$(PYTHON) tests/cli.py
+	$(PYTHON) -m unittest discover -s tests -p 'test_*.py'
+	$(PYTHON) tests/evaluation.py
+	$(PYTHON) tests/comparison.py
+	$(PYTHON) tests/experiment.py
+
+experiment: all
+	@test -n "$(OUTPUT)" || (echo 'Set OUTPUT=results/experiments/NAME'; exit 1)
+	$(PYTHON) scripts/experiment.py "$(CONFIG)" --output "$(OUTPUT)" $(OPTIONS)
 
 clean:
 	rm -rf build
@@ -65,5 +74,5 @@ re:
 
 -include $(DEP)
 
-.PHONY: all clean fclean re test
+.PHONY: all clean fclean re test experiment
 .SECONDARY: $(TEST_OBJ)

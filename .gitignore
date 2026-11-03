@@ -66,6 +66,11 @@ vcpkg_installed/
 Testing/
 .cache/
 
+# Python bytecode
+__pycache__/
+.venv/
+*.py[cod]
+
 # MyTorch executables
 /my_torch_analyzer
 /my_torch_generator
@@ -73,4 +78,14 @@ Testing/
 # Generated models
 /models/
 
+# Generated evaluation reports
+/results/
+
+# Generated datasets and preparation reports
+/dataset/processed/
+/dataset/splits/
+
 *.txt
+!/dataset/raw/**/*.txt
+!/notebooks/requirements.txt
+.ipynb_checkpoints/
