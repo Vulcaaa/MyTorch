@@ -9,7 +9,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from scripts.comparison import load_comparison
+from scripts.comparison import describe, load_comparison, load_history
 from scripts.evaluate import compute_metrics, fingerprint
 
 
@@ -41,6 +41,23 @@ class ComparisonTests(unittest.TestCase):
         reports = load_comparison([fast, slow], self.validation)
         self.assertEqual([report["run"] for report in reports], ["slow-correct", "fast-poor"])
         self.assertEqual(reports[0]["worst_recall"], 1)
+
+    def test_seed_statistics_and_optional_loss_history(self):
+        stats = describe([0.81, 0.85, 0.83])
+        self.assertAlmostEqual(stats["mean"], 0.83)
+        self.assertAlmostEqual(stats["std"], 0.02)
+        self.assertEqual(describe([0.81]), {"mean": 0.81, "std": None})
+        self.assertEqual(describe([]), {"mean": None, "std": None})
+        path = self.work / "history.csv"
+        self.assertEqual(load_history(path), [])
+        path.write_text("epoch,train_loss,validation_loss\n1,1,1.1\n2,0.8,0.9\n")
+        self.assertEqual(load_history(path)[1], {"epoch": 2, "train_loss": 0.8, "validation_loss": 0.9})
+        for invalid in ("epoch,loss\n1,0.4\n", "epoch,train_loss,validation_loss\n",
+                        "epoch,train_loss,validation_loss\n1,nan,0.2\n",
+                        "epoch,train_loss,validation_loss\n1,1,1\n1,1,1\n"):
+            path.write_text(invalid)
+            with self.subTest(history=invalid), self.assertRaises(ValueError):
+                load_history(path)
 
     def test_rejects_wrong_dataset_even_with_same_class_counts(self):
         wrong = copy.deepcopy(self.metrics)

@@ -1,8 +1,10 @@
 """Load comparable validation reports without running inference."""
 
+import csv
 import json
 import math
 from pathlib import Path
+import statistics
 
 from scripts.evaluate import CLASSES, fingerprint
 
@@ -78,3 +80,119 @@ def load_comparison(run_directories, validation_dataset):
             raise ValueError(f"{directory.name}: {error}") from error
     return sorted(reports, key=lambda report: (-report["metrics"]["macro_f1"],
                                               -report["worst_recall"], report["directory"]))
+
+
+def describe(values):
+    """Keep singleton dispersion unknown, rather than claiming zero variance."""
+    return {"mean": statistics.mean(values) if values else None,
+            "std": statistics.stdev(values) if len(values) > 1 else None}
+
+
+def load_history(path):
+    """Optional backend log contract: epoch,train_loss,validation_loss."""
+    path = Path(path)
+    if not path.exists():
+        return []
+    with path.open(newline="", encoding="utf-8") as source:
+        reader = csv.DictReader(source)
+        if reader.fieldnames != ["epoch", "train_loss", "validation_loss"]:
+            raise ValueError(f"{path}: expected epoch,train_loss,validation_loss")
+        rows = []
+        for row in reader:
+            try:
+                epoch = int(row["epoch"])
+                train, validation = float(row["train_loss"]), float(row["validation_loss"])
+            except (TypeError, ValueError) as error:
+                raise ValueError(f"{path}: invalid epoch or loss") from error
+            if (epoch <= (rows[-1]["epoch"] if rows else 0) or
+                    any(not math.isfinite(value) or value < 0 for value in (train, validation))):
+                raise ValueError(f"{path}: invalid epoch or loss")
+            rows.append({"epoch": epoch, "train_loss": train, "validation_loss": validation})
+    if not rows:
+        raise ValueError(f"{path}: history contains no epochs")
+    return rows
+
+
+def load_experiment(directory):
+    """Build a fresh summary from a frozen campaign and its completed reports.
+
+    Seeds come only from the experiment plan. Partial groups remain visible but
+    cannot establish a leading configuration until every planned run completes.
+    """
+    directory = Path(directory).resolve()
+    manifest = json.loads((directory / "experiment.json").read_text(encoding="utf-8"))
+    if manifest.get("version") != 1:
+        raise ValueError("unsupported experiment version")
+    plan = manifest["plan"]
+    seeds = plan["seeds"]
+    if not seeds or len(set(seeds)) != len(seeds):
+        raise ValueError("experiment seeds must be non-empty and unique")
+    configurations = [config["name"] for config in plan["configurations"]]
+    if not configurations or len(set(configurations)) != len(configurations):
+        raise ValueError("experiment configurations must be non-empty and unique")
+    completed = []
+    seen = set()
+    for run in manifest["runs"]:
+        pair = (run["configuration"], run["seed"])
+        if pair in seen or pair[0] not in configurations or pair[1] not in seeds:
+            raise ValueError("duplicate or unexpected configuration/seed in experiment")
+        seen.add(pair)
+        if run["status"] == "completed":
+            completed.append(run)
+    paths = [directory / run["directory"] / "evaluation" for run in completed]
+    reports = load_comparison(paths, plan["datasets"]["validation"]["path"]) if paths else []
+    by_path = {report["directory"]: report for report in reports}
+    grouped = {name: [] for name in configurations}
+    model_hashes = set()
+    for run, path in zip(completed, paths):
+        report = by_path[str(path.resolve())]
+        metrics = report["metrics"]
+        metadata = metrics.get("experiment", {})
+        if (metadata.get("configuration") != run["configuration"] or metadata.get("seed") != run["seed"] or
+                metadata.get("training_seconds") != run["training_seconds"] or metadata.get("model_bytes") != run["model_bytes"]):
+            raise ValueError("evaluation metadata differs from the experiment run")
+        if (metrics["artifacts"]["dataset"]["sha256"] != plan["datasets"]["validation"]["sha256"] or
+                metrics["artifacts"]["analyzer"]["sha256"] != manifest["tools"]["analyzer"]["sha256"]):
+            raise ValueError("evaluation artifacts differ from the frozen experiment")
+        trained_hash = run["trained_model"]["sha256"]
+        if (metrics["artifacts"]["model"]["sha256"] != trained_hash or
+                fingerprint(Path(run["trained_model"]["path"]))["sha256"] != trained_hash):
+            raise ValueError("trained model differs from the evaluated model")
+        if trained_hash in model_hashes:
+            raise ValueError("the same model was reused across experiment runs")
+        model_hashes.add(trained_hash)
+        if (not math.isfinite(run["training_seconds"]) or run["training_seconds"] < 0 or
+                type(run["model_bytes"]) is not int or run["model_bytes"] <= 0):
+            raise ValueError("invalid training cost")
+        report.update(run=f"{run['configuration']}/seed-{run['seed']}",
+                      configuration=run["configuration"], seed=run["seed"])
+        grouped[run["configuration"]].append(report)
+    summaries = []
+    for name, entries in grouped.items():
+        present = sorted(report["seed"] for report in entries)
+        summary = {"configuration": name, "seeds": present,
+                   "missing_seeds": [seed for seed in seeds if seed not in present],
+                   "complete": set(present) == set(seeds)}
+        for key in ("accuracy", "macro_f1", "prediction_seconds"):
+            summary[key] = describe([report["metrics"][key] for report in entries])
+        summary["worst_recall"] = describe([report["worst_recall"] for report in entries])
+        for key in ("training_seconds", "model_bytes"):
+            summary[key] = describe([report["metrics"]["experiment"][key] for report in entries])
+        summary["per_class"] = {label: {key: describe([report["metrics"]["per_class"][label][key]
+                                                      for report in entries])
+                                         for key in ("precision", "recall", "f1")} for label in CLASSES}
+        summaries.append(summary)
+    summaries.sort(key=lambda row: (not row["complete"],
+                                   -(row["macro_f1"]["mean"] if row["macro_f1"]["mean"] is not None else -1),
+                                   -(row["worst_recall"]["mean"] if row["worst_recall"]["mean"] is not None else -1),
+                                   row["configuration"]))
+    ready = (manifest["status"] == "completed" and len(seeds) >= 2 and
+             all(row["complete"] for row in summaries))
+    leaders = []
+    if ready:
+        first = summaries[0]
+        leaders = [row["configuration"] for row in summaries
+                   if row["macro_f1"]["mean"] == first["macro_f1"]["mean"] and
+                   row["worst_recall"]["mean"] == first["worst_recall"]["mean"]]
+    return {"status": manifest["status"], "expected_seeds": seeds, "selection_ready": ready,
+            "leading_configurations": leaders, "configurations": summaries, "runs": reports}
