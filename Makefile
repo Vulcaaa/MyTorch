@@ -53,6 +53,7 @@ test: all $(TEST_BIN)
 	@set -e; for executable in $(TEST_BIN); do ./$$executable; done
 	$(PYTHON) tests/cli.py
 	$(PYTHON) tests/evaluation.py
+	$(PYTHON) tests/comparison.py
 
 clean:
 	rm -rf build
