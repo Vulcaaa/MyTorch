@@ -4,7 +4,7 @@ This is the proposed architecture and may evolve during development.
 
 MyTorch uses **C++17 for network computation and executables**, and **Python for
 dataset preparation, experiment orchestration, and result analysis**. The
-Makefile handles builds and tests; the notebook launches dataset cleaning.
+Makefile handles builds, tests, and experiments; notebooks launch dataset preparation.
 
 ## Components
 
@@ -14,7 +14,8 @@ Makefile handles builds and tests; the notebook launches dataset cleaning.
 | `src/chess/` | C++ | FEN parsing, feature encoding, and dataset label handling. |
 | `src/generator/` | C++ | `my_torch_generator`: create models from configuration files. |
 | `src/analyzer/` | C++ | `my_torch_analyzer`: coordinate training and prediction. |
-| `scripts/` | Python | Clean and split datasets; later run experiments, compute metrics, and plot results. |
+| `scripts/` | Python | Clean/split datasets, orchestrate experiments, evaluate models, and aggregate comparable runs. |
+| `notebooks/` | Python | Launch dataset preparation, inspect evaluation reports, and compare validation runs. |
 | `tests/` | C++ and Python | Function tests and executable tests. |
 
 The network module operates on numeric vectors without knowledge of chess or
@@ -38,9 +39,9 @@ Prediction:
 FEN file → C++ parsing and encoding → C++ network → class predictions
 ```
 
-Experiment scripts will invoke the executables through `subprocess`, exchanging
-files and command output. Language bindings are unnecessary. Computation and
-weight updates stay in C++; Python organizes the experiments.
+Python scripts invoke the executables through `subprocess`, exchanging files
+and command output. Language bindings are unnecessary. Computation and weight
+updates stay in C++; Python organizes the experiments.
 
 ## Testing
 
@@ -59,16 +60,21 @@ need not be duplicated across languages.
 | --- | --- |
 | `make` | Build both C++ executables |
 | `make test` | Run C++ tests and Python executable tests |
+| `make experiment OUTPUT=PATH OPTIONS=--prepare` | Freeze an experiment and generate initial models; full execution awaits training integration |
 | `make clean` | Remove build artifacts |
 | `make fclean` | Also remove executables |
 | `make re` | Clean and rebuild |
 
 Dataset cleaning is launched through
 [`notebooks/clean_dataset.ipynb`](../notebooks/clean_dataset.ipynb), which calls
-`scripts/clean_dataset.py`. The notebook reads `dataset/raw/` and writes results
-to `dataset/processed/`. `notebooks/split_dataset.ipynb` then writes
-train/validation/test files to `dataset/splits/`. Other Python commands may be
-added later.
+`scripts/clean_dataset.py` to read `dataset/raw/` and write `dataset/processed/`.
+[`notebooks/split_dataset.ipynb`](../notebooks/split_dataset.ipynb) then writes
+train/validation/test files to `dataset/splits/`. `make dataset` does not exist.
+
+Experiment commands use `CONFIG` (defaults to `configs/experiment.json`),
+`OUTPUT` (required new directory) and optional `OPTIONS`. Python commands use
+the `PYTHON` variable, which defaults to `python3`. Third-party dependencies
+will be declared in a dedicated file and installed in a virtual environment.
 
 Scripts will be versioned `.py` files. Experiments must retain configurations,
 seeds, commands, and dataset references for reproducibility. Training datasets
@@ -80,5 +86,9 @@ Model generation, initialization, serialization, FEN encoding, dataset loading,
 forward propagation, and analyzer prediction are implemented. C++ tests and
 Python CLI tests run through `make test`.
 
-Dataset cleaning and splitting are implemented. Training and evaluation scripts
-remain to be implemented.
+The Python evaluation script computes classification metrics through the analyzer;
+see the [evaluation guide](evaluation.md). `evaluation.ipynb` inspects one model's
+report; `comparison.ipynb` compares individual validation runs and configuration
+statistics independently. `experiment.py` prepares/runs the configuration-by-seed
+plan, reusing `evaluate.py` and `comparison.py`. Dataset cleaning and splitting
+are implemented. The backend training adapter remains to be implemented.

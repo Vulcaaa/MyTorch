@@ -46,7 +46,17 @@ for input and model requirements.
 
 Run either executable with `--help` for its command-line options.
 
+Evaluate a saved model on labeled positions with
+`python3 scripts/evaluate.py MODEL DATASET --output results/RUN`.
+Prepare a configuration/seed experiment with
+`make experiment OUTPUT=results/experiments/preparation OPTIONS=--prepare`.
+Full experiments await the training backend. See the
+[evaluation guide](docs/evaluation.md) for the workflow and two analysis notebooks.
+
 ## Development
+
+See the [project roadmap](docs/project-roadmap.md) for the implementation,
+training, experiment, and defense checklist.
 
 - `src/neural/` — shared neural network code (headers beside sources)
 - `src/generator/` — model generator
@@ -55,8 +65,8 @@ Run either executable with `--help` for its command-line options.
 - `tests/` — tests
 
 C++ handles network computation and the command-line programs. Python handles
-CLI tests and dataset preparation through the
-[cleaning notebook](notebooks/clean_dataset.ipynb) and
+CLI tests, dataset preparation, experiment orchestration, and result analysis.
+Prepare data with the [cleaning notebook](notebooks/clean_dataset.ipynb) and
 [split notebook](notebooks/split_dataset.ipynb). See the
 [cleaning guide](docs/dataset-cleaning.md),
 [split guide](docs/dataset-splitting.md), and

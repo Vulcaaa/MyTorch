@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "seeds": [42, 43, 44],
+  "datasets": {
+    "train": "../dataset/splits/train.txt",
+    "validation": "../dataset/splits/validation.txt",
+    "split_metadata": "../dataset/splits/split_info.json"
+  },
+  "configurations": [
+    {
+      "name": "compact",
+      "network": "basic_network.conf",
+      "overrides": {"layers": "777,64,3"}
+    },
+    {
+      "name": "reference",
+      "network": "basic_network.conf",
+      "overrides": {}
+    }
+  ],
+  "training": {
+    "command": null,
+    "settings": null
+  }
+}
