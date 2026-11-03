@@ -81,6 +81,10 @@ __pycache__/
 # Generated evaluation reports
 /results/
 
+# Generated datasets and preparation reports
+/dataset/processed/
+/dataset/splits/
+
 *.txt
 !/notebooks/requirements.txt
 .ipynb_checkpoints/
