@@ -58,5 +58,5 @@ and predictions must use the same class order. Display `Nothing`, `Check`, or
 `Checkmate` without a color suffix.
 
 Class mapping belongs to the chess module; the neural network operates on
-numeric vectors. See [data encoding](data-encoding.md#dataset-and-model-contract)
+numeric vectors. See [data encoding](datasets.md#dataset-and-model-contract)
 for input dimensions and model compatibility requirements.

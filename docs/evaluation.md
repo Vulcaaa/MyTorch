@@ -62,7 +62,7 @@ standard deviation. Preparing models does not produce quality scores.
 python3 scripts/evaluate.py MODEL DATASET --output results/RUN
 ```
 
-Use a saved `.nn` model, a labeled [FEN dataset](data-encoding.md), and a new output
+Use a saved `.nn` model, a labeled [FEN dataset](datasets.md), and a new output
 directory. This command remains the entry point for the selected model's final
 test evaluation, and for inspecting an existing model without retraining.
 

@@ -41,7 +41,7 @@ Classify positions from a FEN dataset using a saved model:
 
 The analyzer prints one class (`Nothing`, `Check`, or `Checkmate`) per position,
 in order. A generated model is untrained, so its predictions are only
-illustrative. See the [chess data guide](docs/data-encoding.md#prediction-command)
+illustrative. See the [chess data guide](docs/datasets.md#prediction-command)
 for input and model requirements.
 
 Run either executable with `--help` for its command-line options.
@@ -68,8 +68,7 @@ C++ handles network computation and the command-line programs. Python handles
 CLI tests, dataset preparation, experiment orchestration, and result analysis.
 Prepare data with the [cleaning notebook](notebooks/clean_dataset.ipynb) and
 [split notebook](notebooks/split_dataset.ipynb). See the
-[cleaning guide](docs/dataset-cleaning.md),
-[split guide](docs/dataset-splitting.md), and
+[dataset guide](docs/datasets.md) for encoding, cleaning, and splitting, and the
 [architecture guide](docs/architecture.md) for details.
 
 CI builds and tests the project, then synchronizes successful pushes on `main`
