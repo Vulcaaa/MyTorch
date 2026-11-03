@@ -46,6 +46,10 @@ for input and model requirements.
 
 Run either executable with `--help` for its command-line options.
 
+Evaluate a saved model on labeled positions with
+`python3 scripts/evaluate.py MODEL DATASET --output results/RUN`.
+See the [evaluation guide](docs/evaluation.md) for metrics and report formats.
+
 ## Development
 
 See the [project roadmap](docs/project-roadmap.md) for the implementation,

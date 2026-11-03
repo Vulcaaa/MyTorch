@@ -14,7 +14,8 @@ Makefile is the common entry point for builds, tests, and scripts.
 | `src/chess/` | C++ | FEN parsing, feature encoding, and dataset label handling. |
 | `src/generator/` | C++ | `my_torch_generator`: create models from configuration files. |
 | `src/analyzer/` | C++ | `my_torch_analyzer`: coordinate training and prediction. |
-| `scripts/` (planned) | Python | Prepare datasets, run experiments, compute metrics, and plot results. |
+| `scripts/` | Python | Evaluate models and validate comparable runs; dataset preparation and experiment orchestration are planned. |
+| `notebooks/` | Python | Plot evaluation reports and compare validation runs. |
 | `tests/` | C++ and Python | Function tests and executable tests. |
 
 The network module operates on numeric vectors without knowledge of chess or
@@ -78,4 +79,7 @@ Model generation, initialization, serialization, FEN encoding, dataset loading,
 forward propagation, and analyzer prediction are implemented. C++ tests and
 Python CLI tests run through `make test`.
 
-Training and Python preparation and evaluation scripts remain to be implemented.
+The Python evaluation script computes classification metrics through the analyzer;
+see the [evaluation guide](evaluation.md). The notebook plots reports and compares
+individual validation runs. Training, Python preparation scripts, and experiment
+orchestration remain to be implemented.
