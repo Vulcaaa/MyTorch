@@ -1,4 +1,6 @@
+#include <cmath>
 #include <stdexcept>
+#include <string>
 #include <utility>
 #include <iostream>
 
@@ -6,13 +8,50 @@
 #include "Activation.hpp"
 #include "Initializer.hpp"
 
-NeuralNetwork::NeuralNetwork(const NetworkConfig& config) : _config(config)
+namespace {
+
+void validateLayerSizes(const NetworkConfig &config)
 {
     if (config.layers.size() < 2)
         throw std::invalid_argument("a network requires at least an input and output layer");
     for (const auto size : config.layers)
         if (size == 0)
             throw std::invalid_argument("layer sizes must be positive");
+}
+
+void validateParameters(const NetworkConfig &config, const std::vector<Layer> &layers)
+{
+    if (layers.size() != config.layers.size() - 1)
+        throw std::invalid_argument("expected " + std::to_string(config.layers.size() - 1)
+            + " parameter layers, got " + std::to_string(layers.size()));
+    for (std::size_t i = 0; i < layers.size(); ++i) {
+        const auto inputs = config.layers[i];
+        const auto neurons = config.layers[i + 1];
+        const auto &layer = layers[i];
+        const auto where = "parameter layer " + std::to_string(i) + ": ";
+
+        if (layer.weights.size() != neurons || layer.biases.size() != neurons)
+            throw std::invalid_argument(where + "expected " + std::to_string(neurons)
+                + " weight rows and biases");
+        for (const auto &row : layer.weights) {
+            if (row.size() != inputs)
+                throw std::invalid_argument(where + "expected " + std::to_string(inputs)
+                    + " weights per neuron");
+            for (const auto weight : row)
+                if (!std::isfinite(weight))
+                    throw std::invalid_argument(where + "weights must be finite");
+        }
+        for (const auto bias : layer.biases)
+            if (!std::isfinite(bias))
+                throw std::invalid_argument(where + "biases must be finite");
+    }
+}
+
+} // namespace
+
+NeuralNetwork::NeuralNetwork(const NetworkConfig& config) : _config(config)
+{
+    validateLayerSizes(_config);
 
     std::mt19937 rng(_config.seed);
     const auto method = initialization::parseMethod(_config.initialization);
@@ -65,4 +104,7 @@ std::vector<double> NeuralNetwork::predict(const std::vector<double>& inputs) co
 
 NeuralNetwork::NeuralNetwork(NetworkConfig config, std::vector<Layer> layers)
     : _config(std::move(config)), _layers(std::move(layers))
-{}
+{
+    validateLayerSizes(_config);
+    validateParameters(_config, _layers);
+}
