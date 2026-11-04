@@ -81,6 +81,9 @@ __pycache__/
 # Generated evaluation reports
 /results/
 
+# Per-run training histories
+/logs/
+
 # Generated datasets and preparation reports
 /dataset/processed/
 /dataset/splits/

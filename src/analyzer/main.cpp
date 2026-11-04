@@ -1,61 +1,55 @@
-#include <algorithm>
-#include <array>
 #include <iostream>
+#include <exception>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 
 #include "Arguments.hpp"
-#include "NeuralNetwork.hpp"
-#include "Dataset.hpp"
-#include "ModelSerializer.hpp"
+#include "Prediction.hpp"
+#include "Training.hpp"
+#include "neural/ModelSerializer.hpp"
 
-void validateChessModel(const NeuralNetwork& nn)
+namespace {
+
+void validateChessModel(const NeuralNetwork& network)
 {
-    if (nn.inputSize() != 777 || nn.outputSize() != 3)
+    if (network.inputSize() != 777 || network.outputSize() != 3)
         throw std::invalid_argument("chess model requires 777 inputs and 3 outputs; got "
-            + std::to_string(nn.inputSize()) + " inputs and "
-            + std::to_string(nn.outputSize()) + " outputs");
+            + std::to_string(network.inputSize()) + " inputs and "
+            + std::to_string(network.outputSize()) + " outputs");
 }
 
-int runPrediction(const NeuralNetwork& nn, const Dataset& dataset)
+int runAnalyzer(const AnalyzerArguments& arguments)
 {
-    constexpr std::array<std::string_view, 3> classes = {
-        "Nothing", "Check", "Checkmate"
-    };
-
-    for (const auto& sample : dataset) {
-        const auto scores = nn.predict(sample.inputs);
-        const auto best = std::max_element(scores.begin(), scores.end());
-        std::cout << classes[best - scores.begin()] << '\n';
+    NeuralNetwork network = ModelSerializer::load(arguments.loadFile);
+    validateChessModel(network);
+    if (arguments.mode == AnalyzerMode::Train) {
+        runTraining(network, arguments, std::cerr);
+        return 0;
     }
-    return 0;
+    return runPrediction(network, loadDataset(arguments.chessFile, DatasetMode::Prediction));
 }
 
-int runAnalyzer(AnalyzerArguments arguments)
-{
-    NeuralNetwork nn = ModelSerializer::load(arguments.loadFile);
-    validateChessModel(nn);
-
-    const auto mode = arguments.mode == AnalyzerMode::Train
-        ? DatasetMode::Training : DatasetMode::Prediction;
-    const Dataset dataset = loadDataset(arguments.chessFile, mode);
-
-    if (arguments.mode == AnalyzerMode::Predict) {
-        return runPrediction(nn, dataset);
-    } else if (arguments.mode == AnalyzerMode::Train) {
-        // code
-    }
-    return 0;
-}
+} // namespace
 
 int main(int ac, char** av)
 {
     if (ac == 2 && std::string_view(av[1]) == "--help") {
         std::cout << "USAGE\n"
-                  << "\t./my_torch_analyzer [--predict | --train [--save SAVEFILE]] LOADFILE CHESSFILE\n\n"
+                  << "\t./my_torch_analyzer --predict LOADFILE CHESSFILE\n"
+                  << "\t./my_torch_analyzer --train --validation FILE [OPTIONS] LOADFILE CHESSFILE\n\n"
                   << "Train a neural network or classify chess positions in FEN format.\n"
-                  << "Training is not implemented yet.\n";
+                  << "Training is wired; neural loss and backpropagation are pending (issue #5).\n\n"
+                  << "TRAINING OPTIONS (before LOADFILE and CHESSFILE, in any order)\n"
+                  << "\t--validation FILE  Independent labeled validation dataset (required)\n"
+                  << "\t--epochs N         Maximum epochs (positive integer; default: 100)\n"
+                  << "\t--batch-size N     Mini-batch size (positive integer; default: 32)\n"
+                  << "\t--patience N       Early-stopping patience (positive integer; default: 10)\n"
+                  << "\t--min-delta X      Minimum loss improvement (finite, >= 0; default: 0.0001)\n"
+                  << "\t--history FILE     Override automatic per-run history CSV path\n"
+                  << "\t--save FILE        Save trained model here (default: LOADFILE)\n\n"
+                  << "Learning rate and seed come from the loaded model.\n"
+                  << "Training currently returns 84 until the neural backend is implemented.\n";
         return 0;
     }
 

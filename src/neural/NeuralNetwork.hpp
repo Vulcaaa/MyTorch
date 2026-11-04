@@ -4,6 +4,12 @@
 #include <cstddef>
 #include <vector>
 
+// Generic numeric example shared by the training loop and the neural backend.
+struct TrainingSample {
+    std::vector<double> inputs;
+    std::vector<double> target;
+};
+
 struct Layer {
     std::vector<std::vector<double>> weights;
     std::vector<double> biases;
@@ -18,8 +24,12 @@ class NeuralNetwork {
     public:
         explicit NeuralNetwork(const NetworkConfig &config);
         std::vector<double> predict(const std::vector<double>& inputs) const;
+        // Implemented by issue #5; currently throw until the backend is available.
+        double trainBatch(const std::vector<TrainingSample>& batch);
+        double loss(const std::vector<TrainingSample>& samples) const;
         std::size_t inputSize() const { return _config.layers.front(); }
         std::size_t outputSize() const { return _config.layers.back(); }
+        const NetworkConfig& config() const { return _config; }
 
     private:
         friend class ModelSerializer;

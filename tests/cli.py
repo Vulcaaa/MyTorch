@@ -170,6 +170,7 @@ class CommandLineTests(unittest.TestCase):
             for mode in ("--predict", "--train"):
                 with self.subTest(inputs=inputs, outputs=outputs, mode=mode):
                     result = self.run_command("my_torch_analyzer", mode,
+                                              *(["--validation", "validation.txt"] if mode == "--train" else []),
                                               str(model_path), "missing.txt")
                     self.assertEqual(result.returncode, 84)
                     self.assertEqual(result.stdout, "")
@@ -219,7 +220,9 @@ class CommandLineTests(unittest.TestCase):
                     if contents is not None:
                         path.write_text(contents)
                     result = self.run_command(
-                        "my_torch_analyzer", mode, model, path.name,
+                        "my_torch_analyzer", mode,
+                        *(["--validation", "validation.txt"] if mode == "--train" else []),
+                        model, path.name,
                     )
                     self.assertEqual(result.returncode, 84)
                     self.assertEqual(result.stdout, "")
@@ -231,11 +234,79 @@ class CommandLineTests(unittest.TestCase):
         path = self.work / "positions.txt"
         path.write_text("\n8/8/8/8/8/8/8/8 w - - 0 1")
         result = self.run_command(
-            "my_torch_analyzer", "--train", model, path.name,
+            "my_torch_analyzer", "--train", "--validation", "validation.txt", model, path.name,
         )
         self.assertEqual(result.returncode, 84)
         self.assertEqual(result.stdout, "")
         self.assertIn("positions.txt:2: missing training label", result.stderr)
+
+    def test_training_argument_errors_precede_file_loading(self):
+        cases = [
+            (["--train"], "requires --validation"),
+            (["--train", "--validation", "val.txt", "--epochs", "0"], "--epochs"),
+            (["--train", "--validation", "val.txt", "--min-delta", "nan"], "--min-delta"),
+            (["--train", "--validation", "val.txt", "--history", "a.csv", "--history", "b.csv"],
+             "duplicate option: --history"),
+            (["--predict", "--batch-size", "32"], "only valid with --train"),
+        ]
+        for options, diagnostic in cases:
+            with self.subTest(options=options):
+                result = self.run_command("my_torch_analyzer", *options, "missing.nn", "missing.txt")
+                self.assertEqual(result.returncode, 84)
+                self.assertEqual(result.stdout, "")
+                self.assertIn(diagnostic, result.stderr)
+                self.assertNotIn("cannot open model", result.stderr)
+        self.assertFalse((self.work / "logs").exists())
+
+    def test_training_reports_pending_backend_without_saving(self):
+        model = self.analyzer_model()
+        original = (self.work / model).read_bytes()
+        (self.work / "train.txt").write_text("8/8/8/8/8/8/8/8 w - - 0 1 Nothing\n")
+        (self.work / "val.txt").write_text("8/8/8/8/8/8/8/8 b - - 0 1 Nothing\n")
+        for save_options in ([], ["--save", "trained.nn"]):
+            with self.subTest(save_options=save_options):
+                result = self.run_command(
+                    "my_torch_analyzer", "--train", "--validation", "val.txt",
+                    "--epochs", "2", "--batch-size", "1", "--history", "history.csv",
+                    *save_options, model, "train.txt",
+                )
+                self.assertEqual(result.returncode, 84)
+                self.assertEqual(result.stdout, "")
+                self.assertIn("loss is not implemented yet (issue #5)", result.stderr)
+                self.assertEqual((self.work / model).read_bytes(), original)
+                self.assertFalse((self.work / "trained.nn").exists())
+                self.assertFalse((self.work / "history.csv").exists())
+                self.assertFalse((self.work / "logs").exists())
+
+    def test_training_validates_independent_validation_set(self):
+        model = self.analyzer_model()
+        original = (self.work / model).read_bytes()
+        fen = "8/8/8/8/8/8/8/8 w - - 0 1"
+        (self.work / "train.txt").write_text(fen + " Nothing\n")
+        validation = self.work / "validation.txt"
+        cases = [
+            (None, "cannot open dataset"),
+            ("", "no positions"),
+            (fen + "\n", "missing training label"),
+            ("invalid\n", "expected six FEN fields"),
+            ("8/8/8/8/8/8/8/8 w - - 99 50 Nothing\n", "share a model-visible input"),
+        ]
+        for contents, diagnostic in cases:
+            with self.subTest(contents=contents):
+                validation.unlink(missing_ok=True)
+                if contents is not None:
+                    validation.write_text(contents)
+                result = self.run_command(
+                    "my_torch_analyzer", "--train", "--validation", validation.name,
+                    "--save", "trained.nn", "--history", "history.csv", model, "train.txt",
+                )
+                self.assertEqual(result.returncode, 84)
+                self.assertEqual(result.stdout, "")
+                self.assertIn(diagnostic, result.stderr)
+                self.assertNotIn("not implemented", result.stderr)
+                self.assertEqual((self.work / model).read_bytes(), original)
+                self.assertFalse((self.work / "trained.nn").exists())
+                self.assertFalse((self.work / "history.csv").exists())
 
     @unittest.skipUnless(os.name == "posix", "requires POSIX file permissions")
     def test_analyzer_unreadable_dataset(self):
