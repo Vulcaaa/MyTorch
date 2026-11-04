@@ -163,12 +163,12 @@ measured loss slope with the gradient; observed differences stay below `1e-9`.
 ## Performance and limitations
 
 A training step costs about three forward passes per sample (forward, backward,
-and gradient accumulation). With the current build flags (no `-O2`), on an
-Apple M5, an epoch of 2,400 positions on the 777-128-64-3 reference network,
-including the train and validation loss evaluations, takes about 2.5 s. A train
-set of about 570,000 positions would take roughly 10 minutes per epoch.
+and gradient accumulation). On an Apple M5, 8 epochs of 2,400 positions on the
+777-128-64-3 reference network, including the train and validation loss
+evaluations, take 2.3 s with `-O2` (20.2 s without optimization, identical
+losses). A train set of about 570,000 positions would take roughly one minute
+per epoch.
 
-Possible improvements, not implemented: compiler optimization (`-O2`), skipping
-zero inputs in the first layer (about 34 of the 777 chess inputs are non-zero),
-parallelism, momentum or adaptive optimizers, and regularization such as dropout
-or weight decay.
+Possible improvements, not implemented: skipping zero inputs in the first layer
+(about 34 of the 777 chess inputs are non-zero), parallelism, momentum or
+adaptive optimizers, and regularization such as dropout or weight decay.

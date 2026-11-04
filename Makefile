@@ -4,7 +4,7 @@ CXX = g++
 PYTHON = python3
 CONFIG ?= configs/experiment.json
 CPPFLAGS = -Isrc -Isrc/chess/ -Isrc/neural/ -Iinclude -MMD -MP
-CXXFLAGS = -std=c++17 -Wall -Wextra -Werror
+CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -O2
 
 COMMON_SRC = $(wildcard src/neural/*.cpp)
 GENERATOR_SRC = $(wildcard src/generator/*.cpp)
