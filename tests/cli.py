@@ -258,24 +258,27 @@ class CommandLineTests(unittest.TestCase):
                 self.assertNotIn("cannot open model", result.stderr)
         self.assertFalse((self.work / "logs").exists())
 
-    def test_training_reports_pending_backend_without_saving(self):
+    def test_training_reports_pending_update_without_saving(self):
         model = self.analyzer_model()
         original = (self.work / model).read_bytes()
         (self.work / "train.txt").write_text("8/8/8/8/8/8/8/8 w - - 0 1 Nothing\n")
         (self.work / "val.txt").write_text("8/8/8/8/8/8/8/8 b - - 0 1 Nothing\n")
+        history = self.work / "history.csv"
         for save_options in ([], ["--save", "trained.nn"]):
             with self.subTest(save_options=save_options):
+                history.unlink(missing_ok=True)
                 result = self.run_command(
                     "my_torch_analyzer", "--train", "--validation", "val.txt",
-                    "--epochs", "2", "--batch-size", "1", "--history", "history.csv",
+                    "--epochs", "2", "--batch-size", "1", "--history", history.name,
                     *save_options, model, "train.txt",
                 )
                 self.assertEqual(result.returncode, 84)
                 self.assertEqual(result.stdout, "")
-                self.assertIn("loss is not implemented yet (issue #5)", result.stderr)
+                self.assertIn("trainBatch is not implemented yet (issue #5)", result.stderr)
                 self.assertEqual((self.work / model).read_bytes(), original)
                 self.assertFalse((self.work / "trained.nn").exists())
-                self.assertFalse((self.work / "history.csv").exists())
+                # The initial validation loss works, so the history header is already written.
+                self.assertEqual(history.read_text(), "epoch,train_loss,validation_loss\n")
                 self.assertFalse((self.work / "logs").exists())
 
     def test_training_validates_independent_validation_set(self):

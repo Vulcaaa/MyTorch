@@ -137,14 +137,10 @@ int main()
     const auto updateError = test::expectThrow<std::runtime_error>([&] {
         pendingTraining.trainBatch(samples);
     });
-    const auto lossError = test::expectThrow<std::runtime_error>([&] {
-        pendingTraining.loss(samples);
-    });
-    test::check(updateError.find("not implemented") != std::string::npos
-        && lossError.find("not implemented") != std::string::npos,
-        "pending training methods must fail explicitly");
+    test::check(updateError.find("not implemented") != std::string::npos,
+        "pending training update must fail explicitly");
     test::check(pendingTraining.predict(samples[0].inputs) == prediction,
-        "pending training methods changed predictions");
+        "pending training update changed predictions");
     config.initialization = "unknown";
     test::expectThrow<std::invalid_argument>([&] { NeuralNetwork network(config); });
     testExplicitParameters();

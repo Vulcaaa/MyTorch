@@ -28,8 +28,11 @@ class NeuralNetwork {
         NeuralNetwork(NetworkConfig config, std::vector<Layer> layers);
 
         std::vector<double> predict(const std::vector<double>& inputs) const;
-        // Implemented by issue #5; currently throw until the backend is available.
+        // Implemented by issue #5; currently throws until the backend is available.
         double trainBatch(const std::vector<TrainingSample>& batch);
+        // Mean loss over samples without changing the network: cross-entropy for softmax,
+        // binary cross-entropy summed over outputs for sigmoid. Throws std::invalid_argument
+        // for invalid samples (see validateSamples) and std::runtime_error if it is not finite.
         double loss(const std::vector<TrainingSample>& samples) const;
         std::size_t inputSize() const { return _config.layers.front(); }
         std::size_t outputSize() const { return _config.layers.back(); }
