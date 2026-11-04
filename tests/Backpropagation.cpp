@@ -270,6 +270,50 @@ void testGradientsMatchFiniteDifferences()
     }
 }
 
+// XOR (output 1 when exactly one input is 1) needs a hidden layer: no single weighted sum
+// separates its classes. Mini-batches of two samples must drive the loss close to 0 and
+// classify all four cases, while a network without hidden layer stays near chance.
+void testLearnsXor()
+{
+    for (const std::string output : {"softmax", "sigmoid"}) {
+        const bool softmax = output == "softmax";
+        std::vector<TrainingSample> samples;
+        for (const double a : {0.0, 1.0})
+            for (const double b : {0.0, 1.0}) {
+                const double y = a != b ? 1.0 : 0.0;
+                samples.push_back({{a, b}, softmax ? std::vector<double>{1 - y, y}
+                                                   : std::vector<double>{y}});
+            }
+        const std::vector<TrainingSample> first(samples.begin(), samples.begin() + 2);
+        const std::vector<TrainingSample> second(samples.begin() + 2, samples.end());
+        const std::size_t outputs = softmax ? 2 : 1;
+
+        const auto train = [&](std::vector<std::size_t> layers) {
+            NetworkConfig config;
+            config.layers = std::move(layers);
+            config.hidden_activation = "tanh";
+            config.output_activation = output;
+            config.learning_rate = 0.5;
+            config.initialization = "xavier";
+            NeuralNetwork network(config);
+            for (int step = 0; step < 1000; ++step)
+                network.trainBatch(step % 2 == 0 ? first : second);
+            return network;
+        };
+
+        const auto network = train({2, 4, outputs});
+        test::check(network.loss(samples) < 0.05, output + ": XOR loss must drop close to 0");
+        for (const auto &sample : samples) {
+            const auto prediction = network.predict(sample.inputs);
+            const bool predictedOne = softmax ? prediction[1] > prediction[0] : prediction[0] > 0.5;
+            const bool expectedOne = sample.target.back() == 1.0;
+            test::check(predictedOne == expectedOne, output + ": XOR case misclassified");
+        }
+        test::check(train({2, outputs}).loss(samples) > 0.6,
+            output + ": XOR must not be learnable without a hidden layer");
+    }
+}
+
 } // namespace
 
 int main()
@@ -280,5 +324,6 @@ int main()
     testGradients();
     testTrainBatch();
     testGradientsMatchFiniteDifferences();
+    testLearnsXor();
     std::cout << "Backpropagation tests passed\n";
 }
