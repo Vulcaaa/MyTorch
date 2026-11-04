@@ -34,6 +34,10 @@ class NeuralNetwork {
         // binary cross-entropy summed over outputs for sigmoid. Throws std::invalid_argument
         // for invalid samples (see validateSamples) and std::runtime_error if it is not finite.
         double loss(const std::vector<TrainingSample>& samples) const;
+        // Gradients of loss(samples) with respect to every weight and bias, shaped like layers(),
+        // computed by backpropagation without changing the network. Throws like loss(), and
+        // std::invalid_argument when the hidden activation has no derivative.
+        std::vector<Layer> gradients(const std::vector<TrainingSample>& samples) const;
         std::size_t inputSize() const { return _config.layers.front(); }
         std::size_t outputSize() const { return _config.layers.back(); }
         const NetworkConfig& config() const { return _config; }
@@ -59,6 +63,16 @@ class NeuralNetwork {
 
         // Returns an empty pass (no activations) when the inputs do not match the network.
         ForwardPass forward(const std::vector<double> &inputs) const;
+
+        struct LossGradients {
+            double loss;
+            std::vector<Layer> gradients;
+        };
+
+        // Mean loss and gradients over validated samples, from one forward pass per sample.
+        LossGradients lossAndGradients(const std::vector<TrainingSample>& samples) const;
+        // Adds the gradients of one sample's loss to sums and returns that loss.
+        double backpropagate(const TrainingSample& sample, std::vector<Layer>& sums) const;
 
         NetworkConfig _config;
         std::vector<Layer> _layers;
