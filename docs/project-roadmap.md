@@ -172,7 +172,7 @@ les exemples traités. Un résultat négatif mesuré permet également de justif
 | Document | Déjà disponible | À compléter |
 | --- | --- | --- |
 | Guide des données | Guide consolidé ; référence, effectifs et limites documentés en PR #24 | Origines/droits inconnus à clarifier si possible ; limites observées |
-| Guide d’entraînement | Commande, contrat neuronal, réglages, arrêt, historique et sauvegarde documentés | Confirmer le contrat avec #5 et vérifier les commandes avec le vrai moteur |
+| Guide d’entraînement | Guide court de `--train` : utilisation, options, arrêt, historique et sauvegarde | Vérifier les commandes avec le vrai moteur ; Gustave documente les calculs neuronaux |
 | Guide d’évaluation | Runner, notebooks et protocole de comparaison disponibles | Brancher l’entraînement et renseigner les expériences réelles |
 | Rapport d’expériences | À produire | Essais, courbes, coûts, alternatives, problèmes et choix final |
 | README | Compilation, génération, prédiction et liens vers les guides | Usage validé de l’entraînement, modèle livré et liens vers les résultats |
