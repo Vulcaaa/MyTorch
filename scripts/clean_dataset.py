@@ -10,7 +10,7 @@ from pathlib import Path
 
 LABELS = {"Nothing", "Check", "Checkmate"}
 PIECES = set("PNBRQKpnbrqk")
-EXCLUDED_DIRS = {"processed", "splits"}
+EXCLUDED_DIRS = {"processed", "splits", "references"}
 
 
 @dataclass

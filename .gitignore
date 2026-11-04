@@ -87,6 +87,7 @@ __pycache__/
 # Generated datasets and preparation reports
 /dataset/processed/
 /dataset/splits/
+/dataset/references/
 
 *.txt
 !/dataset/raw/**/*.txt
