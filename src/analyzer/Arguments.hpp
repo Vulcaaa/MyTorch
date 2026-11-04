@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <string>
 
 enum class AnalyzerMode {
@@ -7,11 +8,21 @@ enum class AnalyzerMode {
     Train
 };
 
+struct TrainingArguments {
+    std::string validationFile;
+    std::string historyFile; // Empty selects an automatic per-run path during training.
+    std::size_t epochs = 100;
+    std::size_t batchSize = 32;
+    std::size_t patience = 10;
+    double minDelta = 0.0001;
+};
+
 struct AnalyzerArguments {
     AnalyzerMode mode;
     std::string loadFile;
     std::string chessFile;
     std::string saveFile; // Empty in prediction mode; defaults to loadFile in training mode.
+    TrainingArguments training{};
 };
 
 // Throws std::invalid_argument for invalid command-line arguments.

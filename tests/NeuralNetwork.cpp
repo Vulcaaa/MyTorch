@@ -59,6 +59,20 @@ int main()
         test::expectThrow<std::invalid_argument>([&] { NeuralNetwork network(config); });
     }
     config.layers = {1, 1};
+    NeuralNetwork pendingTraining(config);
+    const std::vector<TrainingSample> samples = {{{0.5}, {1.0}}};
+    const auto prediction = pendingTraining.predict(samples[0].inputs);
+    const auto updateError = test::expectThrow<std::runtime_error>([&] {
+        pendingTraining.trainBatch(samples);
+    });
+    const auto lossError = test::expectThrow<std::runtime_error>([&] {
+        pendingTraining.loss(samples);
+    });
+    test::check(updateError.find("not implemented") != std::string::npos
+        && lossError.find("not implemented") != std::string::npos,
+        "pending training methods must fail explicitly");
+    test::check(pendingTraining.predict(samples[0].inputs) == prediction,
+        "pending training methods changed predictions");
     config.initialization = "unknown";
     test::expectThrow<std::invalid_argument>([&] { NeuralNetwork network(config); });
     std::cout << "NeuralNetwork tests passed\n";

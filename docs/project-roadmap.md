@@ -168,4 +168,4 @@ optimiseurs supplémentaires, calibration ou classes supplémentaires. Priorité
 un modèle entraîné fonctionnel, documenté et reproductible.
 
 Fondations existantes : [architecture](architecture.md),
-[contrat d’entrée](data-encoding.md), [contrat de sortie](output-encoding.md).
+[contrat d’entrée](datasets.md), [contrat de sortie](output-encoding.md).

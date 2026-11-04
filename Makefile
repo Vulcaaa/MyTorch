@@ -47,7 +47,11 @@ build/tests/Dataset_tests: build/tests/Dataset.o $(CHESS_OBJ)
 build/tests/AnalyzerArguments_tests: build/tests/AnalyzerArguments.o build/analyzer/Arguments.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-build/tests/AnalyzerSaving_tests: build/tests/AnalyzerSaving.o build/analyzer/Training.o $(COMMON_OBJ)
+build/tests/AnalyzerSaving_tests: build/tests/AnalyzerSaving.o build/analyzer/Training.o $(COMMON_OBJ) $(CHESS_OBJ)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+# This test defines scripted neural methods instead of linking the pending backend.
+build/tests/Training_tests: build/tests/Training.o build/analyzer/Training.o $(filter-out build/neural/Training.o,$(COMMON_OBJ)) $(CHESS_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 test: all $(TEST_BIN)

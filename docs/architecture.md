@@ -19,7 +19,7 @@ Makefile handles builds, tests, and experiments; notebooks launch dataset prepar
 | `tests/` | C++ and Python | Function tests and executable tests. |
 
 The network module operates on numeric vectors without knowledge of chess or
-FEN. The chess module implements the [input](data-encoding.md) and
+FEN. The chess module implements the [input](datasets.md) and
 [output](output-encoding.md) contracts. The analyzer connects both modules.
 
 ## Planned data flow
