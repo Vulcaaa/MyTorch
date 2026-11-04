@@ -37,6 +37,12 @@ class NeuralNetwork {
         // Parameter layers: layers()[i] connects config().layers[i] to config().layers[i + 1].
         const std::vector<Layer> &layers() const { return _layers; }
 
+        // Checks samples before training or loss evaluation. Throws std::invalid_argument when
+        // samples is empty, a sample has the wrong number of inputs or targets, a value is not
+        // finite, a target value is outside [0, 1], softmax targets do not sum to 1 (tolerance
+        // 1e-6), or the output activation has no supported loss (softmax and sigmoid only).
+        void validateSamples(const std::vector<TrainingSample> &samples) const;
+
     private:
         friend class ModelSerializer;
 

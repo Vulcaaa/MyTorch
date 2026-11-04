@@ -10,6 +10,8 @@
 
 namespace {
 
+constexpr double targetSumTolerance = 1e-6;
+
 void validateLayerSizes(const NetworkConfig &config)
 {
     if (config.layers.size() < 2)
@@ -100,6 +102,39 @@ std::vector<double> NeuralNetwork::predict(const std::vector<double>& inputs) co
     if (activations.empty())
         throw std::runtime_error("Forward pass failed.");
     return activations.back();
+}
+
+void NeuralNetwork::validateSamples(const std::vector<TrainingSample> &samples) const
+{
+    const auto &activation = _config.output_activation;
+    if (activation != "softmax" && activation != "sigmoid")
+        throw std::invalid_argument("no loss is defined for output activation '" + activation + "'");
+    if (samples.empty())
+        throw std::invalid_argument("training requires at least one sample");
+
+    const auto fail = [](std::size_t index, const std::string &message) {
+        throw std::invalid_argument("training sample " + std::to_string(index) + ": " + message);
+    };
+    for (std::size_t i = 0; i < samples.size(); ++i) {
+        const auto &sample = samples[i];
+        if (sample.inputs.size() != inputSize())
+            fail(i, "expected " + std::to_string(inputSize()) + " inputs, got "
+                + std::to_string(sample.inputs.size()));
+        if (sample.target.size() != outputSize())
+            fail(i, "expected " + std::to_string(outputSize()) + " target values, got "
+                + std::to_string(sample.target.size()));
+        for (const auto value : sample.inputs)
+            if (!std::isfinite(value))
+                fail(i, "inputs must be finite");
+        double sum = 0.0;
+        for (const auto value : sample.target) {
+            if (!std::isfinite(value) || value < 0.0 || value > 1.0)
+                fail(i, "target values must be finite and in [0, 1]");
+            sum += value;
+        }
+        if (activation == "softmax" && std::abs(sum - 1.0) > targetSumTolerance)
+            fail(i, "softmax target values must sum to 1");
+    }
 }
 
 NeuralNetwork::NeuralNetwork(NetworkConfig config, std::vector<Layer> layers)
