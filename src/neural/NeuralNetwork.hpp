@@ -28,7 +28,11 @@ class NeuralNetwork {
         NeuralNetwork(NetworkConfig config, std::vector<Layer> layers);
 
         std::vector<double> predict(const std::vector<double>& inputs) const;
-        // Implemented by issue #5; currently throws until the backend is available.
+        // One mini-batch gradient descent step: every weight and bias moves by
+        // -learning_rate * gradient of the mean batch loss. Returns the mean loss before the
+        // update. Throws like gradients(), std::invalid_argument when learning_rate is not
+        // finite and positive, and std::runtime_error when an updated parameter would not be
+        // finite. The network is unchanged whenever it throws.
         double trainBatch(const std::vector<TrainingSample>& batch);
         // Mean loss over samples without changing the network: cross-entropy for softmax,
         // binary cross-entropy summed over outputs for sigmoid. Throws std::invalid_argument

@@ -32,10 +32,32 @@ void forEachValue(std::vector<Layer>& layers, Function function)
 
 } // namespace
 
-// Issue #5 replaces this explicit failure with the gradient descent update.
-double NeuralNetwork::trainBatch(const std::vector<TrainingSample>&)
+double NeuralNetwork::trainBatch(const std::vector<TrainingSample>& batch)
 {
-    throw std::runtime_error("trainBatch is not implemented yet (issue #5)");
+    const double rate = _config.learning_rate;
+    if (!std::isfinite(rate) || rate <= 0.0)
+        throw std::invalid_argument("learning_rate must be finite and positive");
+    auto [batchLoss, updated] = lossAndGradients(batch);
+
+    // Gradient descent: every parameter takes a step of size rate against its gradient.
+    // The new values overwrite the gradients and are kept only if they are all finite.
+    bool finite = true;
+    const auto step = [&](double parameter, double& gradient) {
+        gradient = parameter - rate * gradient;
+        finite = finite && std::isfinite(gradient);
+    };
+    for (std::size_t i = 0; i < _layers.size(); ++i) {
+        for (std::size_t j = 0; j < _layers[i].weights.size(); ++j) {
+            for (std::size_t k = 0; k < _layers[i].weights[j].size(); ++k)
+                step(_layers[i].weights[j][k], updated[i].weights[j][k]);
+            step(_layers[i].biases[j], updated[i].biases[j]);
+        }
+    }
+    if (!finite)
+        throw std::runtime_error("parameters are not finite after the update "
+            "(try a lower learning_rate)");
+    _layers = std::move(updated);
+    return batchLoss;
 }
 
 double NeuralNetwork::loss(const std::vector<TrainingSample>& samples) const

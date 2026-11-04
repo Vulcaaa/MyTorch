@@ -44,13 +44,24 @@ Layer layerWith(std::vector<std::vector<double>> weights, std::vector<double> bi
 }
 
 NeuralNetwork networkWith(std::vector<std::size_t> sizes, const std::string &hidden,
-    const std::string &output, std::vector<Layer> layers)
+    const std::string &output, std::vector<Layer> layers, double learningRate = 0.01)
 {
     NetworkConfig config;
     config.layers = std::move(sizes);
     config.hidden_activation = hidden;
     config.output_activation = output;
+    config.learning_rate = learningRate;
     return NeuralNetwork(config, std::move(layers));
+}
+
+bool sameParameters(const std::vector<Layer> &left, const std::vector<Layer> &right)
+{
+    if (left.size() != right.size())
+        return false;
+    for (std::size_t i = 0; i < left.size(); ++i)
+        if (left[i].weights != right[i].weights || left[i].biases != right[i].biases)
+            return false;
+    return true;
 }
 
 void checkLayer(const Layer &actual, const Layer &expected, const std::string &message)
@@ -185,6 +196,36 @@ void testGradients()
     test::expectThrow<std::runtime_error>([&] { overflowing.gradients({{{10, 0}, {1, 0}}}); });
 }
 
+void testTrainBatch()
+{
+    // Same sample as testGradients: loss log 2, weight gradient [[-1, -2], [1, 2]],
+    // bias gradient [-1/2, 1/2]. With learning rate 0.1: parameter - 0.1 * gradient.
+    const std::vector<Layer> initial{layerWith({{1, -0.5}, {0, 0}}, {0, 0})};
+    const TrainingSample sample{{2, 4}, {1, 0}};
+    auto network = networkWith({2, 2}, "relu", "softmax", initial, 0.1);
+    const auto checkpoint = network;
+    checkClose(network.trainBatch({sample}), std::log(2.0), "trainBatch must return the loss before the update");
+    checkLayer(network.layers()[0], layerWith({{1.1, -0.3}, {-0.1, -0.2}}, {0.05, -0.05}),
+        "updated parameters");
+    test::check(network.loss({sample}) < std::log(2.0), "an update must lower the batch loss");
+    test::check(sameParameters(checkpoint.layers(), initial), "a copy must not follow the updates");
+    test::check(network.config().learning_rate == 0.1, "training must not change the configuration");
+
+    // Every failure leaves the network unchanged.
+    const auto unchanged = network.layers();
+    test::expectThrow<std::invalid_argument>([&] { network.trainBatch({}); });
+    test::check(sameParameters(network.layers(), unchanged), "invalid batch changed the network");
+    for (const double rate : {0.0, -0.1, std::nan("")}) {
+        auto invalidRate = networkWith({2, 2}, "relu", "softmax", initial, rate);
+        test::expectThrow<std::invalid_argument>([&] { invalidRate.trainBatch({sample}); });
+        test::check(sameParameters(invalidRate.layers(), initial), "invalid learning rate changed the network");
+    }
+    // 1e308 * gradient 2 overflows to infinity.
+    auto overflowing = networkWith({2, 2}, "relu", "softmax", initial, 1e308);
+    test::expectThrow<std::runtime_error>([&] { overflowing.trainBatch({sample}); });
+    test::check(sameParameters(overflowing.layers(), initial), "overflowing update changed the network");
+}
+
 } // namespace
 
 int main()
@@ -193,5 +234,6 @@ int main()
     testInvalidSamples();
     testLoss();
     testGradients();
+    testTrainBatch();
     std::cout << "Backpropagation tests passed\n";
 }
