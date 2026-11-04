@@ -10,6 +10,9 @@ It combines a reusable neural network module with two command-line programs:
 Network generation, saving, loading, and prediction are implemented. Training
 is still in development. No neural network framework is used.
 
+See the [training guide](docs/training-command.md) for the accepted arguments,
+orchestration behavior, and pending neural backend integration.
+
 ## Build
 
 Requires GNU Make and a C++17 compiler (GCC by default); tests also require Python 3.

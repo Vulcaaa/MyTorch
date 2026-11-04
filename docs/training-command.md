@@ -1,26 +1,32 @@
 # Training command: implementation contract
 
-Status: argument parsing and help are implemented for issue #7. Training,
-early stopping, history export, and the neural API below remain unimplemented;
-valid training requests return 84 with an explicit pending-training diagnostic.
-The neural API below is the integration contract proposed to issue #5, not an
-API already implemented or confirmed by Gustave. The CLI parameters and automatic
-history export with an optional path override have been approved by Mathys.
+Status: argument parsing, help, and orchestration are implemented for issue #7.
+`runTraining` calls public `NeuralNetwork::trainBatch` and `NeuralNetwork::loss`
+methods directly and implements epochs, batches, validation, checkpoints,
+history, and saving. `runAnalyzer` in `main.cpp` calls `runTraining` in train mode
+and `runPrediction` from `Prediction.cpp` otherwise. The neural
+calculations from issue #5 are pending: CLI training still returns 84 with an
+explicit neural-backend diagnostic. The backend contract below has not been
+confirmed by Gustave. CLI parameters and automatic history export are approved.
 
 ## Responsibilities
 
-- Issue #5 owns generic neural samples, loss calculation, derivatives, gradient
+- Issue #5 owns loss calculation, derivatives, gradient
   aggregation, and parameter updates in `src/neural/`.
 - Issue #7 owns arguments, labeled dataset loading, chess compatibility checks,
   reproducible epoch ordering, batches, validation, early stopping, history,
   checkpoint selection, and saving in `src/analyzer/`.
-- `main.cpp` connects these components and preserves the existing exit codes.
+- `main.cpp` dispatches to `Training.cpp` or `Prediction.cpp` and handles parsing,
+  help, and the existing exit codes.
   Neither the neural module nor the dataset loader owns the training loop.
 
 ## Neural API for issue #5
 
-The following declarations describe the intended additions; they are not added
-to the actual headers until implementation begins:
+`TrainingSample` is defined in `src/neural/NeuralNetwork.hpp`, and the read-only
+`config()` accessor is implemented. The public `trainBatch` and `loss` methods
+are declared in the same header. Their current definitions in
+`src/neural/Training.cpp` throw explicit not-implemented errors; issue #5 will
+replace those definitions with the calculations specified below:
 
 ```cpp
 struct TrainingSample {
@@ -107,7 +113,7 @@ early stopping available for every successful training run. The old bare
 `--train LOADFILE CHESSFILE` invocation returns 84 with a missing-validation
 diagnostic. Parsing validates syntax and values without opening input files or
 creating output paths. An empty `training.historyFile` represents the approved
-automatic-history mode; the future training loop will select its concrete path.
+automatic-history mode; the training loop selects its concrete path.
 
 ### Approved history behavior
 
@@ -125,14 +131,26 @@ failures on stderr and return 84; do not silently disable history or save a mode
 as if the run had completed successfully.
 
 This CSV export belongs to issue #7. It does not implement the shared severity
-logger or generation logs requested by issue #13. Ignore `/logs/` in Git when
-automatic history creation is implemented.
+logger or generation logs requested by issue #13. `/logs/` is ignored in Git.
 
-## Proposed orchestration behavior
+## Implemented orchestration behavior
+
+`runTraining(network, arguments, progress)` in `src/analyzer/Training.*` calls
+`working.trainBatch(batch)` for updates and `working.loss(samples)` for
+measurements. There is no operations struct, callback injection, or virtual
+dispatch in production. Both public neural methods consume numeric
+`TrainingSample` vectors and return a mean loss. The const qualifier on `loss`
+prevents ordinary modification of the network during validation.
+
+Until issue #5 supplies the calculations, the methods fail explicitly. The
+orchestration test binary links test-only definitions of those same methods in
+place of the pending implementation; generated programs always link the explicit
+failures, never the test definitions.
 
 Load and validate both labeled datasets before updates. Reject shared
 model-visible inputs across train and validation, including FENs differing only
-in unencoded fields. Never load a test set in the training command.
+in unencoded fields. Repeated rows inside train are allowed for class balancing.
+Never load a test set in the training command.
 
 Seed one `std::mt19937` from the model's seed. Each epoch starts from canonical
 dataset indices and shuffles them with that generator, then processes successive
@@ -154,8 +172,32 @@ the lowest-loss checkpoint, including checkpoint 0 if no epoch improves it.
 
 Save only after successful training and history export. With an explicit
 distinct `--save` destination, leave `LOADFILE` unchanged. Without `--save`, use
-the existing source-path saving behavior. Keep progress and diagnostics on
-stderr, prediction output on stdout, success code 0, and error code 84.
+the source path. Write the selected model to a uniquely reserved temporary file
+beside its destination, then rename it into place. Serialization or rename failure
+leaves an existing destination intact and removes the temporary file. This uses
+POSIX exclusive file creation, as does history reservation; it does not promise
+durability across a power failure. Reject model destinations aliasing either
+dataset, history destinations aliasing any model/dataset, and explicit alternate
+save paths aliasing the source model.
+
+The loop operates on a copy: failures leave the caller's network unchanged.
+Completed history rows are retained for diagnosis even if a later batch or save
+fails. A failed run's history may contain only its header. A `TrainingResult`
+reports completed epochs, selected epoch (0 for the initial model), selected
+validation loss, early stopping, and the history path. Progress is written to the
+provided stream, which the CLI integration must connect to stderr. Keep
+prediction output on stdout, success code 0, and error code 84.
+
+## Verification
+
+`make test` includes `tests/Training.cpp`. Scripted test neural methods check scheduling
+and checkpoints with controlled parameters/losses; they are not evidence of
+learning. Tests cover partial batches, sample coverage, identical-seed
+reproducibility, changed-seed ordering, independent validation, cumulative patience improvements,
+restoring an earlier or initial checkpoint, both save modes, model reload,
+overlapping inputs, invalid data/backend losses, automatic histories, existing
+history files, path aliases, and history/save failures. A POSIX file-size limit
+forces a real history write failure. Actual loss reduction remains blocked on #5.
 
 ## Experiment runner integration
 

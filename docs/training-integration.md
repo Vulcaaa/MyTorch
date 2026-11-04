@@ -1,8 +1,11 @@
 # Training integration (pending backend)
 
 The experiment runner is ready to call a training backend; it does not implement
-backpropagation. The analyzer parses the approved training options, but `--train`
-returns 84 with an explicit diagnostic until training is implemented.
+backpropagation. The analyzer parses the approved training options and calls
+`runTraining` from its dispatcher in `src/analyzer/main.cpp`. Prediction is
+implemented separately in `src/analyzer/Prediction.cpp`. The training loop loads
+both datasets and checks their independence, but `--train` returns 84 when it
+reaches the pending neural loss calculation from issue #5.
 Therefore `configs/experiment.json` leaves `training.command` and `training.settings`
 null, and full experiments stop before creating an output directory. `--prepare`
 can generate initial models independently.
