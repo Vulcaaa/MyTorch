@@ -1,21 +1,18 @@
-# Training integration (pending backend)
+# Training integration (pending adapter)
 
-The experiment runner is ready to call a training backend; it does not implement
-backpropagation. The analyzer parses the approved training options and calls
-`runTraining` from its dispatcher in `src/analyzer/main.cpp`. Prediction is
-implemented separately in `src/analyzer/Prediction.cpp`. The training loop loads
-both datasets and checks their independence, but `--train` returns 84 when it
-reaches the pending neural loss calculation from issue #5.
-Therefore `configs/experiment.json` leaves `training.command` and `training.settings`
-null, and full experiments stop before creating an output directory. `--prepare`
-can generate initial models independently.
+The experiment runner is ready to call a training backend. The analyzer parses
+the approved training options and calls `runTraining` from its dispatcher in
+`src/analyzer/main.cpp`; with the neural calculations of issue #5, `--train` now
+trains and saves models end to end. No adapter maps the runner's requests to that
+command yet. Therefore `configs/experiment.json` leaves `training.command` and
+`training.settings` null, and full experiments stop before creating an output
+directory. `--prepare` can generate initial models independently.
 
-## Contract to connect with Gustave
+## Adapter contract
 
 The C++ boundary between issues #5 and #7 and the approved CLI parameters are
-specified in [training command design](training-command.md). The C++ boundary
-remains a design declaration, not an implemented backend or an agreement already
-confirmed by Gustave.
+specified in [training command design](training-command.md) and implemented. The
+neural calculations are described in [backpropagation](backpropagation.md).
 
 Set `training.command` to an argument array for the agreed backend/adapter. No
 shell is used. It must consume `{initial_model}`, `{trained_model}`, and

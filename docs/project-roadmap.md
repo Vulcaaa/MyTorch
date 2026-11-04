@@ -24,8 +24,8 @@ flowchart LR
 | --- | --- | --- |
 | Problème et conception | Contrats d’entrée/sortie documentés | Justifier les choix liés à l’apprentissage |
 | Données | Nettoyage, découpage et rapports réalisés ; PR ouvertes | Fusionner et figer les données de référence |
-| Module neuronal | Génération, sauvegarde, chargement et prédiction disponibles | Terminer et vérifier la rétropropagation |
-| Entraînement | Intégration de la commande incomplète | Entraîner, valider, arrêter et sauvegarder |
+| Module neuronal | Génération, sauvegarde, chargement, prédiction et rétropropagation disponibles | Accélérer l’entraînement si nécessaire |
+| Entraînement | Commande `--train` fonctionnelle de bout en bout | Entraîner le modèle de référence sur les données complètes |
 | Qualité des prédictions | Commande de prédiction disponible | Métriques, référence et matrice de confusion |
 | Expériences et coûts | Comparaisons à réaliser | Mesurer les compromis et choisir un modèle |
 | Documentation et livraison | Guides existants ; résultats à produire | Rapport reproductible et modèle entraîné |
@@ -64,10 +64,10 @@ flowchart LR
 
 - [x] Générer des réseaux concrets ; initialiser, sauvegarder, charger et prédire.
 - [x] Préparer et tester la fonction de sauvegarde vers le fichier source ou un autre fichier.
-- [ ] Terminer la rétropropagation : perte/sortie compatibles, dérivées, gradients,
+- [x] Terminer la rétropropagation : perte/sortie compatibles, dérivées, gradients,
       mise à jour des poids/biais et rejet des paramètres invalides.
-- [ ] Vérifier les gradients par différences finies et les mises à jour sur des valeurs connues.
-- [ ] Montrer une baisse de perte sur un petit problème déterministe.
+- [x] Vérifier les gradients par différences finies et les mises à jour sur des valeurs connues.
+- [x] Montrer une baisse de perte sur un petit problème déterministe.
 - [ ] Brancher `--train` : époques, taille des lots, taux d’apprentissage et ordre reproductible.
 - [ ] Vérifier le parcours complet d’entraînement : deux modes de sauvegarde,
       rechargement du modèle entraîné et diagnostics d’erreur.
@@ -77,7 +77,7 @@ flowchart LR
 ## 4 · Apprentissage et surapprentissage
 
 - [ ] Enregistrer par époque les pertes train/validation, les métriques et le temps écoulé.
-- [ ] Garantir que la validation ne met jamais à jour les poids.
+- [x] Garantir que la validation ne met jamais à jour les poids.
 - [ ] Implémenter l’arrêt anticipé sur validation et restaurer la meilleure sauvegarde.
 - [ ] Fixer le nombre maximal d’époques, la patience, l’amélioration minimale et le calcul de la perte moyenne.
 - [ ] Examiner les problèmes réellement observés : divergence, stagnation, instabilité ou classe unique prédite.
@@ -137,7 +137,7 @@ les exemples traités. Un résultat négatif mesuré permet également de justif
 | Document | Déjà disponible | À compléter |
 | --- | --- | --- |
 | Guide des données | Contrats ; guides de nettoyage/découpage en PR | Origines, droits, distributions et limites |
-| Guide d’entraînement | À rédiger | Commande, réglages, perte, mises à jour, arrêt et sauvegarde |
+| Guide d’entraînement | [Commande](training-command.md) et [rétropropagation](backpropagation.md) | Réglages retenus et résultats |
 | Rapport d’expériences | À produire | Protocole, essais, courbes, coûts, alternatives, problèmes et choix final |
 | README | Compilation, génération et prédiction | Entraînement, modèle livré et liens vers les résultats |
 

@@ -105,8 +105,8 @@ trained for this layout. Dimensions alone cannot verify feature or class order.
 The `.nn` file stores model configuration and parameters, not input positions.
 
 The generator remains generic. The analyzer checks that a loaded chess model has
-777 inputs and 3 outputs before reading the dataset. Training is not yet
-implemented.
+777 inputs and 3 outputs before reading the dataset, in both prediction and
+[training](training-command.md).
 
 ### Prediction command
 

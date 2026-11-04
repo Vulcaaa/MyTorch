@@ -4,10 +4,10 @@ Status: argument parsing, help, and orchestration are implemented for issue #7.
 `runTraining` calls public `NeuralNetwork::trainBatch` and `NeuralNetwork::loss`
 methods directly and implements epochs, batches, validation, checkpoints,
 history, and saving. `runAnalyzer` in `main.cpp` calls `runTraining` in train mode
-and `runPrediction` from `Prediction.cpp` otherwise. The neural
-calculations from issue #5 are pending: CLI training still returns 84 with an
-explicit neural-backend diagnostic. The backend contract below has not been
-confirmed by Gustave. CLI parameters and automatic history export are approved.
+and `runPrediction` from `Prediction.cpp` otherwise. Issue #5 implements the
+neural calculations behind the contract below; see
+[backpropagation](backpropagation.md). CLI parameters and automatic history
+export are approved.
 
 ## Responsibilities
 
@@ -24,9 +24,9 @@ confirmed by Gustave. CLI parameters and automatic history export are approved.
 
 `TrainingSample` is defined in `src/neural/NeuralNetwork.hpp`, and the read-only
 `config()` accessor is implemented. The public `trainBatch` and `loss` methods
-are declared in the same header. Their current definitions in
-`src/neural/Training.cpp` throw explicit not-implemented errors; issue #5 will
-replace those definitions with the calculations specified below:
+are declared in the same header and implemented in `src/neural/Training.cpp` as
+specified below; the [backpropagation guide](backpropagation.md) details the
+calculations:
 
 ```cpp
 struct TrainingSample {
@@ -142,10 +142,9 @@ dispatch in production. Both public neural methods consume numeric
 `TrainingSample` vectors and return a mean loss. The const qualifier on `loss`
 prevents ordinary modification of the network during validation.
 
-Until issue #5 supplies the calculations, the methods fail explicitly. The
-orchestration test binary links test-only definitions of those same methods in
-place of the pending implementation; generated programs always link the explicit
-failures, never the test definitions.
+The orchestration test binary links test-only definitions of those same methods
+in place of `src/neural/Training.cpp`; generated programs always link the real
+implementation, never the test definitions.
 
 Load and validate both labeled datasets before updates. Reject shared
 model-visible inputs across train and validation, including FENs differing only
@@ -197,7 +196,8 @@ reproducibility, changed-seed ordering, independent validation, cumulative patie
 restoring an earlier or initial checkpoint, both save modes, model reload,
 overlapping inputs, invalid data/backend losses, automatic histories, existing
 history files, path aliases, and history/save failures. A POSIX file-size limit
-forces a real history write failure. Actual loss reduction remains blocked on #5.
+forces a real history write failure. Learning itself is verified by the neural
+tests in `tests/Backpropagation.cpp` and by a real training run in `tests/cli.py`.
 
 ## Experiment runner integration
 

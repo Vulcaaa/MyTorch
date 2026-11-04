@@ -7,7 +7,7 @@ configurations, common training settings, dataset paths, and seeds **once**.
 Paths in this file are relative to its directory. The supplied compact/reference
 pair is an initial capacity comparison, not a tuned grid or a final choice.
 
-While training is unavailable, prepare all initial models:
+Until the training adapter is connected, prepare all initial models:
 
 ```sh
 make experiment OUTPUT=results/experiments/preparation OPTIONS=--prepare
@@ -102,6 +102,6 @@ measurements, not isolated speed benchmarks.
    model** before test evaluation. Do not cherry-pick a seed or tune using test
    results. The runner reports leaders; it does not choose/export a final model.
 
-Training commands/settings, checkpoint selection and history emission still need
-to be agreed with Gustave. Final training comparisons, test results, interpretation,
-and model delivery remain open parts of issue #8.
+The training adapter (command and settings in `configs/experiment.json`) remains to
+be connected. Final training comparisons, test results, interpretation, and model
+delivery remain open parts of issue #8.
