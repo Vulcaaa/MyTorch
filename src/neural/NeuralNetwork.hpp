@@ -46,7 +46,16 @@ class NeuralNetwork {
     private:
         friend class ModelSerializer;
 
-        std::vector<std::vector<double>> forward(const std::vector<double> &inputs) const;
+        // Values computed by one forward pass, kept for loss and backpropagation.
+        struct ForwardPass {
+            // activations[0] holds the inputs, activations[i + 1] the outputs of _layers[i].
+            std::vector<std::vector<double>> activations;
+            // Output layer values before its activation, used for a numerically stable loss.
+            std::vector<double> outputLogits;
+        };
+
+        // Returns an empty pass (no activations) when the inputs do not match the network.
+        ForwardPass forward(const std::vector<double> &inputs) const;
 
         NetworkConfig _config;
         std::vector<Layer> _layers;

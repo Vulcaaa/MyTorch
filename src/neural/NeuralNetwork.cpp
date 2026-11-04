@@ -64,17 +64,17 @@ NeuralNetwork::NeuralNetwork(const NetworkConfig& config) : _config(config)
     }
 }
 
-std::vector<std::vector<double>> NeuralNetwork::forward(
-    const std::vector<double> &inputs) const
+NeuralNetwork::ForwardPass NeuralNetwork::forward(const std::vector<double> &inputs) const
 {
     if (_layers.empty()) {
         std::cerr << "Error: NeuralNetwork requires at least one parameter layer.\n";
         return {};
     }
-    std::vector<std::vector<double>> activations{inputs};
+    ForwardPass pass;
+    pass.activations.push_back(inputs);
 
     for (const auto &layer : _layers) {
-        const auto &current_inputs = activations.back();
+        const auto &current_inputs = pass.activations.back();
         std::vector<double> results(layer.weights.size());
 
         for (std::size_t j = 0; j < layer.weights.size(); ++j) {
@@ -89,19 +89,21 @@ std::vector<std::vector<double>> NeuralNetwork::forward(
             results[j] = sum;
         }
         const bool isOutput = (&layer == &_layers.back());
+        if (isOutput)
+            pass.outputLogits = results;
         applyActivation(results, isOutput ? _config.output_activation : _config.hidden_activation);
-        activations.push_back(std::move(results));
+        pass.activations.push_back(std::move(results));
     }
-    return activations;
+    return pass;
 }
 
 std::vector<double> NeuralNetwork::predict(const std::vector<double>& inputs) const
 {
-    const auto activations = forward(inputs);
+    auto pass = forward(inputs);
 
-    if (activations.empty())
+    if (pass.activations.empty())
         throw std::runtime_error("Forward pass failed.");
-    return activations.back();
+    return std::move(pass.activations.back());
 }
 
 void NeuralNetwork::validateSamples(const std::vector<TrainingSample> &samples) const
