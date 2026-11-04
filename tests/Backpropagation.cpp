@@ -226,6 +226,50 @@ void testTrainBatch()
     test::check(sameParameters(overflowing.layers(), initial), "overflowing update changed the network");
 }
 
+// Measures each gradient directly: nudge one parameter by +h and -h, and divide the loss
+// change by 2h. Backpropagation must agree for every weight and bias and every activation
+// pair. Inputs and the seed keep ReLU pre-activations away from its kink at 0.
+void testGradientsMatchFiniteDifferences()
+{
+    constexpr double h = 1e-6;
+    const std::vector<TrainingSample> samples{
+        {{0.3, -1.2, 0.8}, {0, 1, 0}}, {{1.5, 0.2, -0.4}, {0.2, 0.3, 0.5}}};
+
+    for (const auto *hidden : {"sigmoid", "tanh", "relu", "linear"}) {
+        for (const auto *output : {"softmax", "sigmoid"}) {
+            NetworkConfig config;
+            config.layers = {3, 4, 5, 3};
+            config.hidden_activation = hidden;
+            config.output_activation = output;
+            config.initialization = "xavier";
+            config.seed = 11;
+            const NeuralNetwork network(config);
+            const auto gradients = network.gradients(samples);
+            auto layers = network.layers();
+
+            const auto measure = [&](double &parameter) {
+                const double saved = parameter;
+                parameter = saved + h;
+                const double up = NeuralNetwork(config, layers).loss(samples);
+                parameter = saved - h;
+                const double down = NeuralNetwork(config, layers).loss(samples);
+                parameter = saved;
+                return (up - down) / (2 * h);
+            };
+            const auto where = std::string(hidden) + "/" + output;
+            for (std::size_t i = 0; i < layers.size(); ++i) {
+                for (std::size_t j = 0; j < layers[i].weights.size(); ++j) {
+                    for (std::size_t k = 0; k < layers[i].weights[j].size(); ++k)
+                        test::check(std::abs(measure(layers[i].weights[j][k])
+                            - gradients[i].weights[j][k]) < 1e-7, where + ": weight gradient mismatch");
+                    test::check(std::abs(measure(layers[i].biases[j]) - gradients[i].biases[j]) < 1e-7,
+                        where + ": bias gradient mismatch");
+                }
+            }
+        }
+    }
+}
+
 } // namespace
 
 int main()
@@ -235,5 +279,6 @@ int main()
     testLoss();
     testGradients();
     testTrainBatch();
+    testGradientsMatchFiniteDifferences();
     std::cout << "Backpropagation tests passed\n";
 }
