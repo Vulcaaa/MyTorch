@@ -5,13 +5,13 @@ chess positions as **check**, **checkmate**, or **neither**, using FEN notation.
 It combines a reusable neural network module with two command-line programs:
 
 - `my_torch_generator`: creates neural networks from configuration files.
-- `my_torch_analyzer`: classifies chess positions; training is planned.
+- `my_torch_analyzer`: trains networks and classifies chess positions.
 
-Network generation, saving, loading, and prediction are implemented. Training
-is still in development. No neural network framework is used.
+Network generation, saving, loading, training, and prediction are implemented.
+No neural network framework is used.
 
-See the [training guide](docs/training-command.md) for usage, options,
-early stopping, history, and saving.
+See the [training guide](docs/training.md) for commands, the training flow,
+backpropagation, checkpoints, and experiment integration.
 
 ## Build
 
@@ -47,13 +47,26 @@ in order. A generated model is untrained, so its predictions are only
 illustrative. See the [chess data guide](docs/datasets.md#prediction-command)
 for input and model requirements.
 
+Train a saved model on labeled positions, with an independent validation set:
+
+```sh
+./my_torch_analyzer --train --validation validation.txt --save models/trained.nn \
+  models/basic_network_1.nn train.txt
+```
+
+Progress and the path of the per-epoch loss history are printed on stderr. The
+best model on validation is saved to `--save` (or back to the loaded file).
+Without `--validation`, the analyzer splits the loaded data into approximately
+90% training / 10% validation, by class and model-visible input groups, using the
+model seed. Supply validation explicitly for existing reference splits.
+
 Run either executable with `--help` for its command-line options.
 
 Evaluate a saved model on labeled positions with
 `python3 scripts/evaluate.py MODEL DATASET --output results/RUN`.
 Prepare a configuration/seed experiment with
 `make experiment OUTPUT=results/experiments/preparation OPTIONS=--prepare`.
-Full experiments await the training backend. See the
+Full experiments await the training adapter. See the
 [evaluation guide](docs/evaluation.md) for the workflow and two analysis notebooks.
 
 ## Development

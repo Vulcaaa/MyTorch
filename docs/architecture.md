@@ -10,7 +10,7 @@ Makefile handles builds, tests, and experiments; notebooks launch dataset prepar
 
 | Component | Language | Responsibility |
 | --- | --- | --- |
-| `src/neural/` | C++ | Generic network: configuration, initialization, serialization, then forward propagation and training. |
+| `src/neural/` | C++ | Generic network: configuration, initialization, serialization, forward propagation, and [training](training.md). |
 | `src/chess/` | C++ | FEN parsing, feature encoding, and dataset label handling. |
 | `src/generator/` | C++ | `my_torch_generator`: create models from configuration files. |
 | `src/analyzer/` | C++ | `my_torch_analyzer`: coordinate training and prediction. |
@@ -87,8 +87,9 @@ must remain available for the project defense, without requiring Git tracking.
 ## Current status
 
 Model generation, initialization, serialization, FEN encoding, dataset loading,
-forward propagation, and analyzer prediction are implemented. C++ tests and
-Python CLI tests run through `make test`.
+forward propagation, backpropagation with mini-batch gradient descent, and
+analyzer training and prediction are implemented. C++ tests and Python CLI tests
+run through `make test`.
 
 The Python evaluation script computes classification metrics through the analyzer;
 see the [evaluation guide](evaluation.md). `evaluation.ipynb` inspects one model's

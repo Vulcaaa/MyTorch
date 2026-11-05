@@ -3,6 +3,7 @@
 #include "neural/ModelSerializer.hpp"
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <bitset>
 #include <cerrno>
@@ -19,6 +20,7 @@
 #include <random>
 #include <sstream>
 #include <stdexcept>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 
@@ -60,8 +62,8 @@ void validateRequest(const NeuralNetwork& network, const AnalyzerArguments& argu
     if (arguments.mode != AnalyzerMode::Train)
         throw std::invalid_argument("training requires --train");
     const auto& settings = arguments.training;
-    if (arguments.loadFile.empty() || arguments.chessFile.empty() || settings.validationFile.empty())
-        throw std::invalid_argument("training requires model, train and validation paths");
+    if (arguments.loadFile.empty() || arguments.chessFile.empty())
+        throw std::invalid_argument("training requires model and dataset paths");
     if (settings.epochs == 0 || settings.batchSize == 0 || settings.patience == 0
         || !std::isfinite(settings.minDelta) || settings.minDelta < 0)
         throw std::invalid_argument("invalid training settings");
@@ -73,6 +75,8 @@ void validateRequest(const NeuralNetwork& network, const AnalyzerArguments& argu
     if (destination != arguments.loadFile && samePath(destination, arguments.loadFile))
         throw std::invalid_argument("--save must not alias the source model through another path");
     for (const auto& dataset : {arguments.chessFile, settings.validationFile}) {
+        if (dataset.empty())
+            continue;
         if (samePath(destination, dataset) || samePath(arguments.loadFile, dataset))
             throw std::invalid_argument("model paths must not overwrite training or validation data");
     }
@@ -96,6 +100,58 @@ std::bitset<777> inputKey(const TrainingSample& sample)
     for (std::size_t i = 0; i < sample.inputs.size(); ++i)
         key[i] = sample.inputs[i] != 0;
     return key;
+}
+
+// Stable first-occurrence grouping avoids depending on unordered_map traversal.
+// Splitting groups, not rows, keeps duplicate model inputs on the same side.
+std::pair<std::vector<TrainingSample>, std::vector<TrainingSample>> splitSamples(
+    std::vector<TrainingSample> samples, std::uint32_t seed)
+{
+    struct Group {
+        std::size_t label;
+        std::vector<std::size_t> rows;
+    };
+    std::unordered_map<std::bitset<777>, std::size_t> indices;
+    std::vector<Group> groups;
+    std::array<std::vector<std::size_t>, 3> classes;
+    for (std::size_t i = 0; i < samples.size(); ++i) {
+        const auto& target = samples[i].target;
+        const auto label = static_cast<std::size_t>(std::find(target.begin(), target.end(), 1.0)
+            - target.begin());
+        const auto [entry, inserted] = indices.emplace(inputKey(samples[i]), groups.size());
+        if (inserted) {
+            classes[label].push_back(groups.size());
+            groups.push_back({label, {}});
+        }
+        auto& group = groups[entry->second];
+        if (group.label != label)
+            throw std::invalid_argument("automatic validation split: conflicting labels for a model-visible input");
+        group.rows.push_back(i);
+    }
+
+    std::mt19937 random(seed);
+    std::vector<bool> heldOut(samples.size(), false);
+    for (std::size_t label = 0; label < classes.size(); ++label) {
+        auto& selected = classes[label];
+        if (selected.empty())
+            continue;
+        if (selected.size() < 2)
+            throw std::invalid_argument("automatic validation split: class "
+                + std::to_string(label) + " needs at least two distinct model-visible inputs; "
+                "provide more data or --validation FILE");
+        std::shuffle(selected.begin(), selected.end(), random);
+        // Nearest 10% of groups per class; retain at least one on each side.
+        const auto count = std::clamp(selected.size() / 10 + (selected.size() % 10 >= 5),
+            std::size_t{1}, selected.size() - 1);
+        for (std::size_t i = 0; i < count; ++i)
+            for (const auto row : groups[selected[i]].rows)
+                heldOut[row] = true;
+    }
+    std::vector<TrainingSample> training, validation;
+    // Preserve source row order after selecting membership; epochs shuffle separately.
+    for (std::size_t i = 0; i < samples.size(); ++i)
+        (heldOut[i] ? validation : training).push_back(std::move(samples[i]));
+    return {std::move(training), std::move(validation)};
 }
 
 void rejectOverlap(const std::vector<TrainingSample>& training,
@@ -131,6 +187,8 @@ class HistoryFile {
         {
             for (const auto& protectedPath : {arguments.loadFile, arguments.chessFile,
                 arguments.training.validationFile, modelDestination(arguments)}) {
+                if (protectedPath.empty())
+                    continue;
                 if (samePath(path, protectedPath))
                     throw std::invalid_argument("history path must not overwrite a model or dataset");
             }
@@ -232,9 +290,20 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
     std::ostream& progress)
 {
     validateRequest(network, arguments);
-    const auto training = numericSamples(loadDataset(arguments.chessFile, DatasetMode::Training));
-    const auto validation = numericSamples(loadDataset(arguments.training.validationFile, DatasetMode::Training));
+    auto training = numericSamples(loadDataset(arguments.chessFile, DatasetMode::Training));
+    std::vector<TrainingSample> validation;
+    const bool automatic = arguments.training.validationFile.empty();
+    if (automatic) {
+        auto split = splitSamples(std::move(training), network.config().seed);
+        training = std::move(split.first);
+        validation = std::move(split.second);
+    } else {
+        validation = numericSamples(loadDataset(arguments.training.validationFile, DatasetMode::Training));
+    }
     rejectOverlap(training, validation);
+    progress << (automatic ? "Automatic validation split (90/10 groups per class)" : "Explicit validation dataset")
+        << ": train=" << training.size() << " validation=" << validation.size()
+        << " seed=" << network.config().seed << '\n';
 
     NeuralNetwork working = network;
     NeuralNetwork best = working;

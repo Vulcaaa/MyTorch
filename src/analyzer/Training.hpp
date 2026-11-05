@@ -13,7 +13,8 @@ struct TrainingResult {
     std::string historyFile;
 };
 
-// Loads both labeled datasets, trains a working copy, restores its best checkpoint,
+// Loads labeled data (explicit validation or an automatic 90/10 split), trains a
+// working copy, restores its best checkpoint,
 // exports history and saves. On failure, the caller's network is unchanged.
 TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& arguments,
     std::ostream& progress);

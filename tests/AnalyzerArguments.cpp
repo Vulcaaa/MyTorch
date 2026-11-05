@@ -35,6 +35,13 @@ int main()
         && arguments.training.patience == 10 && arguments.training.minDelta == 0.0001,
         "incorrect training defaults");
 
+    arguments = parse({"--train", "model.nn", "positions.txt"});
+    test::check(arguments.training.validationFile.empty() && arguments.saveFile == "model.nn",
+        "bare training must select automatic validation and save in LOADFILE");
+    arguments = parse({"--train", "--save", "trained.nn", "model.nn", "positions.txt"});
+    test::check(arguments.training.validationFile.empty() && arguments.saveFile == "trained.nn",
+        "minimal subject syntax with --save must be accepted");
+
     arguments = parse({"--train", "--history", "run history.csv", "--batch-size", "16",
         "--save", "trained model.nn", "--min-delta", "1e-3", "--epochs", "250",
         "--validation", "validation data.txt", "--patience", "20",
@@ -59,7 +66,7 @@ int main()
         "maximum representable integer was rejected");
 
     const std::vector<std::vector<const char*>> invalid = {
-        {}, {"--train"}, {"--train", "model.nn"}, {"--train", "model.nn", "positions.txt"},
+        {}, {"--train"}, {"--train", "model.nn"},
         {"--unknown", "model.nn", "positions.txt"},
         {"--predict", "--save", "out.nn", "model.nn", "positions.txt"},
         {"--train", "--save", "model.nn", "positions.txt"},

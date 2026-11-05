@@ -7,12 +7,11 @@ les expériences, la documentation et la livraison dans le temps disponible.
 **Légende :** ☑ réalisé, même en PR non fusionnée · ☐ restant ou à confirmer · ◇ optionnel.
 Les cases suivent le travail réalisé ; la fusion et la livraison restent des étapes distinctes.
 
-**Point au 4 novembre 2026 :** le nettoyage, les splits, les outils d’évaluation
-et l’orchestration de `--train` sont fusionnés. La référence `chess-v1` est prête
-et vérifiée en PR #24, encore non fusionnée. Gustave est proche de terminer le
-moteur d’apprentissage (#5), selon le point d’équipe ; son intégration et sa
-validation réelle restent à confirmer. La fermeture de #7 ne signifie pas que
-l’apprentissage complet a déjà été validé.
+**Point au 5 novembre 2026 :** le nettoyage, les splits, les outils d’évaluation,
+l’orchestration de `--train` et la référence `chess-v1` sont fusionnés. Le moteur
+d’apprentissage (#5) et le parcours CLI complet sont implémentés et testés dans
+la PR #25, avec validation explicite ou découpage automatique. L’adaptateur du
+runner, les entraînements complets et les résultats sur les échecs restent à produire.
 
 ```mermaid
 flowchart LR
@@ -30,9 +29,9 @@ flowchart LR
 | Axe | État actuel | Prochain résultat attendu |
 | --- | --- | --- |
 | Problème et conception | Contrats d’entrée/sortie documentés | Justifier les choix liés à l’apprentissage |
-| Données | Nettoyage/splits fusionnés ; référence `chess-v1` vérifiée en PR #24 | Fusionner la référence ; conserver les fichiers locaux |
-| Module neuronal | Génération, sauvegarde, chargement et prédiction disponibles ; #5 presque terminé par Gustave | Finaliser, vérifier et intégrer le moteur d’apprentissage |
-| Entraînement | Boucle, validation, arrêt anticipé, historique et sauvegarde implémentés | Valider le parcours avec le vrai moteur ; connecter le runner |
+| Données | Nettoyage/splits et référence `chess-v1` fusionnés et vérifiés | Conserver les fichiers locaux pour les expériences |
+| Module neuronal | Génération, sauvegarde, chargement, prédiction et rétropropagation disponibles | Mesurer et optimiser les entraînements complets |
+| Entraînement | Commande complète, validation explicite ou automatique, arrêt anticipé et sauvegarde testés | Connecter le runner aux entraînements |
 | Qualité des prédictions | Évaluateur, métriques et notebooks disponibles | Mesurer les modèles entraînés et comparer à la classe majoritaire |
 | Expériences et coûts | Runner et protocole prêts ; entraînement non connecté | Lancer les comparaisons, mesurer les coûts et choisir un modèle |
 | Documentation et livraison | Guides existants ; résultats à produire | Rapport reproductible et modèle entraîné |
@@ -58,7 +57,7 @@ flowchart LR
 - [x] Conserver les données brutes sans les modifier.
 - [x] Figer `chess-v1` : manifeste, empreintes, effectifs, environnement et commandes
       de vérification/recréation ; reproduction des sept fichiers vérifiée. **PR #24.**
-- [ ] Fusionner la PR #24 pour intégrer la référence aux expériences sur `main`.
+- [x] Fusionner la PR #24 pour intégrer la référence aux expériences sur `main`.
 - [x] Documenter les informations connues et signaler explicitement les origines,
       licences et droits d’utilisation externes inconnus.
 - [ ] Retrouver ces informations externes si possible ; ne pas présenter les droits comme établis.
@@ -76,15 +75,14 @@ flowchart LR
 
 - [x] Générer des réseaux concrets ; initialiser, sauvegarder, charger et prédire.
 - [x] Préparer et tester la fonction de sauvegarde vers le fichier source ou un autre fichier.
-- [ ] Terminer la rétropropagation : perte/sortie compatibles, dérivées, gradients,
-      mise à jour des poids/biais et rejet des paramètres invalides. **#5 : Gustave,
-      presque terminé ; validation/fusion encore à confirmer.**
-- [ ] Vérifier les gradients par différences finies et les mises à jour sur des valeurs connues.
-- [ ] Montrer une baisse de perte sur un petit problème déterministe.
+- [x] Terminer la rétropropagation : perte/sortie compatibles, dérivées, gradients,
+      mise à jour des poids/biais et rejet des paramètres invalides.
+- [x] Vérifier les gradients par différences finies et les mises à jour sur des valeurs connues.
+- [x] Montrer une baisse de perte sur un petit problème déterministe.
 - [x] Implémenter l’orchestration de `--train` : époques, mini-lots, taux du modèle
       et ordre reproductible ; tests avec méthodes neuronales de substitution.
-- [ ] Intégrer les vrais calculs `trainBatch` et `loss` de #5 et vérifier leur contrat.
-- [ ] Vérifier le parcours complet d’entraînement : deux modes de sauvegarde,
+- [x] Intégrer les vrais calculs `trainBatch` et `loss` de #5 et vérifier leur contrat.
+- [x] Vérifier le parcours complet d’entraînement : deux modes de sauvegarde,
       rechargement du modèle entraîné et diagnostics d’erreur.
 
 **À présenter :** vérifications des calculs et démonstration générer → entraîner → sauvegarder → recharger.
@@ -98,8 +96,9 @@ flowchart LR
       y compris le modèle initial si aucune époque ne l’améliore.
 - [x] Définir les paramètres de la commande : 100 époques, mini-lots de 32,
       patience 10, amélioration minimale 0,0001 ; pertes moyennes après chaque époque.
-- [ ] Vérifier ces comportements avec le vrai moteur, notamment l’absence de mise
-      à jour pendant la validation, puis fixer le budget commun des expériences.
+- [x] Vérifier le parcours CLI avec le vrai moteur et l’exclusion de la validation
+      des mises à jour dans les tests de la boucle.
+- [ ] Fixer le budget commun des expériences.
 - [ ] Produire les courbes réelles ; relever les métriques de validation et les temps
       d’entraînement avec le runner et les outils d’évaluation.
 - [ ] Examiner les problèmes réellement observés : divergence, stagnation, instabilité ou classe unique prédite.
@@ -172,10 +171,10 @@ les exemples traités. Un résultat négatif mesuré permet également de justif
 | Document | Déjà disponible | À compléter |
 | --- | --- | --- |
 | Guide des données | Guide consolidé ; référence, effectifs et limites documentés en PR #24 | Origines/droits inconnus à clarifier si possible ; limites observées |
-| Guide d’entraînement | Guide court de `--train` : utilisation, options, arrêt, historique et sauvegarde | Vérifier les commandes avec le vrai moteur ; Gustave documente les calculs neuronaux |
+| Guide d’entraînement | [Guide unifié](training.md) : commande, boucle, rétropropagation et intégration | Réglages retenus et résultats |
 | Guide d’évaluation | Runner, notebooks et protocole de comparaison disponibles | Brancher l’entraînement et renseigner les expériences réelles |
 | Rapport d’expériences | À produire | Essais, courbes, coûts, alternatives, problèmes et choix final |
-| README | Compilation, génération, prédiction et liens vers les guides | Usage validé de l’entraînement, modèle livré et liens vers les résultats |
+| README | Compilation, génération, prédiction et liens vers les guides | Modèle livré et liens vers les résultats |
 
 ## 8 · Modèle final et soutenance
 
@@ -194,9 +193,8 @@ chiffrés, graphiques lisibles et compromis justifiés. Le barème fourni décri
 
 | Quand | Priorité |
 | --- | --- |
-| Maintenant, #5 proche de la fin | Fusionner #24 ; préparer l’adaptateur du runner et la grille d’essai ; avancer #13 en parallèle |
-| À la livraison de #5 | Vérifier les calculs et une baisse de perte ; tester `--train`, les sauvegardes et le rechargement avec le vrai moteur |
-| Dès que le parcours complet fonctionne | Connecter le runner ; entraîner une référence et examiner courbes, arrêt et comparaison à la classe majoritaire |
+| Maintenant | Finaliser la fusion de #25 ; préparer l’adaptateur du runner et la grille d’essai ; avancer #13 en parallèle |
+| Ensuite | Connecter le runner ; entraîner une référence et examiner courbes, arrêt et comparaison à la classe majoritaire |
 | Après une référence stable | Comparer quelques architectures/réglages et une alternative concrète |
 | Dernière passe | Figer le modèle, mesurer qualité/coûts finaux, terminer le rapport et vérifier les livrables |
 

@@ -4,7 +4,7 @@ CXX = g++
 PYTHON = python3
 CONFIG ?= configs/experiment.json
 CPPFLAGS = -Isrc -Isrc/chess/ -Isrc/neural/ -Iinclude -MMD -MP
-CXXFLAGS = -std=c++17 -Wall -Wextra -Werror
+CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -O2
 
 COMMON_SRC = $(wildcard src/neural/*.cpp)
 GENERATOR_SRC = $(wildcard src/generator/*.cpp)
@@ -50,7 +50,7 @@ build/tests/AnalyzerArguments_tests: build/tests/AnalyzerArguments.o build/analy
 build/tests/AnalyzerSaving_tests: build/tests/AnalyzerSaving.o build/analyzer/Training.o $(COMMON_OBJ) $(CHESS_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-# This test defines scripted neural methods instead of linking the pending backend.
+# This test defines scripted neural methods instead of linking src/neural/Training.cpp.
 build/tests/Training_tests: build/tests/Training.o build/analyzer/Training.o $(filter-out build/neural/Training.o,$(COMMON_OBJ)) $(CHESS_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
