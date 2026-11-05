@@ -10,14 +10,16 @@ COMMON_SRC = $(wildcard src/neural/*.cpp)
 GENERATOR_SRC = $(wildcard src/generator/*.cpp)
 ANALYZER_SRC = $(wildcard src/analyzer/*.cpp)
 CHESS_SRC = $(wildcard src/chess/*.cpp)
+LOGGING_SRC = $(wildcard src/logging/*.cpp)
 CHESS_OBJ = $(CHESS_SRC:src/%.cpp=build/%.o)
+LOGGING_OBJ = $(LOGGING_SRC:src/%.cpp=build/%.o)
 COMMON_OBJ = $(COMMON_SRC:src/%.cpp=build/%.o)
 GENERATOR_OBJ = $(GENERATOR_SRC:src/%.cpp=build/%.o)
 ANALYZER_OBJ = $(ANALYZER_SRC:src/%.cpp=build/%.o)
 TEST_SRC = $(wildcard tests/*.cpp)
 TEST_OBJ = $(TEST_SRC:tests/%.cpp=build/tests/%.o)
 TEST_BIN = $(TEST_SRC:tests/%.cpp=build/tests/%_tests)
-DEP = $(COMMON_OBJ:.o=.d) $(GENERATOR_OBJ:.o=.d) $(ANALYZER_OBJ:.o=.d) $(TEST_OBJ:.o=.d) $(CHESS_OBJ:.o=.d)
+DEP = $(COMMON_OBJ:.o=.d) $(GENERATOR_OBJ:.o=.d) $(ANALYZER_OBJ:.o=.d) $(TEST_OBJ:.o=.d) $(CHESS_OBJ:.o=.d) $(LOGGING_OBJ:.o=.d)
 
 all: $(GENERATOR) $(ANALYZER)
 
@@ -45,6 +47,9 @@ build/tests/Dataset_tests: build/tests/Dataset.o $(CHESS_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 build/tests/AnalyzerArguments_tests: build/tests/AnalyzerArguments.o build/analyzer/Arguments.o
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+build/tests/Logger_tests: build/tests/Logger.o $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 build/tests/AnalyzerSaving_tests: build/tests/AnalyzerSaving.o build/analyzer/Training.o $(COMMON_OBJ) $(CHESS_OBJ)
