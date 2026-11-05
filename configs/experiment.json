@@ -2,9 +2,9 @@
   "version": 1,
   "seeds": [42, 43, 44],
   "datasets": {
-    "train": "../dataset/splits/train.txt",
-    "validation": "../dataset/splits/validation.txt",
-    "split_metadata": "../dataset/splits/split_info.json"
+    "train": "../dataset/references/chess-v1/splits/train.txt",
+    "validation": "../dataset/references/chess-v1/splits/validation.txt",
+    "split_metadata": "../dataset/references/chess-v1/splits/split_info.json"
   },
   "configurations": [
     {

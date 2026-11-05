@@ -8,6 +8,7 @@ Follow the preparation workflow: **raw data → cleaning → train/validation/te
 1. [FEN encoding and C++ dataset contract](#1-fen-encoding-and-c-dataset-contract)
 2. [Dataset cleaning](#2-dataset-cleaning)
 3. [Dataset splitting](#3-dataset-splitting)
+4. [Frozen reference datasets](#4-frozen-reference-datasets)
 
 ---
 
@@ -148,8 +149,8 @@ dataset/raw/                  dataset/processed/
 
 The notebook reads all `.txt` files recursively from `dataset/raw/`. If that
 folder is absent, the cleaner supports the older layout under `dataset/`.
-It never reads `processed/` or `splits/` as sources. Source files are left
-unchanged.
+It never reads `processed/`, `splits/`, or `references/` as sources. Source files
+are left unchanged.
 
 ### Input and output
 
@@ -258,3 +259,146 @@ need for it.
 
 Use **train** to fit weights, **validation** to choose settings and a model,
 and **test** once for final evaluation.
+
+---
+
+## 4. Frozen reference datasets
+
+`chess-v1` is the fixed dataset for MyTorch experiments. The existing cleaner and
+splitter already produced reproducible data; this reference adds a retained
+version, file inventory, integrity checks, and experiment paths that notebook
+reruns cannot overwrite.
+
+### Storage and manifest
+
+- Tracked inventory: [`dataset/manifests/chess-v1.json`](../dataset/manifests/chess-v1.json).
+  Paths are relative to the repository root; artifact paths are relative to its
+  `storage` directory. It records SHA-256 hashes and byte sizes for every source,
+  tool, and artifact; row counts and class counts for source/prepared FEN files;
+  settings, provenance limitations, commands, and the preparation environment.
+- Retained local files: `dataset/references/chess-v1/` (ignored by Git).
+  Keep this directory for experiments and the defense, along with the tracked
+  manifest and raw sources. Copy it when moving workspaces, or recreate it below.
+- Disposable notebook outputs remain in `dataset/processed/` and `dataset/splits/`.
+  Experiments no longer use those paths.
+
+```text
+dataset/references/chess-v1/
+├── processed/
+│   ├── cleaned.txt
+│   ├── provenance.jsonl
+│   └── report.json
+└── splits/
+    ├── train.txt
+    ├── validation.txt
+    ├── test.txt
+    └── split_info.json
+```
+
+### Preparation report: chess-v1
+
+All ten `.txt` files under `dataset/raw/` were selected, including
+`check/10_pieces_SHORT.txt`. Their exact paths, hashes, per-source class counts,
+and invalid-row counts are in the manifest. Sources are preserved unchanged.
+
+| Stage | Records | Nothing | Check | Checkmate |
+| --- | ---: | ---: | ---: | ---: |
+| Raw (including one invalid row) | 723,025 | 300,000 | 249,305 | 173,719 |
+| Cleaned | 715,555 | 297,563 | 248,133 | 169,859 |
+| Train | 572,445 | 238,051 | 198,507 | 135,887 |
+| Validation | 71,555 | 29,756 | 24,813 | 16,986 |
+| Test | 71,555 | 29,756 | 24,813 | 16,986 |
+
+Cleaning removes **7,469 duplicate rows** and **one malformed row**, with **zero
+conflicting records**. The malformed row is line 1 of
+`raw/check/10_pieces_SHORT.txt`. See the retained `processed/report.json` for
+details and `provenance.jsonl` for every cleaned row's source locations.
+
+The [cleaning rules](#cleaning-rules) validate six-field FENs
+and labels, normalize color suffixes, retain the first duplicate, and exclude
+all rows in conflicting groups. Source paths are traversed in sorted order.
+Model inputs are identified by board, side to move, and en passant target;
+castling rights and move counters do not distinguish inputs.
+
+Splitting uses **seed 42**, **80% / 10% / 10%**, class stratification, and **no
+balancing**. All cleaned positions occur exactly once across the three splits,
+with **zero shared model-visible inputs**. Counts include rounding per class.
+These files reproduce the existing notebook outputs; no split algorithm changed.
+
+The external source, generator, license, and usage grant are **unknown**. The
+repository filenames and Git history do not establish them. Local retention for
+project experiments and the defense does not establish redistribution rights.
+FEN syntax and label format are checked; chess legality and label correctness
+have not been audited. These limitations are also recorded in the manifest.
+
+### Commands and reproduction
+
+Run from the repository root. Preparation and verification need only the Python
+standard library. The recorded environment is **CPython 3.12.3**. Recreation
+warns when the Python version/implementation or preparation tool hashes differ,
+but accepts the result only if all artifact hashes and integrity checks match.
+The manifest also records the base Git revision and each tool's exact SHA-256,
+which identifies the preparation code even if it was uncommitted at that revision.
+The platform string is informational.
+
+Initial creation, already performed for this reference:
+
+```sh
+python3 -m scripts.reference_dataset prepare chess-v1
+```
+
+Verify the retained reference without modifying any file:
+
+```sh
+python3 -m scripts.reference_dataset verify
+```
+
+Verification exits nonzero on missing/modified sources or artifacts, mismatched
+counts or metadata, duplicate/overlapping inputs, changed labels, incomplete
+split coverage, or inconsistent provenance row counts. It compares the current
+files with the tracked manifest; it does not rewrite a changed inventory.
+
+On a fresh checkout, restore the ignored reference from the **recorded sources**:
+
+```sh
+python3 -m scripts.reference_dataset recreate
+python3 -m scripts.reference_dataset verify
+```
+
+To independently reproduce it while the retained reference already exists:
+
+```sh
+python3 -m scripts.reference_dataset recreate --output /tmp/mytorch-chess-v1-recreated
+python3 -m scripts.reference_dataset verify --storage /tmp/mytorch-chess-v1-recreated
+```
+
+The output directory must be new. Recreation stages only the selected sources,
+runs the existing cleaner and splitter, and checks **all seven artifact hashes**
+and integrity constraints before installing the generated files. Later additions
+to `dataset/raw/` are ignored for this reference. The manifest remains unchanged.
+Small-fixture tests exercise reproduction and verification failures in `make test`.
+
+To intentionally change sources, cleaning rules, or settings, create a new
+reference version and manifest, document it, then explicitly update experiment
+paths. `prepare` refuses an existing reference name and `recreate` refuses an
+existing output directory. Never regenerate a manifest to conceal a changed file.
+
+### Experiment paths
+
+[`configs/experiment.json`](../configs/experiment.json) resolves train, validation,
+and metadata to `dataset/references/chess-v1/splits/`. The standalone comparison
+notebook defaults to this validation file too. Tests check the supplied config
+against a small frozen reference; the real paths and hashes were also checked
+against this manifest.
+
+Train only on `train.txt`, choose settings/models on `validation.txt`, and reserve
+`test.txt` for the final selected model. The experiment config does not include a
+test dataset. After verification, the usual preparation command is:
+
+```sh
+make experiment OUTPUT=results/experiments/chess-v1-preparation OPTIONS=--prepare
+```
+
+The runner captures the resolved dataset paths and hashes in its experiment
+manifest and detects changes during a campaign. This issue adds no training,
+model selection, or final test evaluation.

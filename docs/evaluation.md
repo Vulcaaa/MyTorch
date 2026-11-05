@@ -7,6 +7,10 @@ configurations, common training settings, dataset paths, and seeds **once**.
 Paths in this file are relative to its directory. The supplied compact/reference
 pair is an initial capacity comparison, not a tuned grid or a final choice.
 
+The default paths use the frozen `chess-v1` reference. On a fresh checkout,
+[recreate and verify it](datasets.md) before preparing an experiment. The
+reference files are retained locally, separately from notebook outputs.
+
 While training is unavailable, prepare all initial models:
 
 ```sh
@@ -17,7 +21,11 @@ This generates one model per configuration/seed, freezes the plan and file hashe
 and writes a manifest and an empty-results summary. It performs **no training or
 evaluation**. `training.command` and `training.settings` intentionally remain null.
 
-After agreeing on and connecting the [training interface](training-integration.md):
+Once the neural calculations and the adapter connecting the runner to
+[`--train`](training-command.md) are implemented and `training.command` /
+`training.settings` are configured, full experiments can run. See the
+[runner contract](training-integration.md) for command placeholders, backend
+requirements, and the optional history format:
 
 ```sh
 make experiment OUTPUT=results/experiments/comparison-01
@@ -102,6 +110,6 @@ measurements, not isolated speed benchmarks.
    model** before test evaluation. Do not cherry-pick a seed or tune using test
    results. The runner reports leaders; it does not choose/export a final model.
 
-Training commands/settings, checkpoint selection and history emission still need
-to be agreed with Gustave. Final training comparisons, test results, interpretation,
-and model delivery remain open parts of issue #8.
+The training adapter and experiment settings still need to be configured.
+Final training comparisons, test results, interpretation, and model delivery
+remain open parts of issue #8.

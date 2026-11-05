@@ -1,0 +1,278 @@
+{
+  "version": 1,
+  "name": "chess-v1",
+  "storage": "dataset/references/chess-v1",
+  "settings": {
+    "seed": 42,
+    "ratios": [
+      0.8,
+      0.1,
+      0.1
+    ],
+    "balance_training": false
+  },
+  "environment": {
+    "python": "3.12.3",
+    "implementation": "CPython",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39"
+  },
+  "tools": {
+    "base_git_revision": "1a475a0133b63d0a82fe6a6df0002a918b6d170b",
+    "files": [
+      {
+        "path": "scripts/clean_dataset.py",
+        "sha256": "3843c3ec3e7fc89d82db09e51d03c439fea248d9260cd341e0b596c9a1e8148a",
+        "bytes": 7290
+      },
+      {
+        "path": "scripts/split_dataset.py",
+        "sha256": "a0352c10110d49e8a46d891b9c418d78043790292b5033daa56a8aa8661e17c5",
+        "bytes": 6044
+      },
+      {
+        "path": "scripts/reference_dataset.py",
+        "sha256": "f950d891d533905d82f7019c92e7e6466cf095dbfc99f0553d1a9d3f5524fff6",
+        "bytes": 13806
+      }
+    ]
+  },
+  "provenance": {
+    "origin": "Existing project files under dataset/raw/; external origin unknown.",
+    "generator": "Unknown; filenames alone do not establish generation methods.",
+    "license": "Unknown; no source license or external usage grant documented.",
+    "usage": "Retained for local MyTorch experiments and the defense; redistribution rights unverified.",
+    "audit": "FEN syntax and label format checked; chess legality and label correctness not audited."
+  },
+  "sources": [
+    {
+      "path": "dataset/raw/check/10_pieces.txt",
+      "sha256": "8232f3bdf9077d88755aa2177d8f7a0dbe17e203933b001b65fc44737e85bf40",
+      "bytes": 3802106,
+      "statistics": {
+        "records": 75198,
+        "invalid_records": 0,
+        "class_counts": {
+          "Nothing": 0,
+          "Check": 75198,
+          "Checkmate": 0
+        }
+      }
+    },
+    {
+      "path": "dataset/raw/check/10_pieces_SHORT.txt",
+      "sha256": "3c4673c44854b10f1c427864a5226b1b592516e3d4bd2eb7ffa6febb5697592d",
+      "bytes": 288,
+      "statistics": {
+        "records": 6,
+        "invalid_records": 1,
+        "class_counts": {
+          "Nothing": 0,
+          "Check": 5,
+          "Checkmate": 0
+        }
+      }
+    },
+    {
+      "path": "dataset/raw/check/20_pieces.txt",
+      "sha256": "d785e850921ef2e52a58e8e6623d7602a59db95c43e52d9e119e80caca5e14d0",
+      "bytes": 6166477,
+      "statistics": {
+        "records": 100000,
+        "invalid_records": 0,
+        "class_counts": {
+          "Nothing": 0,
+          "Check": 100000,
+          "Checkmate": 0
+        }
+      }
+    },
+    {
+      "path": "dataset/raw/check/many_pieces.txt",
+      "sha256": "ea444d195e253688a9ea60484f7b8db5a840a546dc868f70d32f142dc736c5da",
+      "bytes": 5290617,
+      "statistics": {
+        "records": 74102,
+        "invalid_records": 0,
+        "class_counts": {
+          "Nothing": 0,
+          "Check": 74102,
+          "Checkmate": 0
+        }
+      }
+    },
+    {
+      "path": "dataset/raw/checkmate/10_pieces.txt",
+      "sha256": "16fc6f97766778bf6c0ce61f00cd745732219d1e40b3b3df6f283795df2251ff",
+      "bytes": 2395138,
+      "statistics": {
+        "records": 45087,
+        "invalid_records": 0,
+        "class_counts": {
+          "Nothing": 0,
+          "Check": 0,
+          "Checkmate": 45087
+        }
+      }
+    },
+    {
+      "path": "dataset/raw/checkmate/20_pieces.txt",
+      "sha256": "f65f141ce4126ff10a58353ae3ce8b746665e4e93fc7e001fd13b82ec3041ad2",
+      "bytes": 6527413,
+      "statistics": {
+        "records": 100000,
+        "invalid_records": 0,
+        "class_counts": {
+          "Nothing": 0,
+          "Check": 0,
+          "Checkmate": 100000
+        }
+      }
+    },
+    {
+      "path": "dataset/raw/checkmate/many_pieces.txt",
+      "sha256": "0071fb818bff35754dadefdc64d9ff32a05426e6f855cc765cf2ad41b0226e5b",
+      "bytes": 2152316,
+      "statistics": {
+        "records": 28632,
+        "invalid_records": 0,
+        "class_counts": {
+          "Nothing": 0,
+          "Check": 0,
+          "Checkmate": 28632
+        }
+      }
+    },
+    {
+      "path": "dataset/raw/nothing/10_pieces.txt",
+      "sha256": "e8194128f857e7e11a4e5fc0c83fc1f04668a7b430a795a8c8238865663b38eb",
+      "bytes": 4577215,
+      "statistics": {
+        "records": 100000,
+        "invalid_records": 0,
+        "class_counts": {
+          "Nothing": 100000,
+          "Check": 0,
+          "Checkmate": 0
+        }
+      }
+    },
+    {
+      "path": "dataset/raw/nothing/20_pieces.txt",
+      "sha256": "4632ebb6041f1eb53d3d66205ec7bbfc245b94add5ba614745f60826a2746b0d",
+      "bytes": 5737659,
+      "statistics": {
+        "records": 100000,
+        "invalid_records": 0,
+        "class_counts": {
+          "Nothing": 100000,
+          "Check": 0,
+          "Checkmate": 0
+        }
+      }
+    },
+    {
+      "path": "dataset/raw/nothing/many_pieces.txt",
+      "sha256": "f77d7385a71d22eb61d89e4f197fb290227ce7dfc213c4c04f6a7cbbb3b751ef",
+      "bytes": 6918527,
+      "statistics": {
+        "records": 100000,
+        "invalid_records": 0,
+        "class_counts": {
+          "Nothing": 100000,
+          "Check": 0,
+          "Checkmate": 0
+        }
+      }
+    }
+  ],
+  "commands": {
+    "prepare": "python3 -m scripts.reference_dataset prepare chess-v1",
+    "verify": "python3 -m scripts.reference_dataset verify dataset/manifests/chess-v1.json",
+    "recreate": "python3 -m scripts.reference_dataset recreate dataset/manifests/chess-v1.json"
+  },
+  "cleaning_summary": {
+    "records": 723025,
+    "accepted": 715555,
+    "duplicates": 7469,
+    "conflicting_records": 0,
+    "rejected_records": 1,
+    "class_counts": {
+      "Nothing": 297563,
+      "Check": 248133,
+      "Checkmate": 169859
+    }
+  },
+  "artifacts": {
+    "cleaned": {
+      "path": "processed/cleaned.txt",
+      "sha256": "f1ce8632afdd8948b811f8c9b9f6afe9e6fc6c716b3e1f6356f5db6b71b16609",
+      "bytes": 40713332,
+      "statistics": {
+        "records": 715555,
+        "invalid_records": 0,
+        "class_counts": {
+          "Nothing": 297563,
+          "Check": 248133,
+          "Checkmate": 169859
+        }
+      }
+    },
+    "provenance": {
+      "path": "processed/provenance.jsonl",
+      "sha256": "3caed94c1850d4eba049fab746853381ad3a6224c44ce6069a8bb0ca6e288da4",
+      "bytes": 37736667
+    },
+    "cleaning_report": {
+      "path": "processed/report.json",
+      "sha256": "4b8b2d3febfe21c6a4ce8749544bfe435d11a6ef69da3d50009f10171f7c800e",
+      "bytes": 1850
+    },
+    "train": {
+      "path": "splits/train.txt",
+      "sha256": "76b038dda01a24c50e0980d407038d068538394d760c9637e717902b9540e167",
+      "bytes": 32571014,
+      "statistics": {
+        "records": 572445,
+        "invalid_records": 0,
+        "class_counts": {
+          "Nothing": 238051,
+          "Check": 198507,
+          "Checkmate": 135887
+        }
+      }
+    },
+    "validation": {
+      "path": "splits/validation.txt",
+      "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df",
+      "bytes": 4072085,
+      "statistics": {
+        "records": 71555,
+        "invalid_records": 0,
+        "class_counts": {
+          "Nothing": 29756,
+          "Check": 24813,
+          "Checkmate": 16986
+        }
+      }
+    },
+    "test": {
+      "path": "splits/test.txt",
+      "sha256": "a55710b1d4eba1257e87ff883b97769c3e8f16466eb7e9cb894cc62589f09ee8",
+      "bytes": 4070233,
+      "statistics": {
+        "records": 71555,
+        "invalid_records": 0,
+        "class_counts": {
+          "Nothing": 29756,
+          "Check": 24813,
+          "Checkmate": 16986
+        }
+      }
+    },
+    "split_metadata": {
+      "path": "splits/split_info.json",
+      "sha256": "8e8b848abef34af8831fa3d47f7c1a868918b0ad906fe70a9d4c04b8183b6f44",
+      "bytes": 971
+    }
+  }
+}

@@ -10,12 +10,11 @@ Therefore `configs/experiment.json` leaves `training.command` and `training.sett
 null, and full experiments stop before creating an output directory. `--prepare`
 can generate initial models independently.
 
-## Contract to connect with Gustave
+## Runner contract
 
-The C++ boundary between issues #5 and #7 and the approved CLI parameters are
-specified in [training command design](training-command.md). The C++ boundary
-remains a design declaration, not an implemented backend or an agreement already
-confirmed by Gustave.
+The analyzer CLI and checkpoint behavior are documented in the
+[training guide](training-command.md). An adapter still needs to connect the
+experiment request below to that CLI.
 
 Set `training.command` to an argument array for the agreed backend/adapter. No
 shell is used. It must consume `{initial_model}`, `{trained_model}`, and
@@ -47,7 +46,7 @@ model is silently substituted for a failed training result. No test path is supp
 
 ## Optional loss history
 
-The approved issue #7 design always exports history: it uses an automatic path
+The analyzer always exports history: it uses an automatic path
 without `--history`, or the supplied path when that option is present. The runner
 still permits missing histories from other backends.
 
@@ -64,8 +63,9 @@ Columns and order are fixed. Existing malformed histories fail the run; missing
 histories are allowed and reported in the notebook. Validation loss is measured
 without weight updates. The backend must document loss definition/averaging and
 whether the model is the last or a selected checkpoint. Curves are descriptive;
-checkpoint selection follows the common frozen training settings.
+checkpoint selection follows the common frozen training settings. See the
+[training guide](training-command.md#stopping-and-saved-model) for the analyzer's
+loss measurement and checkpoint rule.
 
-**Still to agree:** executable/arguments, settings schema, checkpoint policy, loss
-logging and the small final configuration grid. The supplied network variants are
-only a starting comparison. No adapter pretending to train is shipped.
+The adapter command, settings schema, and final configuration grid still need
+to be configured. The supplied network variants are a starting comparison.
