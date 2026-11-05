@@ -9,7 +9,7 @@ enum class AnalyzerMode {
 };
 
 struct TrainingArguments {
-    std::string validationFile;
+    std::string validationFile; // Empty selects a seeded, stratified 90/10 split of CHESSFILE.
     std::string historyFile; // Empty selects an automatic per-run path during training.
     std::size_t epochs = 100;
     std::size_t batchSize = 32;

@@ -98,8 +98,6 @@ AnalyzerArguments parseAnalyzerArguments(int ac, const char* const av[])
             throw std::invalid_argument("unexpected option: " + path);
     }
     if (arguments.mode == AnalyzerMode::Train) {
-        if (arguments.training.validationFile.empty())
-            throw std::invalid_argument("--train requires --validation FILE");
         if (arguments.saveFile.empty())
             arguments.saveFile = arguments.loadFile;
     }

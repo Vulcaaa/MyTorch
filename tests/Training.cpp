@@ -5,6 +5,7 @@
 
 #include <nlohmann/json.hpp>
 #include <algorithm>
+#include <array>
 #include <csignal>
 #include <fstream>
 #include <iostream>
@@ -74,6 +75,9 @@ struct Probe {
     std::size_t trainEvaluations = 0;
     std::size_t validationEvaluations = 0;
     std::vector<std::vector<std::size_t>> batches;
+    bool automaticSplit = false;
+    std::vector<TrainingSample> automaticUpdates;
+    std::vector<std::vector<TrainingSample>> automaticLossInputs;
 
     Probe(Fixture& value, std::vector<double> losses)
         : fixture(value), validationLosses(std::move(losses)) {}
@@ -83,6 +87,11 @@ struct Probe {
 
     double trainBatch(NeuralNetwork& network, const std::vector<TrainingSample>& batch)
     {
+        if (automaticSplit) {
+            automaticUpdates.insert(automaticUpdates.end(), batch.begin(), batch.end());
+            network = fixture.updated.at(++updates);
+            return 1.0;
+        }
         std::vector<std::size_t> ids;
         for (const auto& sample : batch) {
             test::check(sample.inputs != fixture.validationInput, "validation was used for updates");
@@ -98,6 +107,10 @@ struct Probe {
 
     double loss(const std::vector<TrainingSample>& samples)
     {
+        if (automaticSplit) {
+            automaticLossInputs.push_back(samples);
+            return automaticLossInputs.size() == 1 ? 1.0 : 0.5;
+        }
         if (failure == Failure::InitialLoss)
             return std::numeric_limits<double>::quiet_NaN();
         if (samples.size() == 1 && samples[0].inputs == fixture.validationInput) {
@@ -201,6 +214,109 @@ void testStoppingAndSaveModes()
         "initial checkpoint must be kept when no epoch improves");
     checkSame(network, fixture.initial, fixture);
     checkSame(ModelSerializer::load(fixture.arguments.loadFile), fixture.initial, fixture);
+}
+
+void testAutomaticValidation()
+{
+    Fixture fixture;
+    fixture.arguments.training.validationFile.clear();
+    fixture.arguments.training.epochs = 1;
+    fixture.arguments.training.batchSize = 32;
+    // Twenty groups per class, each duplicated with different unencoded FEN fields.
+    std::string data;
+    for (const auto* piece : {"P", "N", "B"}) {
+        const auto label = std::string(piece) == "P" ? "Nothing"
+            : std::string(piece) == "N" ? "Check" : "Checkmate";
+        for (int square = 0; square < 20; ++square) {
+            std::string board;
+            for (int rank = 0; rank < 8; ++rank) {
+                if (rank)
+                    board += '/';
+                if (rank != square / 8) {
+                    board += '8';
+                    continue;
+                }
+                const int file = square % 8;
+                if (file)
+                    board += std::to_string(file);
+                board += piece;
+                if (file < 7)
+                    board += std::to_string(7 - file);
+            }
+            data += board + " w - - 0 1 " + label + '\n';
+            data += board + " w K - 99 50 " + label + '\n';
+        }
+    }
+    std::ofstream(fixture.arguments.chessFile) << data;
+    const auto source = read(fixture.arguments.loadFile);
+    auto network = fixture.initial;
+    Probe probe(fixture, {});
+    probe.automaticSplit = true;
+    std::ostringstream progress;
+    runWithProbe(network, fixture.arguments, probe, progress);
+    test::check(probe.automaticLossInputs.size() == 3, "wrong automatic loss schedule");
+    const auto& validation = probe.automaticLossInputs[0];
+    const auto& training = probe.automaticLossInputs[1];
+    test::check(training.size() == 108 && validation.size() == 12,
+        "automatic split must select 90/10 groups in every class");
+    std::array<std::size_t, 3> counts{};
+    for (const auto& sample : validation) {
+        const auto label = std::find(sample.target.begin(), sample.target.end(), 1.0) - sample.target.begin();
+        ++counts[label];
+        for (const auto& updated : probe.automaticUpdates)
+            test::check(sample.inputs != updated.inputs, "held-out group used for updates");
+    }
+    test::check(counts == std::array<std::size_t, 3>{4, 4, 4}, "class stratification failed");
+    test::check(probe.automaticUpdates.size() == training.size(), "automatic train coverage failed");
+    for (const auto& sample : training) {
+        test::check(std::count_if(probe.automaticUpdates.begin(), probe.automaticUpdates.end(),
+            [&](const auto& updated) { return sample.inputs == updated.inputs; }) == 2,
+            "training duplicates were omitted or repeated");
+    }
+    for (std::size_t i = 0; i < validation.size(); ++i)
+        test::check(validation[i].inputs == probe.automaticLossInputs[2][i].inputs,
+            "validation changed within an epoch");
+    test::check(progress.str().find("Automatic validation split") != std::string::npos
+        && progress.str().find("train=108 validation=12 seed=42") != std::string::npos,
+        "automatic split counts and seed must be visible");
+    test::check(read(fixture.arguments.chessFile) == data && read(fixture.arguments.loadFile) == source,
+        "automatic splitting modified the source files");
+
+    fixture.arguments.training.historyFile += ".repeat";
+    Probe repeat(fixture, {});
+    repeat.automaticSplit = true;
+    network = fixture.initial;
+    runWithProbe(network, fixture.arguments, repeat, progress);
+    for (std::size_t i = 0; i < validation.size(); ++i)
+        test::check(validation[i].inputs == repeat.automaticLossInputs[0][i].inputs,
+            "same seed must reproduce holdout membership");
+
+    fixture.arguments.training.historyFile += ".changed";
+    network = NeuralNetwork(config(43));
+    Probe changed(fixture, {});
+    changed.automaticSplit = true;
+    runWithProbe(network, fixture.arguments, changed, progress);
+    bool different = false;
+    for (std::size_t i = 0; i < validation.size(); ++i)
+        different = different || validation[i].inputs != changed.automaticLossInputs[0][i].inputs;
+    test::check(different, "automatic splitting ignored the model seed");
+
+    fixture.arguments.training.historyFile += ".invalid";
+    for (const auto& invalid : {
+        std::string("P7/8/8/8/8/8/8/8 w - - 0 1 Nothing\nP7/8/8/8/8/8/8/8 w K - 99 50 Nothing\n"),
+        data + "P7/8/8/8/8/8/8/8 w - - 0 1 Check\n"}) {
+        std::ofstream(fixture.arguments.chessFile) << invalid;
+        Probe rejected(fixture, {});
+        rejected.automaticSplit = true;
+        const auto error = test::expectThrow<std::invalid_argument>([&] {
+            runWithProbe(network, fixture.arguments, rejected, progress);
+        });
+        test::check(error.find("automatic validation split") != std::string::npos,
+            "invalid split needs a specific diagnostic");
+        test::check(rejected.updates == 0 && rejected.automaticLossInputs.empty()
+            && !fs::exists(fixture.arguments.training.historyFile),
+            "invalid split reached training or created history");
+    }
 }
 
 void testInputAndBackendFailures()
@@ -366,6 +482,7 @@ int main()
 {
     testCheckpointAndOrdering();
     testStoppingAndSaveModes();
+    testAutomaticValidation();
     testInputAndBackendFailures();
     testHistoryAndSaveFailures();
     testAutomaticHistory();

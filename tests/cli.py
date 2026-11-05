@@ -242,7 +242,6 @@ class CommandLineTests(unittest.TestCase):
 
     def test_training_argument_errors_precede_file_loading(self):
         cases = [
-            (["--train"], "requires --validation"),
             (["--train", "--validation", "val.txt", "--epochs", "0"], "--epochs"),
             (["--train", "--validation", "val.txt", "--min-delta", "nan"], "--min-delta"),
             (["--train", "--validation", "val.txt", "--history", "a.csv", "--history", "b.csv"],
@@ -284,6 +283,57 @@ class CommandLineTests(unittest.TestCase):
                 self.assertNotEqual(trained["layers"], json.loads(original)["layers"])
                 if save_options:
                     self.assertEqual((self.work / model).read_bytes(), original)
+                self.assertFalse((self.work / "logs").exists())
+
+    def test_training_minimal_syntax_uses_automatic_validation(self):
+        model = self.analyzer_model()
+        original = (self.work / model).read_bytes()
+        data = ("8/8/8/8/8/8/8/8 w - - 0 1 Nothing\n"
+                "8/8/8/8/8/8/8/8 b - - 0 1 Nothing\n")
+        (self.work / "positions.txt").write_text(data)
+        histories = []
+        saved_models = []
+        for save_options, saved in (([], model), (["--save", "trained.nn"], "trained.nn")):
+            with self.subTest(save_options=save_options):
+                (self.work / model).write_bytes(original)
+                result = self.run_command(
+                    "my_torch_analyzer", "--train", *save_options, model, "positions.txt",
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(result.stdout, "")
+                self.assertIn("Automatic validation split", result.stderr)
+                self.assertIn("train=1 validation=1 seed=42", result.stderr)
+                self.assertIn("Training complete", result.stderr)
+                history_line = next(line for line in result.stderr.splitlines()
+                                    if line.startswith("Training history: "))
+                history = self.work / history_line.removeprefix("Training history: ")
+                histories.append(history.read_text())
+                saved_models.append((self.work / saved).read_bytes())
+                self.assertNotEqual(json.loads(saved_models[-1])["layers"], json.loads(original)["layers"])
+                if save_options:
+                    self.assertEqual((self.work / model).read_bytes(), original)
+                self.assertEqual((self.work / "positions.txt").read_text(), data)
+        self.assertEqual(histories[0], histories[1])
+        self.assertEqual(saved_models[0], saved_models[1])
+
+    def test_automatic_validation_rejects_unsplittable_data(self):
+        model = self.analyzer_model()
+        original = (self.work / model).read_bytes()
+        position = "8/8/8/8/8/8/8/8 w - - 0 1 Nothing\n"
+        cases = [
+            (position, "at least two distinct"),
+            (position + "8/8/8/8/8/8/8/8 w K - 99 50 Nothing\n", "at least two distinct"),
+            (position + "8/8/8/8/8/8/8/8 w - - 0 1 Check\n", "conflicting labels"),
+        ]
+        for data, diagnostic in cases:
+            with self.subTest(diagnostic=diagnostic):
+                (self.work / "positions.txt").write_text(data)
+                result = self.run_command("my_torch_analyzer", "--train", "--save", "trained.nn",
+                                          model, "positions.txt")
+                self.assertEqual(result.returncode, 84)
+                self.assertIn(diagnostic, result.stderr)
+                self.assertEqual((self.work / model).read_bytes(), original)
+                self.assertFalse((self.work / "trained.nn").exists())
                 self.assertFalse((self.work / "logs").exists())
 
     def test_training_validates_independent_validation_set(self):
