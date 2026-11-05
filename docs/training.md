@@ -14,10 +14,9 @@ experiment adapter still needs to be implemented.
 | Connect automated experiments | [6. Experiment runner](#6-experiment-runner) |
 | Find tests and remaining work | [7. Verification and limits](#7-verification-and-limits) |
 
-> **Current CLI:** `--validation FILE` is required. The minimal subject invocation
-> `--train [--save SAVEFILE] LOADFILE CHESSFILE` currently returns `84` without it.
-> Making validation optional is a planned compatibility change, not implemented
-> behavior.
+> **Validation is always used:** supply `--validation FILE` to keep existing
+> train/validation splits, or omit it to create an automatic 90/10 split from
+> `CHESSFILE`. Both modes use the same early stopping and best-checkpoint rule.
 
 ## 1. Train a model
 
@@ -38,6 +37,12 @@ labeled split paths:
   models/basic_network_1.nn train.txt
 ```
 
+For a single labeled file, omit `--validation`:
+
+```sh
+./my_torch_analyzer --train --save models/trained.nn models/basic_network_1.nn positions.txt
+```
+
 `LOADFILE` must be an existing model with 777 inputs and 3 outputs. Both datasets
 must contain six-field FENs followed by a class label. Train and validation must
 have no shared model-visible positions; the command rejects overlap. Keep the
@@ -51,7 +56,7 @@ mode are rejected.
 
 | Option | Default | Purpose |
 | --- | --- | --- |
-| `--validation FILE` | Required | Separate validation set; never used for weight updates |
+| `--validation FILE` | Automatic 90/10 split | Use a separate validation file instead of splitting `CHESSFILE`; never used for updates |
 | `--epochs N` | `100` | Maximum epochs |
 | `--batch-size N` | `32` | Training samples per update |
 | `--patience N` | `10` | Epochs without sufficient improvement before stopping |
@@ -77,7 +82,11 @@ inputs, settings, build, and runtime environment.
 
 ```mermaid
 flowchart TD
-    A[Load model and labeled datasets] --> B[Reject overlap between train and validation]
+    A[Load model and labeled CHESSFILE] --> V{Validation file supplied?}
+    V -->|Yes| W[Load validation file; keep all CHESSFILE rows for train]
+    V -->|No| S[Split CHESSFILE once: 90 percent train groups, 10 percent validation groups]
+    W --> B[Reject overlap between train and validation]
+    S --> B
     B --> C[Measure initial validation loss and keep checkpoint 0]
     C --> D[Shuffle training indices]
     D --> E[Next mini-batch]
@@ -95,6 +104,34 @@ flowchart TD
 final evaluation.** The training command never loads the test set. Duplicate
 training rows are allowed for class balancing; shared train/validation inputs
 are rejected even when their FEN move counters differ.
+
+### Automatic split rules
+
+| Step | Rule |
+| --- | --- |
+| Group | Keep rows with the same encoded inputs together: board, side to move, and en passant file; castling rights and move counters do not distinguish inputs |
+| Check labels | Reject different labels for the same model-visible input |
+| Stratify | Split independently within each class present in the file |
+| Select holdout | Shuffle groups using the model seed; reserve the nearest integer to 10% of groups per class, clamped to at least one group on each side |
+| Preserve rows | Keep every row, including duplicates, on its group's side; preserve source order before epoch shuffling |
+| Report | Print automatic/explicit mode, train and validation row counts, and seed to stderr |
+
+Each class present needs at least **two distinct model-visible inputs**. Otherwise
+training fails before updates or history creation; provide more data or an
+independent `--validation FILE`. Absent classes are not invented.
+
+The split is computed **once before training**, using its own seeded random
+generator, and stays fixed across epochs. On the same build/runtime, the same
+input file and model seed reproduce it. Rounding and unequal duplicate-group
+sizes can make the row ratio differ from 90/10, especially on small datasets.
+The operation happens in memory and never rewrites source files.
+
+**For the frozen reference and comparable experiments, always pass
+`--validation validation.txt` alongside the reference `train.txt`.** This keeps
+the existing train/validation assignments intact and leaves the test set for
+final evaluation. Omitting the option intentionally splits the loaded train
+file again; the automatic-mode message makes that visible. The experiment
+adapter must pass its supplied validation path explicitly.
 
 The analyzer seeds one `std::mt19937` from the model seed. Each epoch shuffles
 canonical sample indices, then processes every sample once, including the final
@@ -361,8 +398,8 @@ Run `make test` to build and run the checks:
 | `tests/Loss.cpp`, `tests/Activation.cpp` | Hand-computed losses and derivatives, extreme logits, numerical stability |
 | `tests/Backpropagation.cpp` | Known gradients and updates, batch averaging, invalid inputs, unchanged parameters on failure, XOR learning |
 | Finite differences in `tests/Backpropagation.cpp` | Perturb every weight and bias by `±1e-6`; compare the measured loss slope with backpropagation for all eight hidden/output activation pairs (test tolerance `1e-7`) |
-| `tests/Training.cpp` | Scripted neural methods isolate scheduling, partial batches, shuffling, patience, checkpoint selection, and file failures |
-| `tests/cli.py` | Real training and history export, both save modes, overlap and argument errors |
+| `tests/Training.cpp` | Scripted neural methods isolate scheduling, partial batches, shuffling, patience, checkpoint selection, and file failures; automatic split checks cover seed reproducibility, stratification, duplicate groups, coverage, and holdout exclusion from updates |
+| `tests/cli.py` | Real training in explicit and automatic validation modes, minimal subject syntax, both save modes, repeatable outputs, and invalid split/argument errors |
 | `tests/experiment.py`, `tests/comparison.py` | Runner failure handling, output validation, and history parsing |
 
 The orchestration test substitutes scripted neural methods when linking; shipped
@@ -374,7 +411,7 @@ backpropagation and CLI tests verify actual learning and integration.
 | Topic | Current behavior / remaining work |
 | --- | --- |
 | Chess quality | An operational training pipeline does not establish good classification; run full validation comparisons before final test evaluation |
-| CLI compatibility | Make `--validation` optional to support the minimal subject invocation; current behavior is documented at the top |
+| CLI compatibility | Minimal subject invocation supported through automatic validation; explicit validation preserves reference splits |
 | Automated campaigns | Implement the adapter and freeze its settings schema and comparison grid |
 | Optimizer | Plain mini-batch SGD; momentum, Adam, dropout, and weight decay are not implemented |
 | Activations | Training supports softmax/sigmoid outputs; hidden derivatives support sigmoid/tanh/ReLU/linear, while file configurations accept sigmoid/tanh/ReLU |

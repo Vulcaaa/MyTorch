@@ -56,6 +56,9 @@ Train a saved model on labeled positions, with an independent validation set:
 
 Progress and the path of the per-epoch loss history are printed on stderr. The
 best model on validation is saved to `--save` (or back to the loaded file).
+Without `--validation`, the analyzer splits the loaded data into approximately
+90% training / 10% validation, by class and model-visible input groups, using the
+model seed. Supply validation explicitly for existing reference splits.
 
 Run either executable with `--help` for its command-line options.
 
