@@ -11,6 +11,17 @@ BLACK = "8/8/8/8/8/8/8/8 b - - 0 1"
 
 
 class CleanDatasetTests(unittest.TestCase):
+    def test_legacy_source_discovery_excludes_frozen_references(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            dataset = Path(temporary)
+            (dataset / "source.txt").write_text(f"{WHITE} Nothing\n")
+            reference = dataset / "references/chess-v1"
+            reference.mkdir(parents=True)
+            (reference / "train.txt").write_text(f"{WHITE} Check\n")
+            report = clean_dataset(dataset)
+            self.assertEqual(report["files"], ["source.txt"])
+            self.assertEqual(report["accepted"], 1)
+
     def test_cleaning_across_files_and_source_references(self):
         with tempfile.TemporaryDirectory() as temporary:
             dataset = Path(temporary) / "dataset"

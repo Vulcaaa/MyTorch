@@ -7,6 +7,10 @@ configurations, common training settings, dataset paths, and seeds **once**.
 Paths in this file are relative to its directory. The supplied compact/reference
 pair is an initial capacity comparison, not a tuned grid or a final choice.
 
+The default paths use the frozen `chess-v1` reference. On a fresh checkout,
+[recreate and verify it](datasets.md) before preparing an experiment. The
+reference files are retained locally, separately from notebook outputs.
+
 Until the training adapter is connected, prepare all initial models:
 
 ```sh

@@ -69,7 +69,11 @@ Dataset cleaning is launched through
 [`notebooks/clean_dataset.ipynb`](../notebooks/clean_dataset.ipynb), which calls
 `scripts/clean_dataset.py` to read `dataset/raw/` and write `dataset/processed/`.
 [`notebooks/split_dataset.ipynb`](../notebooks/split_dataset.ipynb) then writes
-train/validation/test files to `dataset/splits/`. `make dataset` does not exist.
+train/validation/test files to `dataset/splits/`. These are disposable outputs.
+`scripts/reference_dataset.py` reuses both preparation tools to freeze a named
+reference under `dataset/references/`, with a tracked manifest in
+`dataset/manifests/`. Experiments use the [frozen reference](datasets.md).
+`make dataset` does not exist.
 
 Experiment commands use `CONFIG` (defaults to `configs/experiment.json`),
 `OUTPUT` (required new directory) and optional `OPTIONS`. Python commands use

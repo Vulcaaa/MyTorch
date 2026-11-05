@@ -86,6 +86,8 @@ Prepare data with the [cleaning notebook](notebooks/clean_dataset.ipynb) and
 [split notebook](notebooks/split_dataset.ipynb). See the
 [dataset guide](docs/datasets.md) for encoding, cleaning, and splitting, and the
 [architecture guide](docs/architecture.md) for details.
+Experiments use the [frozen reference dataset](docs/datasets.md); verify it with
+`python3 -m scripts.reference_dataset verify` before a campaign.
 
 CI builds and tests the project, then synchronizes successful pushes on `main`
 to the Epitech repository.
