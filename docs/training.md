@@ -215,6 +215,7 @@ flowchart LR
 | `loss(samples) const` | Mean loss; never updates parameters |
 | `gradients(samples) const` | Gradients for every weight and bias, shaped like `layers()`; no update |
 | `trainBatch(batch)` | One SGD update; returns mean batch loss **before** the update |
+| `trainBatch(samples, order, begin, count)` | Same update over a slice of shuffled indices; borrows samples instead of copying a mini-batch |
 | `validateSamples(samples) const` | Rejects invalid dimensions, values, or targets |
 | `config()` / `layers()` | Read-only configuration / parameters; explicit parameters can be supplied to the constructor for checks |
 
@@ -316,6 +317,28 @@ changes weights and biases, never the configuration (architecture, activations,
 learning rate, seed). Networks are plain values, so a copy is an independent
 checkpoint.
 
+### CPU implementation
+
+For each layer, the forward pass collects nonzero input indices in ascending
+order. When the inputs are sufficiently sparse, both its weighted sums and
+weight-gradient accumulation visit only those indices. Dense inputs retain
+the contiguous loop. This benefits the sparse chess encoding and sparse ReLU
+hidden outputs; sigmoid hidden layers are generally dense. Zero deltas also
+skip gradient contributions. Parameter update order and batch averaging are
+unchanged.
+
+Forward activations, nonzero indices, logits, and backpropagation deltas are
+allocated once per batch and reused for its samples. Loss evaluation reuses its
+forward buffers across the evaluated dataset. Activation derivatives multiply
+deltas in place, and the original sample inputs are borrowed rather than copied.
+Buffers are local to each call; they are not shared mutable network state.
+
+The analyzer passes slices of its shuffled index array to `trainBatch`, avoiding
+copies of the samples' input/target vectors. Invalid slices are rejected before
+updates. The contiguous-batch API remains available. Gradients and candidate
+parameters are still separate from the live model, preserving the guarantee
+that a failed update leaves it unchanged.
+
 ### Errors
 
 | Situation | Exception |
@@ -400,7 +423,7 @@ Run `make test` to build and run the checks:
 | Tests | Evidence |
 | --- | --- |
 | `tests/Loss.cpp`, `tests/Activation.cpp` | Hand-computed losses and derivatives, extreme logits, numerical stability |
-| `tests/Backpropagation.cpp` | Known gradients and updates, batch averaging, invalid inputs, unchanged parameters on failure, XOR learning |
+| `tests/Backpropagation.cpp` | Known gradients and updates, batch averaging, invalid inputs, unchanged parameters on failure, XOR learning; finite differences with zero/sparse/dense inputs and dead ReLU neurons; indexed/copy batch agreement and invalid index ranges |
 | Finite differences in `tests/Backpropagation.cpp` | Perturb every weight and bias by `±1e-6`; compare the measured loss slope with backpropagation for all eight hidden/output activation pairs (test tolerance `1e-7`) |
 | `tests/Training.cpp` | Scripted neural methods isolate scheduling, partial batches, shuffling, patience, checkpoint selection, and file failures; automatic split checks cover seed reproducibility, stratification, duplicate groups, coverage, and holdout exclusion from updates |
 | `tests/cli.py` | Real training in explicit and automatic validation modes, minimal subject syntax, both save modes, repeatable outputs, and invalid split/argument errors |
@@ -420,10 +443,46 @@ backpropagation and CLI tests verify actual learning and integration.
 | Optimizer | Plain mini-batch SGD; momentum, Adam, dropout, and weight decay are not implemented |
 | Activations | Training supports softmax/sigmoid outputs; hidden derivatives support sigmoid/tanh/ReLU/linear, while file configurations accept sigmoid/tanh/ReLU |
 | Memory | Train and validation samples are loaded into memory as dense vectors |
-| Speed | First-layer multiplication still visits zero inputs; sparse inputs and parallelism are possible follow-ups |
+| Speed | Sparse forward/gradient loops and reused buffers are implemented; execution remains on one CPU thread, without GPU acceleration |
 
 Gustave's development measurement on an Apple M5: eight epochs on 2,400 positions
 with a `777 → 128 → 64 → 3` network took 2.3 seconds with `-O2`, versus 20.2
 seconds without it, with identical losses. This is a small-run measurement,
 not a benchmark of the full dataset; measure full-run time and memory on the
 machine used for experiments.
+
+### CPU optimization measurement
+
+Development snapshot, **5 November 2026**, AMD Ryzen 7 7840HS, Linux, GCC with
+`-std=c++17 -O2` for both builds. Baseline: `b3c31fb`, before the CPU optimization.
+The local Makefile override was not used for either measurement.
+
+A temporary harness uses the first **2,048 train rows and 512 validation rows**
+from the prepared splits, a fresh `777 → 128 → 64 → 3` network for each repeat,
+sigmoid hidden layers, softmax output, Xavier initialization, seed **43**,
+learning rate **0.01**, batch size **32**, and **three epochs**. Each epoch
+shuffles with the same seeded generator, performs all updates, then evaluates
+train and validation losses. Both versions were run three times; reported
+times are medians. Parsing, initialization, and model serialization are excluded.
+There is one before/after comparison for the combined changes.
+
+| Metric for three epochs | Before | After |
+| --- | ---: | ---: |
+| Median elapsed time | 1.325 s | 0.202 s |
+| Allocation calls during the measured loop | 192,960 | 41,910 |
+| Cumulative allocated bytes | 320.31 MiB | 162.65 MiB |
+| Final train loss | 1.0695116042098685 | 1.0695116042098685 |
+| Final validation loss | 1.0709363287179801 | 1.0709363287179801 |
+
+This is approximately **6.5× faster**, with **78% fewer allocation calls** on
+this subset. Allocated bytes are the sum of allocation requests counted by the
+harness, **not peak memory or resident RAM**. Final serialized model files were
+byte-identical. Full-dataset timing, different activations, and different input
+densities can produce different gains.
+
+Fixture SHA-256 hashes (UTF-8 rows copied unchanged from the prepared splits):
+
+```text
+train:      2064f8819727aafa7d2c083443d35fede56efbd3cf2291d7ad22775c554af11c
+validation: 1dc35a438600fc452f053f7130e15584662f56a8e0908947436c9011787541f2
+```
