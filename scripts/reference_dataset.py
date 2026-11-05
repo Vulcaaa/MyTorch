@@ -12,6 +12,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import warnings
 
 from scripts.clean_dataset import clean_dataset, parse_labeled_fen
 from scripts.split_dataset import CLASSES, SPLITS, split_dataset
@@ -239,9 +240,14 @@ def recreate(manifest, *, root=ROOT, output=None):
     environment = manifest["environment"]
     if (platform.python_version(), platform.python_implementation()) != (
             environment["python"], environment["implementation"]):
-        raise ValueError(f"recreation requires {environment['implementation']} {environment['python']}")
+        warnings.warn(
+            f"reference was prepared with {environment['implementation']} {environment['python']}; "
+            "recreation will verify all artifact hashes", stacklevel=2)
     for tool in manifest["tools"]["files"]:
-        check_file(confined(root, tool["path"]), tool)
+        path = confined(root, tool["path"])
+        if not path.is_file() or fingerprint(path) != {key: tool[key] for key in ("sha256", "bytes")}:
+            warnings.warn(f"preparation tool differs from recorded version: {tool['path']}; "
+                          "recreation will verify all artifact hashes", stacklevel=2)
     check_sources(manifest, root)
     with tempfile.TemporaryDirectory(prefix="mytorch-recreate-") as temporary:
         generated, _ = generate(manifest["sources"], root, Path(temporary))

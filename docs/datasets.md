@@ -277,7 +277,6 @@ reruns cannot overwrite.
   tool, and artifact; row counts and class counts for source/prepared FEN files;
   settings, provenance limitations, commands, and the preparation environment.
 - Retained local files: `dataset/references/chess-v1/` (ignored by Git).
-  In this workspace this is `/home/mathys/3/CNA/MyTorch/dataset/references/chess-v1/`.
   Keep this directory for experiments and the defense, along with the tracked
   manifest and raw sources. Copy it when moving workspaces, or recreate it below.
 - Disposable notebook outputs remain in `dataset/processed/` and `dataset/splits/`.
@@ -335,8 +334,9 @@ have not been audited. These limitations are also recorded in the manifest.
 ### Commands and reproduction
 
 Run from the repository root. Preparation and verification need only the Python
-standard library. The recorded environment is **CPython 3.12.3**; recreation
-requires that Python version and the recorded preparation tool hashes.
+standard library. The recorded environment is **CPython 3.12.3**. Recreation
+warns when the Python version/implementation or preparation tool hashes differ,
+but accepts the result only if all artifact hashes and integrity checks match.
 The manifest also records the base Git revision and each tool's exact SHA-256,
 which identifies the preparation code even if it was uncommitted at that revision.
 The platform string is informational.

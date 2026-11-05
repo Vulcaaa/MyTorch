@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 from scripts.experiment import load_spec
 from scripts.reference_dataset import ARTIFACTS, ROOT, TOOLS, fingerprint, prepare, recreate, verify
@@ -136,17 +137,30 @@ class ReferenceDatasetTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "modified file"):
             recreate(self.manifest, root=self.root, output=output)
         self.assertFalse(output.exists())
-        self.manifest = json.loads(self.manifest_path.read_text())
-        (self.root / TOOLS[0]).write_text("changed tool")
-        with self.assertRaisesRegex(ValueError, "modified file"):
+
+    def test_recreation_accepts_python_and_tool_drift_when_artifacts_match(self):
+        output = self.root / "recreated"
+        with (self.root / TOOLS[0]).open("a") as stream:
+            stream.write("\n# Comment-only change.\n")
+        with patch("scripts.reference_dataset.platform.python_version", return_value="3.14.0"), \
+                self.assertWarns(UserWarning) as caught:
             recreate(self.manifest, root=self.root, output=output)
-        self.assertFalse(output.exists())
+        self.assertIn("reference was prepared with", str(caught.warnings[0].message))
+        self.assertTrue(any("preparation tool differs" in str(warning.message)
+                            for warning in caught.warnings))
+        verify(self.manifest, root=self.root, storage=output)
+        # Drift must never weaken the output integrity check or install bad artifacts.
+        self.manifest["artifacts"]["train"]["sha256"] = "0" * 64
+        rejected = self.root / "bad-recreation"
+        with self.assertWarns(UserWarning), self.assertRaisesRegex(ValueError, "modified file"):
+            recreate(self.manifest, root=self.root, output=rejected)
+        self.assertFalse(rejected.exists())
 
     def test_default_experiment_resolves_frozen_artifacts_and_excludes_test(self):
         plan = load_spec(self.root / "configs/experiment.json")
         self.assertEqual(set(plan["datasets"]), {"train", "validation", "split_metadata"})
         for role, entry in plan["datasets"].items():
-            self.assertEqual(Path(entry["path"]), self.artifact(role))
+            self.assertEqual(Path(entry["path"]).resolve(), self.artifact(role).resolve())
             self.assertEqual(entry["sha256"], self.manifest["artifacts"][role]["sha256"])
 
     def test_verify_cli_reports_failure_without_traceback(self):
