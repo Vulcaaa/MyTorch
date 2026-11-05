@@ -137,7 +137,7 @@ les exemples traités. Un résultat négatif mesuré permet également de justif
 | Document | Déjà disponible | À compléter |
 | --- | --- | --- |
 | Guide des données | Contrats ; guides de nettoyage/découpage en PR | Origines, droits, distributions et limites |
-| Guide d’entraînement | [Commande](training-command.md) et [rétropropagation](backpropagation.md) | Réglages retenus et résultats |
+| Guide d’entraînement | [Guide unifié](training.md) : commande, boucle, rétropropagation et intégration | Réglages retenus et résultats |
 | Rapport d’expériences | À produire | Protocole, essais, courbes, coûts, alternatives, problèmes et choix final |
 | README | Compilation, génération et prédiction | Entraînement, modèle livré et liens vers les résultats |
 

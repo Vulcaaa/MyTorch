@@ -10,9 +10,8 @@ It combines a reusable neural network module with two command-line programs:
 Network generation, saving, loading, training, and prediction are implemented.
 No neural network framework is used.
 
-See the [training guide](docs/training-command.md) for the accepted arguments and
-orchestration behavior, and the [backpropagation guide](docs/backpropagation.md)
-for the loss, gradients, and weight updates.
+See the [training guide](docs/training.md) for commands, the training flow,
+backpropagation, checkpoints, and experiment integration.
 
 ## Build
 

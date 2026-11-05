@@ -10,7 +10,7 @@ Makefile handles builds, tests, and experiments; notebooks launch dataset prepar
 
 | Component | Language | Responsibility |
 | --- | --- | --- |
-| `src/neural/` | C++ | Generic network: configuration, initialization, serialization, forward propagation, and [training](backpropagation.md). |
+| `src/neural/` | C++ | Generic network: configuration, initialization, serialization, forward propagation, and [training](training.md). |
 | `src/chess/` | C++ | FEN parsing, feature encoding, and dataset label handling. |
 | `src/generator/` | C++ | `my_torch_generator`: create models from configuration files. |
 | `src/analyzer/` | C++ | `my_torch_analyzer`: coordinate training and prediction. |

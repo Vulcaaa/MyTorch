@@ -17,7 +17,7 @@ This generates one model per configuration/seed, freezes the plan and file hashe
 and writes a manifest and an empty-results summary. It performs **no training or
 evaluation**. `training.command` and `training.settings` intentionally remain null.
 
-After agreeing on and connecting the [training interface](training-integration.md):
+After agreeing on and connecting the [training interface](training.md#6-experiment-runner):
 
 ```sh
 make experiment OUTPUT=results/experiments/comparison-01
