@@ -136,9 +136,9 @@ the class mapping.
 
 ## 2. Dataset cleaning
 
-Run all cells in [the cleaning notebook](../notebooks/clean_dataset.ipynb).
-It calls [`scripts/clean_dataset.py`](../scripts/clean_dataset.py) and shows a
-short summary by class and source file.
+Run all cells in [the preparation notebook](../notebooks/prepare_dataset.ipynb).
+Its cleaning stage calls [`scripts/clean_dataset.py`](../scripts/clean_dataset.py)
+and shows a short summary by class and source file.
 
 ```text
 dataset/raw/                  dataset/processed/
@@ -207,8 +207,8 @@ train/validation/test splits.
 
 ## 3. Dataset splitting
 
-Run all cells in [the split notebook](../notebooks/split_dataset.ipynb) after
-[cleaning the data](#2-dataset-cleaning). It reads
+The splitting stage of [the preparation notebook](../notebooks/prepare_dataset.ipynb)
+runs after [cleaning the data](#2-dataset-cleaning). It reads
 `dataset/processed/cleaned.txt` and writes:
 
 ```text
