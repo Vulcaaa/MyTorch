@@ -23,7 +23,9 @@ evaluation**. `training.command` and `training.settings` intentionally remain nu
 
 Once the neural calculations and the adapter connecting the runner to
 [`--train`](training-command.md) are implemented and `training.command` /
-`training.settings` are configured, full experiments can run:
+`training.settings` are configured, full experiments can run. See the
+[runner contract](training-integration.md) for command placeholders, backend
+requirements, and the optional history format:
 
 ```sh
 make experiment OUTPUT=results/experiments/comparison-01
