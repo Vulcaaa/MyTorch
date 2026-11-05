@@ -2,12 +2,15 @@
 #include "TestSupport.hpp"
 
 #include <chrono>
+#include <csignal>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include <sys/resource.h>
 
 namespace {
 
@@ -94,21 +97,34 @@ void checkLine(const std::string& line, const std::string& expectedEnd)
         "log line '" + line + "' does not end with '" + expectedEnd + "'");
 }
 
+void checkSingleWarning(const std::ostringstream& diagnostics, const std::string& reason)
+{
+    const std::string text = diagnostics.str();
+    const std::string start = "warning: logging disabled: ";
+    test::check(text.rfind(start, 0) == 0 && text.find(reason) != std::string::npos
+        && text.find('\n') == text.size() - 1,
+        "expected one warning mentioning '" + reason + "', got '" + text + "'");
+}
+
 void testCreatesOneFilePerRun()
 {
     test::TempDirectory temporary;
     const auto directory = temporary.path / "logs";
-    Logger logger(directory, "generation", reference);
+    std::ostringstream diagnostics;
+    Logger logger(directory, "generation", diagnostics, reference);
+    test::check(logger.enabled(), "logger is disabled");
     test::check(logger.path() == directory / "generation_2025-11-05_133052.log",
         "unexpected log file path " + logger.path().string());
     test::check(std::filesystem::is_regular_file(logger.path()), "log file was not created");
     test::check(readFile(logger.path()).empty(), "new log file is not empty");
+    test::check(diagnostics.str().empty(), "unexpected diagnostics: " + diagnostics.str());
 }
 
 void testWritesEntries()
 {
     test::TempDirectory temporary;
-    Logger logger(temporary.path, "train", reference);
+    std::ostringstream diagnostics;
+    Logger logger(temporary.path, "train", diagnostics, reference);
     logger.info("Loaded model a.nn");
     logger.warn("slow epoch");
     logger.error("first\nsecond");
@@ -120,6 +136,7 @@ void testWritesEntries()
     checkLine(lines[1], " [WARN] slow epoch");
     checkLine(lines[2], " [ERROR] first\\nsecond");
     checkLine(lines[3], " [INFO] done");
+    test::check(logger.enabled() && diagnostics.str().empty(), "writing entries disabled the logger");
 }
 
 void testNeverOverwrites()
@@ -131,8 +148,9 @@ void testNeverOverwrites()
     writeFile(target, "keep\n");
     std::filesystem::create_symlink(target, temporary.path / "train_2025-11-05_133052_2.log");
 
-    Logger second(temporary.path, "train", reference);
-    Logger third(temporary.path, "train", reference);
+    std::ostringstream diagnostics;
+    Logger second(temporary.path, "train", diagnostics, reference);
+    Logger third(temporary.path, "train", diagnostics, reference);
     second.info("second run");
     third.info("third run");
     test::check(second.path() == temporary.path / "train_2025-11-05_133052_3.log",
@@ -145,15 +163,79 @@ void testNeverOverwrites()
         "concurrent loggers mixed their entries");
 }
 
-void testRejectsUnusableDestinations()
+void testRejectsInvalidPrefixes()
 {
     test::TempDirectory temporary;
+    std::ostringstream diagnostics;
     for (const auto* prefix : {"", "a/b"})
-        test::expectThrow<std::invalid_argument>([&] { Logger(temporary.path, prefix, reference); });
+        test::expectThrow<std::invalid_argument>([&] {
+            Logger(temporary.path, prefix, diagnostics, reference);
+        });
+}
+
+void testUnusableDirectoryDisablesLogging()
+{
+    test::TempDirectory temporary;
     const auto file = temporary.path / "not-a-directory";
-    writeFile(file, "");
-    test::expectThrow<std::runtime_error>([&] { Logger(file, "train", reference); });
-    test::expectThrow<std::runtime_error>([&] { Logger(file / "logs", "train", reference); });
+    writeFile(file, "kept\n");
+    for (const auto& directory : {file, file / "logs"}) {
+        std::ostringstream diagnostics;
+        Logger logger(directory, "train", diagnostics, reference);
+        logger.info("ignored");
+        logger.error("ignored");
+        test::check(!logger.enabled() && logger.path().empty(), "unusable directory was accepted");
+        checkSingleWarning(diagnostics, "not-a-directory");
+    }
+    test::check(readFile(file) == "kept\n", "a file was modified by a disabled logger");
+}
+
+// Limits the size of files this process may write, then restores it.
+class FileSizeLimit {
+    public:
+        explicit FileSizeLimit(rlim_t bytes)
+        {
+            test::check(getrlimit(RLIMIT_FSIZE, &_original) == 0, "cannot read file size limit");
+            rlimit limited = _original;
+            limited.rlim_cur = bytes;
+            test::check(setrlimit(RLIMIT_FSIZE, &limited) == 0, "cannot limit file size");
+        }
+
+        ~FileSizeLimit()
+        {
+            setrlimit(RLIMIT_FSIZE, &_original);
+        }
+
+        FileSizeLimit(const FileSizeLimit&) = delete;
+        FileSizeLimit& operator=(const FileSizeLimit&) = delete;
+
+    private:
+        rlimit _original{};
+};
+
+void testWriteFailureDisablesLogging()
+{
+    test::TempDirectory temporary;
+    std::ostringstream diagnostics;
+    Logger logger(temporary.path, "train", diagnostics, reference);
+    logger.info("first");
+    const auto path = logger.path();
+    // Without this, exceeding the limit would kill the process (SIGXFSZ) instead of
+    // making the write fail.
+    std::signal(SIGXFSZ, SIG_IGN);
+    {
+        const FileSizeLimit limit(std::filesystem::file_size(path));
+        logger.info("second");
+        logger.info("third");
+    }
+    std::signal(SIGXFSZ, SIG_DFL);
+    logger.info("fourth");
+    test::check(!logger.enabled(), "logger stayed enabled after a write failure");
+    test::check(logger.path() == path, "log path changed after a write failure");
+    checkSingleWarning(diagnostics, path.string() + ": cannot write log entry");
+    const auto lines = readLines(path);
+    test::check(lines.size() == 1, "expected only the first entry, got "
+        + std::to_string(lines.size()) + " lines");
+    checkLine(lines[0], " [INFO] first");
 }
 
 } // namespace
@@ -166,6 +248,8 @@ int main()
     testCreatesOneFilePerRun();
     testWritesEntries();
     testNeverOverwrites();
-    testRejectsUnusableDestinations();
+    testRejectsInvalidPrefixes();
+    testUnusableDirectoryDisablesLogging();
+    testWriteFailureDisablesLogging();
     std::cout << "Logger tests passed\n";
 }
