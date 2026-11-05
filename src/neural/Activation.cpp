@@ -56,9 +56,19 @@ void applyActivation(std::vector<double>& values,
 std::vector<double> activationDerivative(const std::vector<double>& activated,
                                          const std::string& activation)
 {
-    std::vector<double> derivatives(activated.size());
+    std::vector<double> derivatives(activated.size(), 1.0);
+    applyActivationDerivative(derivatives, activated, activation);
+    return derivatives;
+}
+
+void applyActivationDerivative(std::vector<double>& deltas,
+    const std::vector<double>& activated, const std::string& activation)
+{
+    if (deltas.size() != activated.size())
+        throw std::invalid_argument("activation derivative dimensions do not match");
     const auto apply = [&](auto derivative) {
-        std::transform(activated.begin(), activated.end(), derivatives.begin(), derivative);
+        for (std::size_t i = 0; i < activated.size(); ++i)
+            deltas[i] *= derivative(activated[i]);
     };
 
     if (activation == "sigmoid")
@@ -68,11 +78,10 @@ std::vector<double> activationDerivative(const std::vector<double>& activated,
     else if (activation == "relu")
         apply([](double a) { return a > 0.0 ? 1.0 : 0.0; });
     else if (activation == "linear")
-        std::fill(derivatives.begin(), derivatives.end(), 1.0);
+        return;
     else if (activation == "softmax")
         throw std::invalid_argument("softmax has no element-wise derivative; "
             "its gradient is computed with the cross-entropy loss");
     else
         throw std::invalid_argument("Unknown activation: " + activation);
-    return derivatives;
 }

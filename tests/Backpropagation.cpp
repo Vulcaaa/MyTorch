@@ -1,6 +1,7 @@
 #include "neural/NeuralNetwork.hpp"
 #include "TestSupport.hpp"
 
+#include <algorithm>
 #include <cmath>
 #include <iostream>
 #include <string>
@@ -314,6 +315,66 @@ void testLearnsXor()
     }
 }
 
+void testSparseInputsAndIndexedBatches()
+{
+    NetworkConfig config;
+    config.layers = {8, 8, 3};
+    config.hidden_activation = "relu";
+    config.output_activation = "softmax";
+    config.initialization = "xavier";
+    auto layers = NeuralNetwork(config).layers();
+    // Six dead ReLU neurons force a sparse hidden layer, even for dense inputs.
+    for (std::size_t j = 2; j < 8; ++j) {
+        std::fill(layers[0].weights[j].begin(), layers[0].weights[j].end(), 0.0);
+        layers[0].biases[j] = -10.0;
+    }
+    layers[0].biases[0] = 2.0;
+    layers[0].biases[1] = 2.0;
+    const std::vector<TrainingSample> samples{
+        {{0, 0, 0, 0, 0, 0, 0, 0}, {1, 0, 0}},
+        {{0, 0, 2, 0, 0, 0, 0, 0}, {0, 1, 0}},
+        {{1, 1, 1, 1, 1, 1, 1, 1}, {0, 0, 1}}};
+    const auto original = samples;
+    const NeuralNetwork network(config, layers);
+    const auto gradients = network.gradients(samples);
+    constexpr double h = 1e-6;
+    for (std::size_t i = 0; i < layers.size(); ++i) {
+        for (std::size_t j = 0; j < layers[i].weights.size(); ++j) {
+            for (std::size_t k = 0; k < layers[i].weights[j].size(); ++k) {
+                auto& weight = layers[i].weights[j][k];
+                const double saved = weight;
+                weight = saved + h;
+                const double up = NeuralNetwork(config, layers).loss(samples);
+                weight = saved - h;
+                const double down = NeuralNetwork(config, layers).loss(samples);
+                weight = saved;
+                test::check(std::abs((up - down) / (2 * h) - gradients[i].weights[j][k]) < 1e-7,
+                    "sparse input/hidden gradient differs from finite differences");
+            }
+        }
+    }
+    auto indexed = network;
+    auto copied = network;
+    const std::vector<std::size_t> order{2, 1, 0, 2, 1};
+    const std::vector<TrainingSample> batch{samples[1], samples[0], samples[2], samples[1]};
+    checkClose(indexed.trainBatch(samples, order, 1, 4), copied.trainBatch(batch),
+        "indexed batch loss differs from copied batch");
+    test::check(sameParameters(indexed.layers(), copied.layers()), "indexed update differs from copied update");
+    for (std::size_t i = 0; i < samples.size(); ++i)
+        test::check(samples[i].inputs == original[i].inputs && samples[i].target == original[i].target,
+            "indexed training modified source samples");
+    const auto unchanged = indexed.layers();
+    for (const auto& range : std::vector<std::pair<std::size_t, std::size_t>>{
+        {0, 0}, {order.size() + 1, 1}, {1, order.size()}, {0, std::size_t(-1)}})
+        test::expectThrow<std::invalid_argument>([&] {
+            indexed.trainBatch(samples, order, range.first, range.second);
+        });
+    test::expectThrow<std::invalid_argument>([&] {
+        indexed.trainBatch(samples, {samples.size()}, 0, 1);
+    });
+    test::check(sameParameters(indexed.layers(), unchanged), "invalid view changed parameters");
+}
+
 } // namespace
 
 int main()
@@ -325,5 +386,6 @@ int main()
     testTrainBatch();
     testGradientsMatchFiniteDifferences();
     testLearnsXor();
+    testSparseInputsAndIndexedBatches();
     std::cout << "Backpropagation tests passed\n";
 }

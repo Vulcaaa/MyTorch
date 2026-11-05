@@ -538,6 +538,16 @@ double NeuralNetwork::trainBatch(const std::vector<TrainingSample>& batch)
     return activeProbe->trainBatch(*this, batch);
 }
 
+// The scripted backend materializes the view only for test probes. Production does not.
+double NeuralNetwork::trainBatch(const std::vector<TrainingSample>& samples,
+    const std::vector<std::size_t>& order, std::size_t begin, std::size_t count)
+{
+    std::vector<TrainingSample> batch;
+    for (std::size_t i = begin; i < begin + count; ++i)
+        batch.push_back(samples.at(order.at(i)));
+    return trainBatch(batch);
+}
+
 double NeuralNetwork::loss(const std::vector<TrainingSample>& samples) const
 {
     test::check(activeProbe != nullptr, "test neural backend not selected");

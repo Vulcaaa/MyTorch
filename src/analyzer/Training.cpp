@@ -344,8 +344,6 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
     std::size_t staleEpochs = 0;
     std::mt19937 random(network.config().seed);
     std::vector<std::size_t> order(training.size());
-    std::vector<TrainingSample> batch;
-    batch.reserve(std::min(training.size(), arguments.training.batchSize));
 
     HistoryFile history(arguments);
     result.historyFile = history.path.string();
@@ -360,10 +358,7 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
         std::shuffle(order.begin(), order.end(), random);
         for (std::size_t begin = 0; begin < order.size();) {
             const auto count = std::min(arguments.training.batchSize, order.size() - begin);
-            batch.clear();
-            for (std::size_t i = 0; i < count; ++i)
-                batch.push_back(training[order[begin + i]]);
-            checkedLoss(working.trainBatch(batch));
+            checkedLoss(working.trainBatch(training, order, begin, count));
             begin += count;
         }
         const double trainLoss = checkedLoss(working.loss(training));

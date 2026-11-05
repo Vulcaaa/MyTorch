@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <cmath>
 #include <stdexcept>
 #include <string>
@@ -64,60 +65,77 @@ NeuralNetwork::NeuralNetwork(const NetworkConfig& config) : _config(config)
     }
 }
 
-NeuralNetwork::ForwardPass NeuralNetwork::forward(const std::vector<double> &inputs) const
+NeuralNetwork::ForwardPass::ForwardPass(const std::vector<Layer>& layers)
 {
-    if (_layers.empty()) {
-        std::cerr << "Error: NeuralNetwork requires at least one parameter layer.\n";
-        return {};
+    activations.reserve(layers.size());
+    nonzero.resize(layers.size());
+    for (std::size_t i = 0; i < layers.size(); ++i) {
+        activations.emplace_back(layers[i].biases.size());
+        nonzero[i].reserve(layers[i].weights.front().size());
     }
-    ForwardPass pass;
-    pass.activations.push_back(inputs);
+    outputLogits.resize(layers.back().biases.size());
+}
 
-    for (const auto &layer : _layers) {
-        const auto &current_inputs = pass.activations.back();
-        std::vector<double> results(layer.weights.size());
+void NeuralNetwork::forward(const std::vector<double>& inputs, ForwardPass& pass) const
+{
+    if (inputs.size() != inputSize())
+        throw std::runtime_error("Forward pass failed: mismatched number of inputs.");
 
+    for (std::size_t i = 0; i < _layers.size(); ++i) {
+        const auto& layer = _layers[i];
+        const auto& current = i == 0 ? inputs : pass.activations[i - 1];
+        auto& results = pass.activations[i];
+        auto& nonzero = pass.nonzero[i];
+        nonzero.clear();
+        for (std::size_t k = 0; k < current.size(); ++k)
+            if (current[k] != 0.0)
+                nonzero.push_back(k);
+        // Sparse inputs (including ReLU hidden outputs) use the same sum order.
+        // Dense layers keep a contiguous loop rather than indexed accesses.
+        const bool sparse = nonzero.size() < current.size() / 2;
         for (std::size_t j = 0; j < layer.weights.size(); ++j) {
-            const auto &weights = layer.weights[j];
-            if (current_inputs.size() != weights.size()) {
-                std::cerr << "Error: Mismatched number of inputs for neuron.\n";
-                return {};
-            }
+            const auto& weights = layer.weights[j];
             double sum = layer.biases[j];
-            for (std::size_t k = 0; k < weights.size(); ++k)
-                sum += current_inputs[k] * weights[k];
+            if (sparse) {
+                for (const auto k : nonzero)
+                    sum += current[k] * weights[k];
+            } else {
+                for (std::size_t k = 0; k < current.size(); ++k)
+                    sum += current[k] * weights[k];
+            }
             results[j] = sum;
         }
-        const bool isOutput = (&layer == &_layers.back());
+        const bool isOutput = i + 1 == _layers.size();
         if (isOutput)
-            pass.outputLogits = results;
+            std::copy(results.begin(), results.end(), pass.outputLogits.begin());
         applyActivation(results, isOutput ? _config.output_activation : _config.hidden_activation);
-        pass.activations.push_back(std::move(results));
     }
-    return pass;
 }
 
 std::vector<double> NeuralNetwork::predict(const std::vector<double>& inputs) const
 {
-    auto pass = forward(inputs);
-
-    if (pass.activations.empty())
-        throw std::runtime_error("Forward pass failed.");
+    ForwardPass pass(_layers);
+    forward(inputs, pass);
     return std::move(pass.activations.back());
 }
 
 void NeuralNetwork::validateSamples(const std::vector<TrainingSample> &samples) const
 {
+    validateSamples(SampleView{samples, nullptr, samples.size()});
+}
+
+void NeuralNetwork::validateSamples(SampleView samples) const
+{
     const auto &activation = _config.output_activation;
     if (activation != "softmax" && activation != "sigmoid")
         throw std::invalid_argument("no loss is defined for output activation '" + activation + "'");
-    if (samples.empty())
+    if (samples.count == 0)
         throw std::invalid_argument("training requires at least one sample");
 
     const auto fail = [](std::size_t index, const std::string &message) {
         throw std::invalid_argument("training sample " + std::to_string(index) + ": " + message);
     };
-    for (std::size_t i = 0; i < samples.size(); ++i) {
+    for (std::size_t i = 0; i < samples.count; ++i) {
         const auto &sample = samples[i];
         if (sample.inputs.size() != inputSize())
             fail(i, "expected " + std::to_string(inputSize()) + " inputs, got "
