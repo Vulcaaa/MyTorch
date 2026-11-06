@@ -85,6 +85,15 @@ std::string formatLogEntry(std::chrono::system_clock::time_point time, LogLevel 
     return entry;
 }
 
+std::string formatSeconds(std::chrono::steady_clock::duration duration)
+{
+    const auto milliseconds = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+    std::ostringstream text;
+    text << milliseconds / 1000 << '.' << std::setw(3) << std::setfill('0') << milliseconds % 1000
+        << " s";
+    return text.str();
+}
+
 Logger::Logger(const std::filesystem::path& directory, const std::string& prefix,
     std::ostream& diagnostics, std::chrono::system_clock::time_point start)
     : _diagnostics(diagnostics)

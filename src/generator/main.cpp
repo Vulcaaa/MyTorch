@@ -2,9 +2,7 @@
 #include <chrono>
 #include <cstddef>
 #include <filesystem>
-#include <iomanip>
 #include <iostream>
-#include <sstream>
 #include <stdexcept>
 #include <string>
 #include <string_view>
@@ -25,28 +23,6 @@ std::string nextOutputFile(const std::string &baseName, std::size_t &index)
     }
 }
 
-std::string describe(const NetworkConfig &config)
-{
-    std::ostringstream description;
-    description << "layers=";
-    for (std::size_t i = 0; i < config.layers.size(); ++i)
-        description << (i == 0 ? "" : ",") << config.layers[i];
-    description << " hidden_activation=" << config.hidden_activation
-        << " output_activation=" << config.output_activation
-        << " initialization=" << config.initialization
-        << " learning_rate=" << config.learning_rate
-        << " seed=" << config.seed;
-    return description.str();
-}
-
-std::string elapsedSince(std::chrono::steady_clock::time_point start)
-{
-    const std::chrono::duration<double> elapsed = std::chrono::steady_clock::now() - start;
-    std::ostringstream text;
-    text << std::fixed << std::setprecision(3) << elapsed.count() << " s";
-    return text.str();
-}
-
 // Generates every requested model and returns how many were saved.
 std::size_t generateModels(int ac, char **av, Logger &logger)
 {
@@ -62,7 +38,7 @@ std::size_t generateModels(int ac, char **av, Logger &logger)
             throw std::invalid_argument("network count must be a positive integer");
 
         NetworkConfig config = loadNetworkConfig(config_file);
-        logger.info("Configuration " + config_file + ": " + describe(config));
+        logger.info("Configuration " + config_file + ": " + describeNetworkConfig(config));
         std::filesystem::create_directories("models");
         const auto baseName = std::filesystem::path(config_file).stem().string();
         std::size_t fileIndex = 1;
@@ -93,14 +69,15 @@ int main(int ac, char **av)
         return 0;
     }
     const auto start = std::chrono::steady_clock::now();
+    const auto elapsed = [&start] { return formatSeconds(std::chrono::steady_clock::now() - start); };
     Logger logger("logs", "generation", std::cerr);
     logger.info("Generation started");
     try {
         const std::size_t generated = generateModels(ac, av, logger);
         logger.info("Generation complete: " + std::to_string(generated)
-            + (generated == 1 ? " model in " : " models in ") + elapsedSince(start));
+            + (generated == 1 ? " model in " : " models in ") + elapsed());
     } catch (const std::exception &error) {
-        logger.error("Generation failed after " + elapsedSince(start) + ": " + error.what());
+        logger.error("Generation failed after " + elapsed() + ": " + error.what());
         std::cerr << "my_torch_generator: " << error.what() << '\n';
         return 84;
     }

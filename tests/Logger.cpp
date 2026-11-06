@@ -49,6 +49,22 @@ void testEntries()
         "2025-11-05T13:30:52.999Z [INFO] end of second\n");
 }
 
+void testDurations()
+{
+    using std::chrono::seconds;
+    const std::vector<std::pair<std::chrono::steady_clock::duration, std::string>> cases = {
+        {std::chrono::steady_clock::duration::zero(), "0.000 s"},
+        {milliseconds(81), "0.081 s"},
+        {std::chrono::microseconds(1999), "0.001 s"},
+        {seconds(75) + milliseconds(5), "75.005 s"},
+        {std::chrono::hours(2), "7200.000 s"},
+    };
+    for (const auto& [duration, expected] : cases) {
+        const std::string actual = formatSeconds(duration);
+        test::check(actual == expected, "expected duration '" + expected + "', got '" + actual + "'");
+    }
+}
+
 void testMessagesStayOnOneLine()
 {
     checkEntry(reference, LogLevel::Error, "first line\nsecond line\r\nthird",
@@ -244,6 +260,7 @@ int main()
 {
     testLevelNames();
     testEntries();
+    testDurations();
     testMessagesStayOnOneLine();
     testCreatesOneFilePerRun();
     testWritesEntries();

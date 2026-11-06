@@ -18,6 +18,9 @@ std::string_view logLevelName(LogLevel level);
 std::string formatLogEntry(std::chrono::system_clock::time_point time, LogLevel level,
     std::string_view message);
 
+// Formats a duration in seconds with millisecond precision, such as "0.081 s".
+std::string formatSeconds(std::chrono::steady_clock::duration duration);
+
 // Writes the entries of one run to its own file.
 //
 // Logging never makes a command fail: if the log file cannot be created or

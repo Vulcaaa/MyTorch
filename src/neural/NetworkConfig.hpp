@@ -16,3 +16,8 @@ struct NetworkConfig {
 
 // Throws std::runtime_error when the file cannot be read or is invalid.
 NetworkConfig loadNetworkConfig(const std::string &filepath);
+
+// Summarizes a configuration on one line, with the keys of the configuration file:
+// "layers=777,128,64,3 hidden_activation=sigmoid output_activation=softmax
+// initialization=xavier learning_rate=0.01 seed=42".
+std::string describeNetworkConfig(const NetworkConfig &config);
