@@ -14,6 +14,7 @@ Makefile handles builds, tests, and experiments; notebooks launch dataset prepar
 | `src/chess/` | C++ | FEN parsing, feature encoding, and dataset label handling. |
 | `src/generator/` | C++ | `my_torch_generator`: create models from configuration files. |
 | `src/analyzer/` | C++ | `my_torch_analyzer`: coordinate training and prediction. |
+| `src/logging/` | C++ | Timestamped [run logs](logging.md) for generation and training. |
 | `scripts/` | Python | Clean/split datasets, orchestrate experiments, evaluate models, and aggregate comparable runs. |
 | `notebooks/` | Python | Launch dataset preparation, inspect evaluation reports, and compare validation runs. |
 | `tests/` | C++ and Python | Function tests and executable tests. |
@@ -88,8 +89,9 @@ must remain available for the project defense, without requiring Git tracking.
 
 Model generation, initialization, serialization, FEN encoding, dataset loading,
 forward propagation, backpropagation with mini-batch gradient descent, and
-analyzer training and prediction are implemented. C++ tests and Python CLI tests
-run through `make test`.
+analyzer training and prediction are implemented. Generation and training runs
+are [logged](logging.md) in `logs/`. C++ tests and Python CLI tests run through
+`make test`.
 
 The Python evaluation script computes classification metrics through the analyzer;
 see the [evaluation guide](evaluation.md). `evaluation.ipynb` inspects one model's

@@ -159,8 +159,8 @@ les exemples traités. Un résultat négatif mesuré permet également de justif
       environnement, états des exécutions, modèles et résultats disponibles.
 - [ ] Utiliser ces manifestes pour les vrais entraînements ; compléter la révision
       du projet et les informations d’arrêt/sélection nécessaires à leur reproduction.
-- [ ] Ajouter le logger partagé génération/entraînement (#13) ; l’historique CSV
-      de pertes existe déjà et ne remplace pas ce journal.
+- [x] Ajouter le logger partagé génération/entraînement (#13) ; l’historique CSV
+      de pertes existe déjà et ne remplace pas ce journal ([journaux](logging.md)).
 - [ ] Conserver les valeurs derrière les graphiques ; indiquer axes, unités et expériences.
 - [ ] Tenir un journal court des problèmes et décisions significatifs :
 

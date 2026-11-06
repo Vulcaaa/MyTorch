@@ -35,6 +35,8 @@ Models are saved in `models/` under the current directory as `basic_network_1.nn
 `basic_network_2.nn`, and `basic_network_3.nn`. The folder is created automatically
 and ignored by Git. Existing names are skipped.
 The configuration controls the network architecture and initialization seed.
+Each run is recorded in `logs/generation_<UTC time>.log`; see the
+[logging guide](docs/logging.md).
 
 Classify positions from a FEN dataset using a saved model:
 
@@ -59,6 +61,8 @@ best model on validation is saved to `--save` (or back to the loaded file).
 Without `--validation`, the analyzer splits the loaded data into approximately
 90% training / 10% validation, by class and model-visible input groups, using the
 model seed. Supply validation explicitly for existing reference splits.
+Each training run is also recorded in `logs/train_<UTC time>.log`, with its data,
+settings, epoch durations, and saved model.
 
 Run either executable with `--help` for its command-line options.
 
@@ -77,6 +81,7 @@ training, experiment, and defense checklist.
 - `src/neural/` — shared neural network code (headers beside sources)
 - `src/generator/` — model generator
 - `src/analyzer/` — chess analyzer
+- `src/logging/` — run logs shared by both programs
 - `configs/` — example configurations
 - `tests/` — tests
 

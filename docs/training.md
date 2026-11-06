@@ -169,6 +169,10 @@ Each successful run writes `epoch,train_loss,validation_loss` to a CSV file. Wit
 the path on stderr. With an explicit path, missing parent directories are
 created and existing files are never overwritten.
 
+Each run also writes a human-readable log, `logs/train_<UTC time>.log`, with the
+model, datasets, settings, epoch losses and durations, and the saved model; see
+the [logging guide](logging.md).
+
 Progress and errors go to stderr. Success returns `0`; invalid arguments,
 invalid data, training failures, and history/save errors return `84`. A failed
 run may retain a partial history for diagnosis.
