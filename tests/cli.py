@@ -404,6 +404,35 @@ class CommandLineTests(unittest.TestCase):
                 self.assertFalse((self.work / "trained.nn").exists())
                 self.assertEqual(self.training_histories(), [])
 
+    def test_training_logs_failures(self):
+        model = self.analyzer_model()
+        (self.work / "train.txt").write_text("8/8/8/8/8/8/8/8 w - - 0 1 Nothing\n")
+        result = self.run_command(
+            "my_torch_analyzer", "--train", "--validation", "missing.txt",
+            "--save", "trained.nn", "--history", "history.csv", model, "train.txt",
+        )
+        self.assertEqual(result.returncode, 84)
+        self.assertEqual(result.stdout, "")
+        self.assertEqual(result.stderr, "MyTorch: missing.txt: cannot open dataset\n")
+        [log] = self.logs("train")
+        self.assertRegex(log.name, r"^train_\d{4}-\d\d-\d\d_\d{6}\.log$")
+        messages = self.log_messages(log)
+        self.assertEqual(messages[:2], [
+            "[INFO] Training started",
+            "[INFO] Model models/chess_1.nn: layers=777,3 hidden_activation=relu "
+            "output_activation=softmax initialization=he learning_rate=0.01 seed=42",
+        ])
+        self.assertEqual(len(messages), 3)
+        self.assertRegex(messages[2], r"^\[ERROR\] Training failed after \d+\.\d{3} s: "
+                         r"missing\.txt: cannot open dataset$")
+
+    def test_prediction_does_not_log(self):
+        model = self.analyzer_model()
+        (self.work / "positions.txt").write_text("8/8/8/8/8/8/8/8 w - - 0 1\n")
+        result = self.run_command("my_torch_analyzer", "--predict", model, "positions.txt")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.logs("train"), [])
+
     def test_training_validates_independent_validation_set(self):
         model = self.analyzer_model()
         original = (self.work / model).read_bytes()

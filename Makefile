@@ -26,7 +26,7 @@ all: $(GENERATOR) $(ANALYZER)
 $(GENERATOR): $(COMMON_OBJ) $(GENERATOR_OBJ) $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-$(ANALYZER): $(COMMON_OBJ) $(ANALYZER_OBJ) $(CHESS_OBJ)
+$(ANALYZER): $(COMMON_OBJ) $(ANALYZER_OBJ) $(CHESS_OBJ) $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 build/%.o: src/%.cpp
@@ -52,11 +52,11 @@ build/tests/AnalyzerArguments_tests: build/tests/AnalyzerArguments.o build/analy
 build/tests/Logger_tests: build/tests/Logger.o $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-build/tests/AnalyzerSaving_tests: build/tests/AnalyzerSaving.o build/analyzer/Training.o $(COMMON_OBJ) $(CHESS_OBJ)
+build/tests/AnalyzerSaving_tests: build/tests/AnalyzerSaving.o build/analyzer/Training.o $(COMMON_OBJ) $(CHESS_OBJ) $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 # This test defines scripted neural methods instead of linking src/neural/Training.cpp.
-build/tests/Training_tests: build/tests/Training.o build/analyzer/Training.o $(filter-out build/neural/Training.o,$(COMMON_OBJ)) $(CHESS_OBJ)
+build/tests/Training_tests: build/tests/Training.o build/analyzer/Training.o $(filter-out build/neural/Training.o,$(COMMON_OBJ)) $(CHESS_OBJ) $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 test: all $(TEST_BIN)
