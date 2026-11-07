@@ -1,0 +1,20 @@
+# Exploratory single-seed width comparison; paths are relative to this file.
+version: 1
+hypothesis: Wider hidden layers may improve validation macro F1 over the existing narrower checkpoints.
+seeds:
+  - 43
+datasets:
+  train: ../../dataset/references/chess-v1/splits/train.txt
+  validation: ../../dataset/references/chess-v1/splits/validation.txt
+  split_metadata: ../../dataset/references/chess-v1/splits/split_info.json
+configurations:
+  - name: large
+    network: ../networks/larger-network.yml
+    overrides: {}
+training:
+  command: builtin
+  settings:
+    epochs: 500
+    batch_size: 32
+    patience: 20
+    min_delta: 0.0001

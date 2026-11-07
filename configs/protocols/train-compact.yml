@@ -1,0 +1,21 @@
+# Exploratory single-seed comparison against the existing epoch-338 reference.
+# Paths are relative to this file; test data is excluded.
+version: 1
+hypothesis: A compact network may approach the existing reference validation macro F1 at lower cost.
+seeds:
+  - 43
+datasets:
+  train: ../../dataset/references/chess-v1/splits/train.txt
+  validation: ../../dataset/references/chess-v1/splits/validation.txt
+  split_metadata: ../../dataset/references/chess-v1/splits/split_info.json
+configurations:
+  - name: compact
+    network: ../networks/compact-shallow-network.yml
+    overrides: {}
+training:
+  command: builtin
+  settings:
+    epochs: 500
+    batch_size: 32
+    patience: 20
+    min_delta: 0.0001
