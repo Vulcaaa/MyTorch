@@ -66,11 +66,12 @@ need not be duplicated across languages.
 | `make fclean` | Also remove executables |
 | `make re` | Clean and rebuild |
 
-Dataset cleaning is launched through
-[`notebooks/clean_dataset.ipynb`](../notebooks/clean_dataset.ipynb), which calls
-`scripts/clean_dataset.py` to read `dataset/raw/` and write `dataset/processed/`.
-[`notebooks/split_dataset.ipynb`](../notebooks/split_dataset.ipynb) then writes
-train/validation/test files to `dataset/splits/`. These are disposable outputs.
+Dataset preparation runs in
+[`notebooks/prepare_dataset.ipynb`](../notebooks/prepare_dataset.ipynb): first
+`scripts/clean_dataset.py` reads `dataset/raw/` and writes `dataset/processed/`,
+then `scripts/split_dataset.py` writes train/validation/test files to
+`dataset/splits/`. Settings and reports are grouped in this single notebook.
+These are disposable outputs.
 `scripts/reference_dataset.py` reuses both preparation tools to freeze a named
 reference under `dataset/references/`, with a tracked manifest in
 `dataset/manifests/`. Experiments use the [frozen reference](datasets.md).

@@ -34,6 +34,10 @@ class NeuralNetwork {
         // finite and positive, and std::runtime_error when an updated parameter would not be
         // finite. The network is unchanged whenever it throws.
         double trainBatch(const std::vector<TrainingSample>& batch);
+        // Same update using a slice of shuffled sample indices, without copying samples.
+        // Rejects empty slices, invalid ranges, and out-of-range sample indices.
+        double trainBatch(const std::vector<TrainingSample>& samples,
+            const std::vector<std::size_t>& order, std::size_t begin, std::size_t count);
         // Mean loss over samples without changing the network: cross-entropy for softmax,
         // binary cross-entropy summed over outputs for sigmoid. Throws std::invalid_argument
         // for invalid samples (see validateSamples) and std::runtime_error if it is not finite.
@@ -59,14 +63,26 @@ class NeuralNetwork {
 
         // Values computed by one forward pass, kept for loss and backpropagation.
         struct ForwardPass {
-            // activations[0] holds the inputs, activations[i + 1] the outputs of _layers[i].
+            explicit ForwardPass(const std::vector<Layer>& layers);
+            // Layer outputs only; the original input vector is borrowed, never copied.
             std::vector<std::vector<double>> activations;
+            // Nonzero input indices per layer, in ascending order; reused across samples.
+            std::vector<std::vector<std::size_t>> nonzero;
             // Output layer values before its activation, used for a numerically stable loss.
             std::vector<double> outputLogits;
         };
 
-        // Returns an empty pass (no activations) when the inputs do not match the network.
-        ForwardPass forward(const std::vector<double> &inputs) const;
+        void forward(const std::vector<double>& inputs, ForwardPass& pass) const;
+
+        struct SampleView {
+            const std::vector<TrainingSample>& samples;
+            const std::size_t* indices;
+            std::size_t count;
+            const TrainingSample& operator[](std::size_t index) const
+            { return samples[indices ? indices[index] : index]; }
+        };
+        void validateSamples(SampleView samples) const;
+        double trainBatchView(SampleView samples);
 
         struct LossGradients {
             double loss;
@@ -74,9 +90,10 @@ class NeuralNetwork {
         };
 
         // Mean loss and gradients over validated samples, from one forward pass per sample.
-        LossGradients lossAndGradients(const std::vector<TrainingSample>& samples) const;
+        LossGradients lossAndGradients(SampleView samples) const;
         // Adds the gradients of one sample's loss to sums and returns that loss.
-        double backpropagate(const TrainingSample& sample, std::vector<Layer>& sums) const;
+        double backpropagate(const TrainingSample& sample, std::vector<Layer>& sums,
+            ForwardPass& pass, std::vector<std::vector<double>>& deltas) const;
 
         NetworkConfig _config;
         std::vector<Layer> _layers;

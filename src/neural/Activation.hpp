@@ -10,3 +10,7 @@ void applyActivation(std::vector<double>& values, const std::string& activation)
 // Throws std::invalid_argument for softmax or an unknown activation.
 std::vector<double> activationDerivative(const std::vector<double>& activated,
                                          const std::string& activation);
+
+// Multiply existing deltas by f'(z) in place, without allocating a derivative vector.
+void applyActivationDerivative(std::vector<double>& deltas,
+    const std::vector<double>& activated, const std::string& activation);
