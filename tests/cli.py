@@ -224,8 +224,18 @@ class CommandLineTests(unittest.TestCase):
                                   str(model_path), positions.name)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout, "Check\nNothing\nCheck\nCheckmate\n")
-        self.assertEqual(result.stderr, "")
+        self.assertEqual(result.stderr,
+                         "Prediction summary: positions=4 labeled=2 correct=0/2 accuracy=0.00%\n")
         self.assertEqual(model_path.read_bytes(), original)
+
+        positions.write_text(
+            "8/8/8/8/8/8/8/8 b - - 0 1 Check\n"
+            "8/8/8/8/8/8/8/8 w - - 0 1 Checkmate\n"
+            "8/8/8/8/8/8/8/8 w - a6 0 1 Checkmate\n")
+        result = self.run_command("my_torch_analyzer", "--predict", str(model_path), positions.name)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stderr,
+                         "Prediction summary: positions=3 labeled=3 correct=2/3 accuracy=66.67%\n")
 
     def test_analyzer_rejects_incompatible_model_before_loading_dataset(self):
         model_path = self.work / self.analyzer_model()
@@ -514,6 +524,7 @@ class CommandLineTests(unittest.TestCase):
         (self.work / "positions.txt").write_text("8/8/8/8/8/8/8/8 w - - 0 1\n")
         result = self.run_command("my_torch_analyzer", "--predict", model, "positions.txt")
         self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stderr, "Prediction summary: positions=1 labeled=0\n")
         self.assertEqual(self.logs("train"), [])
 
     def test_training_validates_independent_validation_set(self):
