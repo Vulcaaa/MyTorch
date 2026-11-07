@@ -134,7 +134,37 @@ TrainingResult runWithProbe(NeuralNetwork& network, const AnalyzerArguments& arg
         explicit Selection(Probe& selected) { activeProbe = &selected; }
         ~Selection() { activeProbe = previous; }
     } selection(probe);
-    return runTraining(network, arguments, progress);
+    Logger log(probe.fixture.directory.path / "logs", "train", progress);
+    return runTraining(network, arguments, progress, log);
+}
+
+// Returns the "[LEVEL] message" part of each entry of the only log in `directory`.
+std::vector<std::string> logMessages(const fs::path& directory)
+{
+    std::vector<fs::path> logs;
+    for (const auto& entry : fs::directory_iterator(directory))
+        logs.push_back(entry.path());
+    test::check(logs.size() == 1, "expected one training log, got " + std::to_string(logs.size()));
+    std::istringstream content(read(logs[0]));
+    std::vector<std::string> messages;
+    // Skip the "2025-11-05T13:30:52.123Z " timestamp, checked by the Logger tests.
+    for (std::string line; std::getline(content, line);)
+        messages.push_back(line.substr(25));
+    return messages;
+}
+
+void checkMessages(const std::vector<std::string>& actual, const std::vector<std::string>& expected)
+{
+    test::check(actual.size() == expected.size(), "expected " + std::to_string(expected.size())
+        + " log entries, got " + std::to_string(actual.size()));
+    for (std::size_t i = 0; i < expected.size(); ++i) {
+        // Epoch durations vary: "(...)" in the expectation only requires a duration in seconds.
+        const auto variable = expected[i].find("(...)");
+        const bool matches = variable == std::string::npos ? actual[i] == expected[i]
+            : actual[i].compare(0, variable, expected[i], 0, variable) == 0
+                && actual[i].size() > variable + 4 && actual[i].compare(actual[i].size() - 3, 3, " s)") == 0;
+        test::check(matches, "expected log entry '" + expected[i] + "', got '" + actual[i] + "'");
+    }
 }
 
 void checkSame(const NeuralNetwork& left, const NeuralNetwork& right, const Fixture& fixture)
@@ -433,6 +463,42 @@ void testAutomaticHistory()
     test::check(read(result.historyFile) == read(repeated.historyFile), "automatic history content changed");
 }
 
+void testTrainingLog()
+{
+    Fixture fixture;
+    Probe probe(fixture, {1.0, 0.6, 0.4, 0.5, 0.45});
+    auto network = fixture.initial;
+    std::ostringstream progress;
+    runWithProbe(network, fixture.arguments, probe, progress);
+    const auto& arguments = fixture.arguments;
+    checkMessages(logMessages(fixture.directory.path / "logs"), {
+        "[INFO] Train set " + arguments.chessFile + ": 5 positions",
+        "[INFO] Validation set " + arguments.training.validationFile + ": 1 position",
+        "[INFO] Settings: epochs=8 batch_size=2 patience=2 min_delta=0.1",
+        "[INFO] Initial validation_loss=1",
+        "[INFO] History: " + arguments.training.historyFile,
+        "[INFO] Epoch 1/8: train_loss=0.25 validation_loss=0.6 (...)",
+        "[INFO] Epoch 2/8: train_loss=0.25 validation_loss=0.4 (...)",
+        "[INFO] Epoch 3/8: train_loss=0.25 validation_loss=0.5 (...)",
+        "[INFO] Epoch 4/8: train_loss=0.25 validation_loss=0.45 (...)",
+        "[INFO] Early stopping after epoch 4 (patience=2)",
+        "[INFO] Saved model from epoch 2 (validation_loss=0.4) to " + arguments.saveFile,
+    });
+    test::check(progress.str().find("warning") == std::string::npos, "logging reported a failure");
+
+    // A failed run keeps what happened before the failure, and never reports a save.
+    Fixture failing;
+    Probe broken(failing, {1.0});
+    broken.failure = Probe::Failure::BatchLoss;
+    network = failing.initial;
+    test::expectThrow<std::runtime_error>([&] {
+        runWithProbe(network, failing.arguments, broken, progress);
+    });
+    const auto messages = logMessages(failing.directory.path / "logs");
+    test::check(messages.size() == 5 && messages.back() == "[INFO] History: "
+        + failing.arguments.training.historyFile, "failed run logged unexpected entries");
+}
+
 void testHistoryWriteFailure()
 {
     Fixture fixture;
@@ -486,6 +552,7 @@ int main()
     testInputAndBackendFailures();
     testHistoryAndSaveFailures();
     testAutomaticHistory();
+    testTrainingLog();
     testHistoryWriteFailure();
     std::cout << "Training orchestration tests passed\n";
 }

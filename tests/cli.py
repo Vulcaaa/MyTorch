@@ -3,12 +3,14 @@
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import tempfile
 import unittest
 
 
 ROOT = Path(__file__).resolve().parents[1]
+LOG_LINE = re.compile(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z \[(INFO|WARN|ERROR)\] (.*)")
 CONFIG = (
     "layers=3,2,1\n"
     "hidden_activation=relu\n"
@@ -128,6 +130,72 @@ class CommandLineTests(unittest.TestCase):
                 self.assertEqual(result.returncode, 84)
                 self.assertIn(config, result.stderr)
                 self.assertEqual(list(self.models.glob("*.nn")), [])
+
+    def logs(self, prefix):
+        return sorted((self.work / "logs").glob(f"{prefix}_*.log"))
+
+    def training_histories(self):
+        """Automatic training history directories, which generation logs must not be mistaken for."""
+        return [path for path in (self.work / "logs").glob("train_*") if path.is_dir()]
+
+    def log_messages(self, path):
+        """Return the "[LEVEL] message" part of each entry, checking every timestamp."""
+        messages = []
+        for line in path.read_text().splitlines():
+            match = LOG_LINE.fullmatch(line)
+            self.assertIsNotNone(match, f"malformed log line: {line!r}")
+            messages.append(f"[{match[1]}] {match[2]}")
+        return messages
+
+    def test_generation_log(self):
+        (self.work / "other.conf").write_text(CONFIG.replace("layers=3,2,1", "layers=2,1"))
+        result = self.generate("network.conf", "2", "other.conf", "1")
+        self.assertEqual(result.stdout, "")
+        [log] = self.logs("generation")
+        self.assertRegex(log.name, r"^generation_\d{4}-\d\d-\d\d_\d{6}\.log$")
+        messages = self.log_messages(log)
+        settings = "hidden_activation=relu output_activation=sigmoid initialization=he learning_rate=0.01"
+        self.assertEqual(messages[:-1], [
+            "[INFO] Generation started",
+            f"[INFO] Configuration network.conf: layers=3,2,1 {settings} seed=42",
+            "[INFO] Generated models/network_1.nn (seed 42)",
+            "[INFO] Generated models/network_2.nn (seed 43)",
+            f"[INFO] Configuration other.conf: layers=2,1 {settings} seed=42",
+            "[INFO] Generated models/other_1.nn (seed 42)",
+        ])
+        self.assertRegex(messages[-1], r"^\[INFO\] Generation complete: 3 models in \d+\.\d{3} s$")
+
+    def test_each_generation_run_has_its_own_log(self):
+        self.generate("network.conf", "1")
+        self.generate("network.conf", "1")
+        logs = self.logs("generation")
+        self.assertEqual(len(logs), 2)
+        self.assertIn("[INFO] Generated models/network_1.nn (seed 42)", self.log_messages(logs[0]))
+        self.assertIn("[INFO] Generated models/network_2.nn (seed 42)", self.log_messages(logs[1]))
+
+    def test_generation_logs_failures(self):
+        result = self.run_command("my_torch_generator", "network.conf", "0")
+        self.assertEqual(result.returncode, 84)
+        self.assertEqual(result.stdout, "")
+        self.assertEqual(result.stderr, "my_torch_generator: network count must be a positive integer\n")
+        [log] = self.logs("generation")
+        messages = self.log_messages(log)
+        self.assertEqual(messages[0], "[INFO] Generation started")
+        self.assertRegex(messages[-1], r"^\[ERROR\] Generation failed after \d+\.\d{3} s: "
+                         r"network count must be a positive integer$")
+
+    def test_generation_continues_without_log(self):
+        (self.work / "logs").write_text("not a directory")
+        result = self.run_command("my_torch_generator", "network.conf", "1")
+        self.assertEqual(result.returncode, 0)
+        self.assertEqual(result.stdout, "")
+        self.assertRegex(result.stderr, r"^warning: logging disabled: [^\n]*logs[^\n]*\n$")
+        self.assertTrue((self.models / "network_1.nn").is_file())
+        self.assertEqual((self.work / "logs").read_text(), "not a directory")
+
+    def test_help_does_not_log(self):
+        self.run_command("my_torch_generator", "--help")
+        self.assertFalse((self.work / "logs").exists())
 
     def analyzer_model(self):
         path = self.work / "chess.conf"
@@ -283,7 +351,7 @@ class CommandLineTests(unittest.TestCase):
                 self.assertNotEqual(trained["layers"], json.loads(original)["layers"])
                 if save_options:
                     self.assertEqual((self.work / model).read_bytes(), original)
-                self.assertFalse((self.work / "logs").exists())
+                self.assertEqual(self.training_histories(), [])
 
     def test_training_minimal_syntax_uses_automatic_validation(self):
         model = self.analyzer_model()
@@ -334,7 +402,113 @@ class CommandLineTests(unittest.TestCase):
                 self.assertIn(diagnostic, result.stderr)
                 self.assertEqual((self.work / model).read_bytes(), original)
                 self.assertFalse((self.work / "trained.nn").exists())
-                self.assertFalse((self.work / "logs").exists())
+                self.assertEqual(self.training_histories(), [])
+
+    def test_training_logs_failures(self):
+        model = self.analyzer_model()
+        (self.work / "train.txt").write_text("8/8/8/8/8/8/8/8 w - - 0 1 Nothing\n")
+        result = self.run_command(
+            "my_torch_analyzer", "--train", "--validation", "missing.txt",
+            "--save", "trained.nn", "--history", "history.csv", model, "train.txt",
+        )
+        self.assertEqual(result.returncode, 84)
+        self.assertEqual(result.stdout, "")
+        self.assertEqual(result.stderr, "MyTorch: missing.txt: cannot open dataset\n")
+        [log] = self.logs("train")
+        self.assertRegex(log.name, r"^train_\d{4}-\d\d-\d\d_\d{6}\.log$")
+        messages = self.log_messages(log)
+        self.assertEqual(messages[:2], [
+            "[INFO] Training started",
+            "[INFO] Model models/chess_1.nn: layers=777,3 hidden_activation=relu "
+            "output_activation=softmax initialization=he learning_rate=0.01 seed=42",
+        ])
+        self.assertEqual(len(messages), 3)
+        self.assertRegex(messages[2], r"^\[ERROR\] Training failed after \d+\.\d{3} s: "
+                         r"missing\.txt: cannot open dataset$")
+
+    def check_training_log(self, expected_start, epochs, saved):
+        """Check a successful training log; losses and durations vary, so they are matched."""
+        [log] = self.logs("train")
+        messages = self.log_messages(log)
+        self.assertEqual(messages[:len(expected_start)], expected_start)
+        loss = r"\d+(\.\d+)?(e-?\d+)?"
+        rest = messages[len(expected_start):]
+        self.assertEqual(len(rest), epochs + 4)
+        self.assertRegex(rest[0], rf"^\[INFO\] Initial validation_loss={loss}$")
+        self.assertRegex(rest[1], r"^\[INFO\] History: logs/train_[^/]+/history\.csv$")
+        for epoch in range(1, epochs + 1):
+            self.assertRegex(rest[1 + epoch], rf"^\[INFO\] Epoch {epoch}/{epochs}: "
+                             rf"train_loss={loss} validation_loss={loss} \(\d+\.\d{{3}} s\)$")
+        best = re.fullmatch(rf"\[INFO\] Saved model from epoch (\d+) \(validation_loss={loss}\) "
+                            rf"to {re.escape(saved)}", rest[-2])
+        self.assertIsNotNone(best, rest[-2])
+        self.assertRegex(rest[-1], rf"^\[INFO\] Training complete in \d+\.\d{{3}} s: "
+                         rf"epochs_completed={epochs} best_epoch={best[1]}$")
+
+    def test_training_log(self):
+        model = self.analyzer_model()
+        (self.work / "train.txt").write_text("8/8/8/8/8/8/8/8 w - - 0 1 Nothing\n")
+        (self.work / "val.txt").write_text("8/8/8/8/8/8/8/8 b - - 0 1 Nothing\n")
+        result = self.run_command(
+            "my_torch_analyzer", "--train", "--validation", "val.txt", "--epochs", "2",
+            "--batch-size", "1", "--save", "trained.nn", model, "train.txt",
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "")
+        self.assertNotIn("warning", result.stderr)
+        self.check_training_log([
+            "[INFO] Training started",
+            "[INFO] Model models/chess_1.nn: layers=777,3 hidden_activation=relu "
+            "output_activation=softmax initialization=he learning_rate=0.01 seed=42",
+            "[INFO] Train set train.txt: 1 position",
+            "[INFO] Validation set val.txt: 1 position",
+            "[INFO] Settings: epochs=2 batch_size=1 patience=10 min_delta=0.0001",
+        ], epochs=2, saved="trained.nn")
+
+    def test_training_log_with_automatic_validation(self):
+        model = self.analyzer_model()
+        (self.work / "positions.txt").write_text("8/8/8/8/8/8/8/8 w - - 0 1 Nothing\n"
+                                                 "8/8/8/8/8/8/8/8 b - - 0 1 Nothing\n")
+        result = self.run_command("my_torch_analyzer", "--train", "--epochs", "1", model, "positions.txt")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.check_training_log([
+            "[INFO] Training started",
+            "[INFO] Model models/chess_1.nn: layers=777,3 hidden_activation=relu "
+            "output_activation=softmax initialization=he learning_rate=0.01 seed=42",
+            "[INFO] Train set positions.txt: 1 position",
+            "[INFO] Validation set: 1 position held out from positions.txt (90/10 per class, seed 42)",
+            "[INFO] Settings: epochs=1 batch_size=32 patience=10 min_delta=0.0001",
+        ], epochs=1, saved=model)
+
+    def test_training_continues_without_log(self):
+        model = self.analyzer_model()
+        original = (self.work / model).read_bytes()
+        (self.work / "train.txt").write_text("8/8/8/8/8/8/8/8 w - - 0 1 Nothing\n")
+        (self.work / "val.txt").write_text("8/8/8/8/8/8/8/8 b - - 0 1 Nothing\n")
+        for log in (self.work / "logs").iterdir():
+            log.unlink()
+        (self.work / "logs").rmdir()
+        (self.work / "logs").write_text("not a directory")
+        result = self.run_command(
+            "my_torch_analyzer", "--train", "--validation", "val.txt", "--epochs", "1",
+            "--history", "history.csv", "--save", "trained.nn", model, "train.txt",
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "")
+        warnings = [line for line in result.stderr.splitlines() if "warning" in line]
+        self.assertEqual(len(warnings), 1, result.stderr)
+        self.assertTrue(warnings[0].startswith("warning: logging disabled: "))
+        self.assertIn("Training complete", result.stderr)
+        trained = json.loads((self.work / "trained.nn").read_text())
+        self.assertNotEqual(trained["layers"], json.loads(original)["layers"])
+        self.assertEqual((self.work / "logs").read_text(), "not a directory")
+
+    def test_prediction_does_not_log(self):
+        model = self.analyzer_model()
+        (self.work / "positions.txt").write_text("8/8/8/8/8/8/8/8 w - - 0 1\n")
+        result = self.run_command("my_torch_analyzer", "--predict", model, "positions.txt")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(self.logs("train"), [])
 
     def test_training_validates_independent_validation_set(self):
         model = self.analyzer_model()

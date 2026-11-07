@@ -82,5 +82,19 @@ int main()
     test::expectThrow<std::runtime_error>([&] {
         loadNetworkConfig((directory.path / "missing.conf").string());
     });
+    config = NetworkConfig{};
+    config.layers = {777, 128, 64, 3};
+    config.hidden_activation = "sigmoid";
+    config.output_activation = "softmax";
+    config.initialization = "xavier";
+    test::check(describeNetworkConfig(config) == "layers=777,128,64,3 hidden_activation=sigmoid "
+        "output_activation=softmax initialization=xavier learning_rate=0.01 seed=42",
+        "incorrect configuration summary: " + describeNetworkConfig(config));
+    config.layers = {2};
+    config.learning_rate = 0.00025;
+    config.seed = 4294967295;
+    test::check(describeNetworkConfig(config) == "layers=2 hidden_activation=sigmoid "
+        "output_activation=softmax initialization=xavier learning_rate=0.00025 seed=4294967295",
+        "incorrect configuration summary: " + describeNetworkConfig(config));
     std::cout << "NetworkConfig tests passed\n";
 }

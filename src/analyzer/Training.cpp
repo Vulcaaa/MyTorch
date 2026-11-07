@@ -241,6 +241,28 @@ double checkedLoss(double value)
     return value;
 }
 
+std::string formatLoss(double value)
+{
+    std::ostringstream text;
+    text.imbue(std::locale::classic());
+    text << value;
+    return text.str();
+}
+
+std::string positionCount(std::size_t count)
+{
+    return std::to_string(count) + (count == 1 ? " position" : " positions");
+}
+
+std::string describeSettings(const TrainingArguments& settings)
+{
+    std::ostringstream text;
+    text.imbue(std::locale::classic());
+    text << "epochs=" << settings.epochs << " batch_size=" << settings.batchSize
+        << " patience=" << settings.patience << " min_delta=" << settings.minDelta;
+    return text.str();
+}
+
 std::string historyRow(std::size_t epoch, double trainLoss, double validationLoss)
 {
     std::ostringstream row;
@@ -287,7 +309,7 @@ void saveTrainingResult(const NeuralNetwork& network, const AnalyzerArguments& a
 }
 
 TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& arguments,
-    std::ostream& progress)
+    std::ostream& progress, Logger& log)
 {
     validateRequest(network, arguments);
     auto training = numericSamples(loadDataset(arguments.chessFile, DatasetMode::Training));
@@ -304,11 +326,20 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
     progress << (automatic ? "Automatic validation split (90/10 groups per class)" : "Explicit validation dataset")
         << ": train=" << training.size() << " validation=" << validation.size()
         << " seed=" << network.config().seed << '\n';
+    log.info("Train set " + arguments.chessFile + ": " + positionCount(training.size()));
+    if (automatic)
+        log.info("Validation set: " + positionCount(validation.size()) + " held out from "
+            + arguments.chessFile + " (90/10 per class, seed " + std::to_string(network.config().seed) + ")");
+    else
+        log.info("Validation set " + arguments.training.validationFile + ": "
+            + positionCount(validation.size()));
+    log.info("Settings: " + describeSettings(arguments.training));
 
     NeuralNetwork working = network;
     NeuralNetwork best = working;
     TrainingResult result;
     result.bestValidationLoss = checkedLoss(working.loss(validation));
+    log.info("Initial validation_loss=" + formatLoss(result.bestValidationLoss));
     double patienceReference = result.bestValidationLoss;
     std::size_t staleEpochs = 0;
     std::mt19937 random(network.config().seed);
@@ -319,10 +350,12 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
     HistoryFile history(arguments);
     result.historyFile = history.path.string();
     progress << "Training history: " << result.historyFile << '\n';
+    log.info("History: " + result.historyFile);
     history.write("epoch,train_loss,validation_loss\n");
     // Use a zero-based counter to avoid overflowing the largest accepted epoch count.
     for (std::size_t index = 0; index < arguments.training.epochs; ++index) {
         const auto epoch = index + 1;
+        const auto epochStart = std::chrono::steady_clock::now();
         std::iota(order.begin(), order.end(), 0);
         std::shuffle(order.begin(), order.end(), random);
         for (std::size_t begin = 0; begin < order.size();) {
@@ -338,6 +371,9 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
         history.write(historyRow(epoch, trainLoss, validationLoss));
         progress << "Epoch " << epoch << ": train_loss=" << trainLoss
             << " validation_loss=" << validationLoss << '\n';
+        log.info("Epoch " + std::to_string(epoch) + "/" + std::to_string(arguments.training.epochs)
+            + ": train_loss=" + formatLoss(trainLoss) + " validation_loss=" + formatLoss(validationLoss)
+            + " (" + formatSeconds(std::chrono::steady_clock::now() - epochStart) + ")");
         result.epochsCompleted = epoch;
         if (validationLoss < result.bestValidationLoss) {
             result.bestValidationLoss = validationLoss;
@@ -352,11 +388,15 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
         }
         if (staleEpochs >= arguments.training.patience) {
             result.earlyStopped = true;
+            log.info("Early stopping after epoch " + std::to_string(epoch) + " (patience="
+                + std::to_string(arguments.training.patience) + ")");
             break;
         }
     }
     history.close();
     saveTrainingResult(best, arguments);
+    log.info("Saved model from epoch " + std::to_string(result.bestEpoch) + " (validation_loss="
+        + formatLoss(result.bestValidationLoss) + ") to " + modelDestination(arguments));
     network = std::move(best);
     progress << "Training complete: best_epoch=" << result.bestEpoch
         << " validation_loss=" << result.bestValidationLoss

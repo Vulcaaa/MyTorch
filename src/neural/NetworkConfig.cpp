@@ -3,7 +3,9 @@
 #include <charconv>
 #include <cmath>
 #include <fstream>
+#include <locale>
 #include <set>
+#include <sstream>
 #include <stdexcept>
 #include <string_view>
 
@@ -127,4 +129,19 @@ NetworkConfig loadNetworkConfig(const std::string &filepath)
             throw std::runtime_error(filepath + ": missing required key '" + key + "'");
     }
     return options;
+}
+
+std::string describeNetworkConfig(const NetworkConfig &config)
+{
+    std::ostringstream description;
+    description.imbue(std::locale::classic());
+    description << "layers=";
+    for (std::size_t i = 0; i < config.layers.size(); ++i)
+        description << (i == 0 ? "" : ",") << config.layers[i];
+    description << " hidden_activation=" << config.hidden_activation
+        << " output_activation=" << config.output_activation
+        << " initialization=" << config.initialization
+        << " learning_rate=" << config.learning_rate
+        << " seed=" << config.seed;
+    return description.str();
 }
