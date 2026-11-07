@@ -68,6 +68,7 @@ README.md       Goal, status, checkpoint and conclusion
 config.json     Resolved parameters, dataset/model hashes, commands and Git revision
 model.nn        Selected checkpoint
 history.csv     Per-epoch train and validation losses
+history.svg     Loss curves with selected checkpoint and stopping epoch
 training.log    Execution diagnostics and detailed analyzer log
 ```
 
@@ -79,7 +80,9 @@ Generation failures retain `generation.log`.
 
 `--train-only` requires one configuration and one seed. Omit it to also evaluate
 the initial and selected models on validation; this adds one `metrics.json`
-containing `before` and `validation` scores.
+containing `before` and `validation` scores and two corresponding
+`confusion-matrix-*.svg` charts. Counts stay in `metrics.json`; no confusion-matrix
+CSV is exported.
 
 Continuation restores weights; shuffle randomness and early-stopping state
 restart. `previous_history` and `previous_checkpoint_epoch` describe the earlier
@@ -102,7 +105,7 @@ The directory contains only:
 ```text
 README.md               Model, dataset and readable scores
 metrics.json            Detailed scores, fingerprints and inference timing
-confusion-matrix.csv    Actual classes in rows, predicted classes in columns
+confusion-matrix.svg    Counts and row percentages: actual rows, predicted columns
 ```
 
 Add `--predictions` only when individual predictions are needed for error
@@ -137,7 +140,11 @@ runs/
   reference-seed-43/
 ```
 
-Each run contains `model.nn`, `history.csv`, `training.log` and `metrics.json`.
+Each run contains `model.nn`, `history.csv`, `history.svg`, `training.log` and
+`metrics.json`, plus confusion-matrix charts when evaluated. When at least two
+trials have completed with validation scores and training durations, the campaign
+root also contains `comparison.svg`: per-trial macro F1 and training time. Failed
+or missing trials are excluded; the campaign status stays visible on the chart.
 The root README groups their results; `comparison.csv` gives before/after scores.
 `config.json` records run states, costs and provenance. No separate summary,
 command, training-config or decision files are needed. Write your conclusion in
@@ -146,6 +153,35 @@ the README's Conclusion section; refreshing the overview preserves that section.
 Failures retain completed runs and diagnostics. Missing seeds remain visible;
 a single seed is exploratory, with no estimate of variability. Timing includes
 process startup/loading and is not an isolated benchmark.
+
+## Charts and existing results
+
+Chart exports are SVG files, viewable in a browser and embedded in result READMEs.
+Python exports require the dependencies in `requirements.txt` (including matplotlib)
+and run headlessly. Direct C++ `--train` exports an SVG beside its history CSV,
+using the same basename, without requiring Python. An existing SVG is never
+replaced by the C++ exporter; an export failure warns without losing the model.
+
+The selected checkpoint and stopping epoch are different markers: training can
+continue for the patience window after its best checkpoint. A checkpoint at epoch
+zero means the initial weights were retained. Continuation charts offset epochs
+by the declared previous checkpoint; they show the current training segment.
+For historical runs without selection metadata, the marker explicitly says
+“lowest recorded validation” rather than claiming it is the saved checkpoint.
+Partial histories show the last recorded epoch, not a successful stopping point.
+
+Regenerate missing charts from existing histories and metrics, without training,
+prediction, or changes to model/configuration/numerical source files:
+
+```sh
+.venv/bin/python scripts/charts.py results --recursive
+```
+
+This preserves written conclusions and refreshes the chart section of existing
+READMEs. It replaces legacy confusion-matrix CSVs only after exporting their chart
+from `metrics.json`. Campaign manifests still marked as active are skipped; check
+their real state before updating a stale status. Missing histories or metrics
+cannot be reconstructed from model weights. `--prepare` has no learning data to plot.
 
 ## Read results in notebooks
 

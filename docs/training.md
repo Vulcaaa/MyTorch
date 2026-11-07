@@ -618,3 +618,15 @@ CPU governor were not pinned; observed timing ranges are retained. macOS/Acceler
 has not been measured. Keep explicit thread settings when reproducing these results.
 
 <!-- cpu-blas-measurements:end -->
+
+## Saved training charts
+
+Direct `--train` writes a loss chart next to its history CSV (`history.svg` for
+`history.csv`, or the basename of a custom `--history` path). It marks the selected
+checkpoint and final training epoch, including retention of epoch-zero weights.
+It needs no Python runtime. Existing chart files are protected; export errors do
+not discard a successfully saved model.
+
+The Python experiment runner also exports loss charts, evaluated confusion
+matrices, and comparisons of completed trials. See [chart exports and backfill](evaluation.md#charts-and-existing-results)
+for regenerating charts from recorded results without retraining.
