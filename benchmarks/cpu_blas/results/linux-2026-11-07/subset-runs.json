@@ -1,0 +1,1802 @@
+[
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.28244712,
+        "loss_seconds": 0.084075958,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.198349823,
+        "validation_loss": 1.0827730977383647
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.285087457,
+        "loss_seconds": 0.084698516,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.200366117,
+        "validation_loss": 1.0806716520084672
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.284834817,
+        "loss_seconds": 0.086465938,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.198347289,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.284715358,
+        "loss_seconds": 0.084837998,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.199854466,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.277939725,
+        "loss_seconds": 0.086602123,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.191315881,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 1.415050765,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "baseline",
+    "threads": 1,
+    "repeat": 1,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/baseline",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/baseline-t1-r1.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.272694985,
+        "loss_seconds": 0.083156799,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.189517458,
+        "validation_loss": 1.0827730977383647
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.271331867,
+        "loss_seconds": 0.081550558,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.189759218,
+        "validation_loss": 1.0806716520084672
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.275946699,
+        "loss_seconds": 0.083346001,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.192571213,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.272270168,
+        "loss_seconds": 0.082821096,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.18942655,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.275767813,
+        "loss_seconds": 0.08294668,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.192799803,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 1.368034827,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "baseline",
+    "threads": 1,
+    "repeat": 2,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/baseline",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/baseline-t1-r2.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.274639079,
+        "loss_seconds": 0.083934065,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.190684155,
+        "validation_loss": 1.0827730977383647
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.274087223,
+        "loss_seconds": 0.082500708,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.191558051,
+        "validation_loss": 1.0806716520084672
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.281134267,
+        "loss_seconds": 0.083454194,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.197659145,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.274038708,
+        "loss_seconds": 0.083002061,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.191014955,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.273021935,
+        "loss_seconds": 0.083364607,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.189635798,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 1.376949975,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "baseline",
+    "threads": 1,
+    "repeat": 3,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/baseline",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/baseline-t1-r3.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.278001545,
+        "loss_seconds": 0.082954645,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.19502489,
+        "validation_loss": 1.0827730977383647
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.293332535,
+        "loss_seconds": 0.083881891,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.209420759,
+        "validation_loss": 1.0806716520084672
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.278076443,
+        "loss_seconds": 0.084012346,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.194042346,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.282394011,
+        "loss_seconds": 0.085184057,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.197187641,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.286780185,
+        "loss_seconds": 0.087131983,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.19962604,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 1.41861298,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "baseline",
+    "threads": 1,
+    "repeat": 4,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/baseline",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/baseline-t1-r4.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.276218114,
+        "loss_seconds": 0.083164522,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.193032752,
+        "validation_loss": 1.0827730977383647
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.281977199,
+        "loss_seconds": 0.085214951,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.196738463,
+        "validation_loss": 1.0806716520084672
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.281480483,
+        "loss_seconds": 0.085337258,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.196117688,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.281932918,
+        "loss_seconds": 0.084078106,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.197833052,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.283211584,
+        "loss_seconds": 0.084863548,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.198326496,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 1.404845855,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "baseline",
+    "threads": 1,
+    "repeat": 5,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/baseline",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/baseline-t1-r5.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.168665837,
+        "loss_seconds": 0.048110548,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.120527278,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.170751702,
+        "loss_seconds": 0.047625114,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.123103725,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.165370253,
+        "loss_seconds": 0.046258371,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.119090602,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.162595337,
+        "loss_seconds": 0.045559439,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.117014137,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.164750419,
+        "loss_seconds": 0.046935771,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.117793639,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.83215683,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 1,
+    "repeat": 1,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t1-r1.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.160802251,
+        "loss_seconds": 0.04538078,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.115401273,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.163380892,
+        "loss_seconds": 0.046576757,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.116782104,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.16527092,
+        "loss_seconds": 0.044750667,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.120498844,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.163213204,
+        "loss_seconds": 0.045418521,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.117773293,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.164277495,
+        "loss_seconds": 0.0464273,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.117829257,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.816967255,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 1,
+    "repeat": 2,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t1-r2.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.164042988,
+        "loss_seconds": 0.0463007,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.11772179,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.168160166,
+        "loss_seconds": 0.045510319,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.122628317,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.172756705,
+        "loss_seconds": 0.048282291,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.124452373,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.167656186,
+        "loss_seconds": 0.046000581,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.121632823,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.166029928,
+        "loss_seconds": 0.045605806,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.12040144,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.838674147,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 1,
+    "repeat": 3,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t1-r3.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.16193256,
+        "loss_seconds": 0.045032422,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.11687993,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.160615247,
+        "loss_seconds": 0.044450499,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.116142276,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.165468663,
+        "loss_seconds": 0.044667392,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.120779089,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.160900661,
+        "loss_seconds": 0.044725332,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.116147898,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.160204827,
+        "loss_seconds": 0.044619836,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.1155628,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.809143959,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 1,
+    "repeat": 4,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t1-r4.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.171208455,
+        "loss_seconds": 0.046601877,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.124585378,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.165547223,
+        "loss_seconds": 0.045366587,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.120158014,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.165211547,
+        "loss_seconds": 0.045717109,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.119472348,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.162340201,
+        "loss_seconds": 0.045670813,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.116647357,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.163185174,
+        "loss_seconds": 0.045222588,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.117933051,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.827515553,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 1,
+    "repeat": 5,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t1-r5.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.166289628,
+        "loss_seconds": 0.046293854,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.119967421,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.16363167,
+        "loss_seconds": 0.046188498,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.117422634,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.165488828,
+        "loss_seconds": 0.046089253,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.119374097,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.164479288,
+        "loss_seconds": 0.045719344,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.118739135,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.16493677,
+        "loss_seconds": 0.045987173,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.118928738,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.824848076,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 2,
+    "repeat": 1,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t2-r1.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.177730275,
+        "loss_seconds": 0.046925539,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.130781523,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.169484799,
+        "loss_seconds": 0.046003121,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.123460489,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.170302833,
+        "loss_seconds": 0.047162281,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.123119624,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.170894138,
+        "loss_seconds": 0.047500851,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.123355867,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.17172778,
+        "loss_seconds": 0.046950636,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.124755975,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.860164563,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 2,
+    "repeat": 2,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t2-r2.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.165466169,
+        "loss_seconds": 0.046276126,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.119170115,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.167908527,
+        "loss_seconds": 0.046215844,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.121661445,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.169171138,
+        "loss_seconds": 0.046187522,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.122959131,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.214742938,
+        "loss_seconds": 0.0508798,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.163837029,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.164629996,
+        "loss_seconds": 0.045894016,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.118713758,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.881951839,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 2,
+    "repeat": 3,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t2-r3.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.168757316,
+        "loss_seconds": 0.046059389,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.1226776,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.181006358,
+        "loss_seconds": 0.046295638,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.134689571,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.16626072,
+        "loss_seconds": 0.045947721,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.12029248,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.171391494,
+        "loss_seconds": 0.046046204,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.125324091,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.165282017,
+        "loss_seconds": 0.045671136,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.119583831,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.852720117,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 2,
+    "repeat": 4,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t2-r4.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.170227323,
+        "loss_seconds": 0.049227158,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.120979126,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.169015338,
+        "loss_seconds": 0.045400294,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.123588143,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.216494692,
+        "loss_seconds": 0.067609768,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.148862782,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.166693999,
+        "loss_seconds": 0.046705144,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.119966603,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.17342417,
+        "loss_seconds": 0.047244018,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.126158101,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.895880156,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 2,
+    "repeat": 5,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t2-r5.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.183678868,
+        "loss_seconds": 0.0513148,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.132338521,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.17252637,
+        "loss_seconds": 0.049286041,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.123218869,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.174820302,
+        "loss_seconds": 0.051152617,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.123646416,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.175115422,
+        "loss_seconds": 0.051894519,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.123197419,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.176540055,
+        "loss_seconds": 0.050017924,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.126500771,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.882706315,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 4,
+    "repeat": 1,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t4-r1.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.183472439,
+        "loss_seconds": 0.050979901,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.132468031,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.171643386,
+        "loss_seconds": 0.050113779,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.121508387,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.172659578,
+        "loss_seconds": 0.049063724,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.123575055,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.1788215,
+        "loss_seconds": 0.054957086,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.123841561,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.193968499,
+        "loss_seconds": 0.051065702,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.142869205,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.900590238,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 4,
+    "repeat": 2,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t4-r2.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.186838795,
+        "loss_seconds": 0.05282092,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.13398834,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.173231859,
+        "loss_seconds": 0.04993656,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.123273299,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.174882393,
+        "loss_seconds": 0.050800338,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.124060605,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.172568875,
+        "loss_seconds": 0.050131082,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.122415482,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.17560586,
+        "loss_seconds": 0.050694981,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.124888557,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.883152228,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 4,
+    "repeat": 3,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t4-r3.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.184302159,
+        "loss_seconds": 0.050715797,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.133564632,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.173021762,
+        "loss_seconds": 0.049715554,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.123282785,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.172683834,
+        "loss_seconds": 0.049001655,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.123651752,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.175006012,
+        "loss_seconds": 0.05021243,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.124764758,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.177593019,
+        "loss_seconds": 0.051477676,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.126092921,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.882635158,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 4,
+    "repeat": 4,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t4-r4.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.175607329,
+        "loss_seconds": 0.053234235,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.122351554,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.171172822,
+        "loss_seconds": 0.048842598,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.122308524,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.186107338,
+        "loss_seconds": 0.05605103,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.130034969,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.18168037,
+        "loss_seconds": 0.046407576,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.135247737,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.17296814,
+        "loss_seconds": 0.049335518,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.123610811,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.887560355,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 4,
+    "repeat": 5,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t4-r5.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.179677082,
+        "loss_seconds": 0.051784645,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.127869263,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.18102434,
+        "loss_seconds": 0.051510094,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.129490382,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.183488828,
+        "loss_seconds": 0.052722241,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.130743184,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.180954023,
+        "loss_seconds": 0.051847613,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.129083406,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.179310194,
+        "loss_seconds": 0.051408096,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.127877943,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.904481135,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 8,
+    "repeat": 1,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t8-r1.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.183066516,
+        "loss_seconds": 0.052612723,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.130423638,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.211202483,
+        "loss_seconds": 0.079973383,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.131205396,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.207370867,
+        "loss_seconds": 0.051911087,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.155418825,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.190653608,
+        "loss_seconds": 0.059485732,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.13113757,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.179744112,
+        "loss_seconds": 0.051458253,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.128262536,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.972066341,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 8,
+    "repeat": 2,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t8-r2.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.179848422,
+        "loss_seconds": 0.051361669,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.128454082,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.17966994,
+        "loss_seconds": 0.050859074,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.128786761,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.185472322,
+        "loss_seconds": 0.056791529,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.128657791,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.204200288,
+        "loss_seconds": 0.075592661,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.12858237,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.182762827,
+        "loss_seconds": 0.051657019,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.131081864,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.931979807,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 8,
+    "repeat": 3,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t8-r3.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.180341367,
+        "loss_seconds": 0.051018348,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.129300566,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.178117732,
+        "loss_seconds": 0.050391402,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.127703698,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.184350304,
+        "loss_seconds": 0.056800884,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.127525906,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.19503867,
+        "loss_seconds": 0.050101202,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.144913573,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.177339974,
+        "loss_seconds": 0.050189005,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.127127655,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 0.915213694,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 8,
+    "repeat": 4,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t8-r4.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.345312362,
+        "loss_seconds": 0.12642506,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.218849802,
+        "validation_loss": 1.082773097738365
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.310882703,
+        "loss_seconds": 0.086900438,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.223905672,
+        "validation_loss": 1.080671652008467
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.312164572,
+        "loss_seconds": 0.095874635,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.216253149,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.296508045,
+        "loss_seconds": 0.078805934,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.21766358,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.269002364,
+        "loss_seconds": 0.058503351,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.210461052,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 1.533909722,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-blas",
+    "threads": 8,
+    "repeat": 5,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-blas",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-blas-t8-r5.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.273625867,
+        "loss_seconds": 0.083067178,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.19053748,
+        "validation_loss": 1.0827730977383647
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.273936536,
+        "loss_seconds": 0.082538003,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.19137515,
+        "validation_loss": 1.0806716520084672
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.280038557,
+        "loss_seconds": 0.084371779,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.195644487,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.279660352,
+        "loss_seconds": 0.08399136,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.19564616,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.273579948,
+        "loss_seconds": 0.083354815,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.190202622,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 1.380863833,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-scalar",
+    "threads": 1,
+    "repeat": 1,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-scalar",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-scalar-t1-r1.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.274062547,
+        "loss_seconds": 0.084289465,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.189752504,
+        "validation_loss": 1.0827730977383647
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.275628764,
+        "loss_seconds": 0.082609076,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.192997706,
+        "validation_loss": 1.0806716520084672
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.317087604,
+        "loss_seconds": 0.083231114,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.23383519,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.27800536,
+        "loss_seconds": 0.082354505,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.195629677,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.271348433,
+        "loss_seconds": 0.082490377,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.188836425,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 1.416157202,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-scalar",
+    "threads": 1,
+    "repeat": 2,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-scalar",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-scalar-t1-r2.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.275544106,
+        "loss_seconds": 0.082678931,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.192844136,
+        "validation_loss": 1.0827730977383647
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.280933862,
+        "loss_seconds": 0.086874121,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.194036196,
+        "validation_loss": 1.0806716520084672
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.284686786,
+        "loss_seconds": 0.085593799,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.199071376,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.287455221,
+        "loss_seconds": 0.087168641,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.200263987,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.281764746,
+        "loss_seconds": 0.084687362,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.197056195,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 1.410411339,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-scalar",
+    "threads": 1,
+    "repeat": 3,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-scalar",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-scalar-t1-r3.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.276073718,
+        "loss_seconds": 0.083540696,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.192512244,
+        "validation_loss": 1.0827730977383647
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.279373575,
+        "loss_seconds": 0.084285885,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.195065348,
+        "validation_loss": 1.0806716520084672
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.280304844,
+        "loss_seconds": 0.084338023,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.19593961,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.279892926,
+        "loss_seconds": 0.083200914,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.196657789,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.277283938,
+        "loss_seconds": 0.08233918,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.19492388,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 1.392964106,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-scalar",
+    "threads": 1,
+    "repeat": 4,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-scalar",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-scalar-t1-r4.nn"
+    ]
+  },
+  {
+    "history": [
+      {
+        "epoch": 1,
+        "epoch_seconds": 0.277790895,
+        "loss_seconds": 0.085358255,
+        "train_loss": 1.0756982249045457,
+        "update_seconds": 0.192411582,
+        "validation_loss": 1.0827730977383647
+      },
+      {
+        "epoch": 2,
+        "epoch_seconds": 0.278392769,
+        "loss_seconds": 0.082467063,
+        "train_loss": 1.0729531760013786,
+        "update_seconds": 0.195903525,
+        "validation_loss": 1.0806716520084672
+      },
+      {
+        "epoch": 3,
+        "epoch_seconds": 0.281584931,
+        "loss_seconds": 0.083750161,
+        "train_loss": 1.0735823312764807,
+        "update_seconds": 0.19781348,
+        "validation_loss": 1.084224177910755
+      },
+      {
+        "epoch": 4,
+        "epoch_seconds": 0.282957156,
+        "loss_seconds": 0.084556081,
+        "train_loss": 1.072690349716518,
+        "update_seconds": 0.198378513,
+        "validation_loss": 1.080198538103466
+      },
+      {
+        "epoch": 5,
+        "epoch_seconds": 0.284404548,
+        "loss_seconds": 0.083735627,
+        "train_loss": 1.072204985834148,
+        "update_seconds": 0.200647972,
+        "validation_loss": 1.0815810753010862
+      }
+    ],
+    "total_seconds": 1.405155876,
+    "train_loss": 1.072204985834148,
+    "validation_accuracy": 0.4072265625,
+    "validation_loss": 1.0815810753010862,
+    "backend": "candidate-scalar",
+    "threads": 1,
+    "repeat": 5,
+    "command": [
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/candidate-scalar",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/train.fen",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/validation.fen",
+      "5",
+      "32",
+      "43",
+      "/home/mathys/3/CNA/mytorch-blas-evidence/prepared-03/measurements/candidate-scalar-t1-r5.nn"
+    ]
+  }
+]

@@ -1,0 +1,18 @@
+{
+  "started_utc": "2026-11-07T13:33:35Z",
+  "threads": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "repeats": 5,
+  "wait_pid": 228123,
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "thread_variables": [
+    "OPENBLAS_NUM_THREADS",
+    "OPENBLAS_DEFAULT_NUM_THREADS",
+    "OMP_NUM_THREADS",
+    "VECLIB_MAXIMUM_THREADS"
+  ]
+}
