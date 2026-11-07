@@ -88,7 +88,8 @@ training, experiment, and defense checklist.
 C++ handles network computation and the command-line programs. Python handles
 CLI tests, dataset preparation, experiment orchestration, and result analysis.
 Clean and split data with the
-[preparation notebook](notebooks/prepare_dataset.ipynb). See the
+[preparation notebook](notebooks/prepare_dataset.ipynb), then inspect class balance
+and position diversity with the [dataset analysis notebook](notebooks/dataset_analysis.ipynb). See the
 [dataset guide](docs/datasets.md) for encoding, cleaning, and splitting, and the
 [architecture guide](docs/architecture.md) for details.
 Experiments use the [frozen reference dataset](docs/datasets.md); verify it with

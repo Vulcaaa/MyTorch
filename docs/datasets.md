@@ -9,6 +9,7 @@ Follow the preparation workflow: **raw data → cleaning → train/validation/te
 2. [Dataset cleaning](#2-dataset-cleaning)
 3. [Dataset splitting](#3-dataset-splitting)
 4. [Frozen reference datasets](#4-frozen-reference-datasets)
+5. [Analyze balance and diversity](#5-analyze-balance-and-diversity)
 
 ---
 
@@ -402,3 +403,29 @@ make experiment OUTPUT=results/experiments/chess-v1-preparation OPTIONS=--prepar
 The runner captures the resolved dataset paths and hashes in its experiment
 manifest and detects changes during a campaign. This issue adds no training,
 model selection, or final test evaluation.
+
+## 5. Analyze balance and diversity
+
+Open [`notebooks/dataset_analysis.ipynb`](../notebooks/dataset_analysis.ipynb) and
+run all cells with the dependencies from `notebooks/requirements.txt`. It reads
+the frozen `chess-v1` train and validation files, checks their manifest hashes,
+and leaves the reserved test file unopened. Recreate the reference first on a
+fresh checkout using the commands above.
+
+The notebook shows class proportions, material-count distributions, side to
+move, piece frequencies and board coverage. It checks duplicate input groups,
+conflicting labels and train/validation overlap using the encoder's input key.
+Missing or multiple kings are flagged, but this is not a full chess-legality
+or label audit.
+
+Two train-fitted diagnostic rules (global majority and majority by side to
+move/piece count) quantify simple sampling shortcuts on validation. These rules
+do not replace the supervised neural model. Exports in
+`results/dataset-analysis/summary.json` and five PNG figures retain the values
+behind the plots; those generated files are ignored by Git.
+
+Use the findings alongside model errors to justify a controlled experiment,
+such as training-only balancing, material-coverage enrichment or a longer
+baseline run. Compare validation macro-F1, per-class recall and runtime before
+keeping a change. Do not infer real-game representativeness from a balanced
+split, or tune settings on the final test set.
