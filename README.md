@@ -15,7 +15,8 @@ backpropagation, checkpoints, and experiment integration.
 
 ## Build
 
-Requires GNU Make and a C++17 compiler (GCC by default). Python tools and tests
+Requires GNU Make, a C++17 compiler (GCC by default), and `yaml-cpp`
+(`sudo apt-get install libyaml-cpp-dev` on Ubuntu/Debian). Python tools and tests
 require Python 3 and `python3 -m pip install -r requirements.txt`.
 Training uses Accelerate on macOS or OpenBLAS when detected on Linux, with a
 portable scalar fallback. See [CPU acceleration](docs/training.md#cpu-blas-backend)
@@ -33,7 +34,7 @@ for dependencies, thread settings and benchmarks.
 Generate three networks from the example configuration:
 
 ```sh
-./my_torch_generator configs/networks/basic-network.conf 3
+./my_torch_generator configs/networks/basic-network.yml 3
 ```
 
 Models are saved in `models/` under the current directory as `basic-network_1.nn`,
@@ -57,7 +58,7 @@ for input and model requirements.
 Train the reference network with the frozen train/validation datasets:
 
 ```sh
-python3 scripts/experiment.py configs/experiments/train-reference.yml \
+python3 scripts/experiment.py configs/protocols/train-reference.yml \
   --train-only --output results/training/YYYY-MM-DD-reference-01
 ```
 
@@ -82,7 +83,7 @@ training, experiment, and defense checklist.
 - `src/analyzer/` — chess analyzer
 - `src/logging/` — run logs shared by both programs
 - `configs/networks/` — network architectures and parameters
-- `configs/experiments/` — training and comparison protocols
+- `configs/protocols/` — training and comparison protocols
 - `tests/` — tests
 
 C++ handles network computation and the command-line programs. Python handles

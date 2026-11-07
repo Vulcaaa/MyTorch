@@ -1,0 +1,8 @@
+# Layer widths, including input and output.
+layers: [777, 128, 64, 3]
+hidden_activation: sigmoid
+output_activation: softmax
+learning_rate: 0.01 # Default when omitted.
+initialization: xavier
+# Multiple networks use seed, seed + 1, seed + 2, etc.
+seed: 42 # Default when omitted.

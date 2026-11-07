@@ -2,8 +2,11 @@ GENERATOR = my_torch_generator
 ANALYZER = my_torch_analyzer
 CXX = g++
 PYTHON = python3
-CONFIG ?= configs/experiments/compare-network-sizes.yml
-CPPFLAGS = -Isrc -Isrc/chess/ -Isrc/neural/ -Iinclude -MMD -MP
+CONFIG ?= configs/protocols/compare-network-sizes.yml
+YAML_CPP_CFLAGS ?=
+YAML_CPP_LIBS ?= -lyaml-cpp
+LDLIBS += $(YAML_CPP_LIBS)
+CPPFLAGS = -Isrc -Isrc/chess/ -Isrc/neural/ -Iinclude $(YAML_CPP_CFLAGS) -MMD -MP
 CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -O8
 
 # BLAS=auto uses Accelerate on macOS, OpenBLAS via pkg-config on Linux,

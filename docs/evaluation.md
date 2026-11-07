@@ -5,7 +5,7 @@
 | Directory | Purpose |
 | --- | --- |
 | `configs/networks/` | Network architecture and parameters |
-| `configs/experiments/` | YAML training and comparison protocols: data, initial model, budget, hypothesis |
+| `configs/protocols/` | YAML training and comparison protocols: data, initial model, budget, hypothesis |
 | `dataset/` | Shared datasets and frozen versions; never copied into results |
 | `results/training/` | Standalone training or checkpoint continuation |
 | `results/evaluation/` | Standalone validation or final test evaluation |
@@ -24,13 +24,30 @@ Open **README.md first** in any result directory. No HTML reports, source-code
 snapshots, exported PNGs, or dataset-analysis directory are generated. Dataset
 analysis remains in its notebook and [dataset documentation](datasets.md).
 
+## Network configuration
+
+`configs/networks/basic-network.yml` defines the architecture and defaults:
+
+```yaml
+layers: [777, 128, 64, 3]
+hidden_activation: sigmoid
+output_activation: softmax
+learning_rate: 0.01
+initialization: xavier
+seed: 42
+```
+
+Protocol `network` paths reference this file. Architecture overrides also use
+YAML lists, for example `layers: [777, 64, 3]`. The protocol's seed list overrides
+the network seed. Continuations read settings from the saved `.nn` model instead.
+
 ## Train one model
 
 Build with `make`. Protocol paths are relative to the configuration file.
 For a fresh reference model:
 
 ```sh
-python3 scripts/experiment.py configs/experiments/train-reference.yml \
+python3 scripts/experiment.py configs/protocols/train-reference.yml \
   --train-only --output results/training/YYYY-MM-DD-reference-01
 ```
 
@@ -40,7 +57,7 @@ It allows **400 additional epochs**, batch size 32, patience 20 and min_delta
 the protocol to select your own initial model.
 
 ```sh
-python3 scripts/experiment.py configs/experiments/continue-reference.yml \
+python3 scripts/experiment.py configs/protocols/continue-reference.yml \
   --train-only --output results/training/2026-11-07-continue-reference-02
 ```
 
@@ -94,13 +111,13 @@ Undefined scores are zero; macro F1 includes Nothing, Check and Checkmate.
 
 ## Compare configurations
 
-Edit `configs/experiments/compare-network-sizes.yml`. It declares architectures,
+Edit `configs/protocols/compare-network-sizes.yml`. It declares architectures,
 seeds, prepared train/validation datasets and common training settings once.
 The compact/reference pair is a starting comparison, not a tuned final choice.
 Verify the [frozen dataset](datasets.md) before a campaign.
 
 ```sh
-python3 scripts/experiment.py configs/experiments/compare-network-sizes.yml \
+python3 scripts/experiment.py configs/protocols/compare-network-sizes.yml \
   --output results/experiments/2026-11-10-compare-network-sizes-01
 
 # Quick technical check on tiny temporary datasets; automatically cleaned.
@@ -184,6 +201,5 @@ that are removed automatically, including when a test fails. No keep-files optio
 or permanent `results/smoke-tests/` directory is used. Tests do not delete real
 training results or models.
 
-Install `requirements.txt` for the YAML protocol reader. Network files remain
-`.conf`; generated `config.json` and metrics remain JSON. YAML comments document
+Install `requirements.txt` for the YAML protocol reader. Network files are YAML too; generated `config.json` and metrics remain JSON. YAML comments document
 choices in editable protocols without adding extra metadata files.

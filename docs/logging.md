@@ -43,11 +43,11 @@ precision, such as `0.081 s`.
 ## Generation log
 
 The log records each configuration with its settings, every saved model with
-its seed, and the total time. Example for `./my_torch_generator basic_network.conf 2`:
+its seed, and the total time. Example for `./my_torch_generator basic-network.yml 2`:
 
 ```text
 2026-11-05T19:00:28.028Z [INFO] Generation started
-2026-11-05T19:00:28.028Z [INFO] Configuration basic_network.conf: layers=777,128,64,3 hidden_activation=sigmoid output_activation=softmax initialization=xavier learning_rate=0.01 seed=42
+2026-11-05T19:00:28.028Z [INFO] Configuration basic-network.yml: layers=777,128,64,3 hidden_activation=sigmoid output_activation=softmax initialization=xavier learning_rate=0.01 seed=42
 2026-11-05T19:00:28.070Z [INFO] Generated models/basic-network_1.nn (seed 42)
 2026-11-05T19:00:28.109Z [INFO] Generated models/basic_network_2.nn (seed 43)
 2026-11-05T19:00:28.109Z [INFO] Generation complete: 2 models in 0.081 s

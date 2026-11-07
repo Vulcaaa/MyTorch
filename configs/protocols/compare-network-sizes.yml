@@ -13,11 +13,11 @@ datasets:
   split_metadata: ../../dataset/references/chess-v1/splits/split_info.json
 configurations:
   - name: compact
-    network: ../networks/basic-network.conf
+    network: ../networks/basic-network.yml
     overrides:
-      layers: 777,64,3
+      layers: [777, 64, 3]
   - name: reference
-    network: ../networks/basic-network.conf
+    network: ../networks/basic-network.yml
     overrides: {}
 training:
   command: builtin

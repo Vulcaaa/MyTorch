@@ -24,7 +24,7 @@ Run from the repository root after `make` and [dataset preparation](datasets.md)
 Generate an initial model first (the generator skips existing filenames):
 
 ```sh
-./my_torch_generator configs/networks/basic-network.conf 1
+./my_torch_generator configs/networks/basic-network.yml 1
 ```
 
 Then train it. Replace `train.txt` and `validation.txt` with your prepared,

@@ -59,31 +59,38 @@ def write_json(path, data):
 
 
 def network_options(path, overrides):
-    options = {}
-    for line in path.read_text(encoding="utf-8").splitlines():
-        content = line.split("#", 1)[0].strip()
-        if not content:
-            continue
-        key, separator, value = content.partition("=")
-        key, value = key.strip(), value.strip()
-        if not separator or key not in NETWORK_KEYS or key in options or not value:
-            raise ValueError(f"{path}: invalid or duplicate network option {key!r}")
-        options[key] = value
+    try:
+        text = path.read_text(encoding="utf-8")
+        document = yaml.compose(text)
+        if isinstance(document, yaml.MappingNode):
+            names = [key.value for key, _ in document.value if isinstance(key, yaml.ScalarNode)]
+            if len(names) != len(set(names)):
+                raise ValueError(f"{path}: duplicate network option")
+        options = yaml.safe_load(text)
+    except yaml.YAMLError as error:
+        raise ValueError(f"{path}: invalid network YAML: {error}") from error
+    if not isinstance(options, dict) or set(options) - NETWORK_KEYS:
+        raise ValueError(f"{path}: expected a mapping of known network options")
     if not isinstance(overrides, dict) or set(overrides) - (NETWORK_KEYS - {"seed"}):
         raise ValueError("network overrides must use known options; seeds belong in the central seed list")
-    for key, value in overrides.items():
-        if not isinstance(value, (str, int, float)) or isinstance(value, bool):
-            raise ValueError(f"invalid override for {key}")
-        value = str(value)
-        if not value.strip() or any(character in value for character in "\n\r#"):
-            raise ValueError(f"invalid override for {key}")
-        options[key] = value
-    options.pop("seed", None)  # Experiment seeds override the network file's default.
+    options.update(overrides)
+    options.pop("seed", None)
     if not {"layers", "hidden_activation", "output_activation", "initialization"} <= options.keys():
         raise ValueError(f"{path}: missing required network options")
-    sizes = [int(size.strip()) for size in options["layers"].split(",")]
+    sizes = options["layers"]
+    if (not isinstance(sizes, list) or len(sizes) < 2 or
+            any(type(size) is not int or size <= 0 for size in sizes)):
+        raise ValueError("layers must be a YAML list of positive integers")
     if sizes[0] != 777 or sizes[-1] != 3:
         raise ValueError("experiment networks require 777 inputs and 3 outputs")
+    for key, allowed in (("hidden_activation", ("sigmoid", "relu", "tanh")),
+                         ("output_activation", ("sigmoid", "softmax")),
+                         ("initialization", ("xavier", "he"))):
+        if options[key] not in allowed:
+            raise ValueError(f"invalid {key}")
+    rate = options.get("learning_rate", 0.01)
+    if isinstance(rate, bool) or not isinstance(rate, (int, float)) or not math.isfinite(rate) or rate <= 0:
+        raise ValueError("learning_rate must be a finite positive number")
     return options
 
 
@@ -311,9 +318,9 @@ def run_experiment(config_path, output, prepare=False, generator=None, analyzer=
                             run["previous_history"] = config["previous_history"]
                             run["previous_checkpoint_epoch"] = config["previous_checkpoint_epoch"]
                     else:
-                        network_config = work / "network.conf"
-                        network_config.write_text("".join(f"{key}={value}\n" for key, value in config["options"].items())
-                                                  + f"seed={seed}\n", encoding="utf-8")
+                        network_config = work / "network.yml"
+                        network_config.write_text(yaml.safe_dump(dict(config["options"], seed=seed), sort_keys=False),
+                                                  encoding="utf-8")
                         print(f"Generate {config['name']} / seed {seed}", flush=True)
                         run["generation"] = run_command([tools["generator"]["path"], str(network_config), "1"],
                                                         work, directory / "generation.log")

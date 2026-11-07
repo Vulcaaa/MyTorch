@@ -48,9 +48,9 @@ class ExperimentTests(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory(prefix="mytorch-experiment-")
         self.addCleanup(temporary.cleanup)
         self.work = Path(temporary.name)
-        self.network = self.work / "base.conf"
-        self.network.write_text("layers=777,3\nhidden_activation=relu\n"
-                                "output_activation=softmax\ninitialization=he\nseed=999\n")
+        self.network = self.work / "base.yml"
+        self.network.write_text("layers: [777, 3]\nhidden_activation: relu\n"
+                                "output_activation: softmax\ninitialization: he\nseed: 999\n")
         for role, counter in (("train", 1), ("validation", 2)):
             (self.work / f"{role}.txt").write_text(
                 f"8/8/8/8/8/8/8/8 w - - {counter} 1 Nothing\n"
@@ -61,8 +61,8 @@ class ExperimentTests(unittest.TestCase):
         self.spec = {
             "version": 1, "seeds": [42, 43, 44],
             "datasets": {"train": "train.txt", "validation": "validation.txt"},
-            "configurations": [{"name": "small", "network": "base.conf", "overrides": {}},
-                               {"name": "large", "network": "base.conf", "overrides": {"layers": "777,2,3"}}],
+            "configurations": [{"name": "small", "network": "base.yml", "overrides": {}},
+                               {"name": "large", "network": "base.yml", "overrides": {"layers": [777, 2, 3]}}],
             "training": {"command": None, "settings": None}}
         self.config = self.work / "protocol.yml"
         self.output = self.work / "results with spaces"
@@ -101,6 +101,15 @@ class ExperimentTests(unittest.TestCase):
         self.config.write_text("version: 1\nseeds: [42\n")
         with self.assertRaisesRegex(ValueError, "invalid YAML"):
             run_experiment(self.config, self.output)
+        self.assertFalse(self.output.exists())
+
+    def test_network_yaml_rejects_duplicate_keys_and_scalar_layers(self):
+        self.write_spec()
+        original = self.network.read_text()
+        for content in (original + "seed: 42\n", original.replace("[777, 3]", "777,3")):
+            self.network.write_text(content)
+            with self.subTest(content=content), self.assertRaises(ValueError):
+                load_spec(self.config)
         self.assertFalse(self.output.exists())
 
     def test_unconfigured_training_fails_before_creating_output(self):
@@ -302,7 +311,7 @@ class ExperimentTests(unittest.TestCase):
 
     def test_builtin_accepts_initial_checkpoint_when_validation_does_not_improve(self):
         self.enable_builtin()
-        self.spec["configurations"][0]["overrides"] = {"learning_rate": "1e-30"}
+        self.spec["configurations"][0]["overrides"] = {"learning_rate": 1e-30}
         self.run_campaign()
         manifest = json.loads((self.output / "config.json").read_text())
         run = manifest["runs"][0]

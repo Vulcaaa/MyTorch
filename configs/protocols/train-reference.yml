@@ -10,7 +10,7 @@ datasets:
   split_metadata: ../../dataset/references/chess-v1/splits/split_info.json
 configurations:
   - name: reference
-    network: ../networks/basic-network.conf
+    network: ../networks/basic-network.yml
     overrides: {}
 training:
   command: builtin

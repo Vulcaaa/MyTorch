@@ -77,7 +77,7 @@ reference under `dataset/references/`, with a tracked manifest in
 `dataset/manifests/`. Experiments use the [frozen reference](datasets.md).
 `make dataset` does not exist.
 
-Experiment commands use `CONFIG` (defaults to `configs/experiments/compare-network-sizes.yml`),
+Experiment commands use `CONFIG` (defaults to `configs/protocols/compare-network-sizes.yml`),
 `OUTPUT` (required new directory) and optional `OPTIONS`. Python commands use
 the `PYTHON` variable, which defaults to `python3`. Install the YAML dependency from `requirements.txt` in a virtual environment.
 Notebook dependencies are listed in `notebooks/requirements.txt`.

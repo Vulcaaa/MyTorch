@@ -12,11 +12,11 @@ import unittest
 ROOT = Path(__file__).resolve().parents[1]
 LOG_LINE = re.compile(r"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z \[(INFO|WARN|ERROR)\] (.*)")
 CONFIG = (
-    "layers=3,2,1\n"
-    "hidden_activation=relu\n"
-    "output_activation=sigmoid\n"
-    "initialization=he\n"
-    "seed=42\n"
+    "layers: [3, 2, 1]\n"
+    "hidden_activation: relu\n"
+    "output_activation: sigmoid\n"
+    "initialization: he\n"
+    "seed: 42\n"
 )
 
 
@@ -26,7 +26,7 @@ class CommandLineTests(unittest.TestCase):
         self.addCleanup(self.temporary.cleanup)
         self.work = Path(self.temporary.name)
         self.models = self.work / "models"
-        (self.work / "network.conf").write_text(CONFIG)
+        (self.work / "network.yml").write_text(CONFIG)
 
     def run_command(self, executable, *arguments):
         return subprocess.run(
@@ -53,8 +53,8 @@ class CommandLineTests(unittest.TestCase):
         self.assertEqual(list(self.models.glob("*.nn")), [])
 
     def test_generate_multiple_configs_and_distinct_models(self):
-        (self.work / "other.conf").write_text(CONFIG.replace("layers=3,2,1", "layers=2,1"))
-        self.generate("network.conf", "3", "other.conf", "2")
+        (self.work / "other.yml").write_text(CONFIG.replace("layers: [3, 2, 1]", "layers: [2, 1]"))
+        self.generate("network.yml", "3", "other.yml", "2")
         self.assertEqual(
             {path.name for path in self.models.glob("*.nn")},
             {"network_1.nn", "network_2.nn", "network_3.nn", "other_1.nn", "other_2.nn"},
@@ -72,9 +72,9 @@ class CommandLineTests(unittest.TestCase):
         (self.models / "network_3.nn").symlink_to("missing-target")
         (self.models / "protected").write_text("protected target")
         (self.models / "network_4.nn").symlink_to("protected")
-        self.generate("network.conf", "2")
+        self.generate("network.yml", "2")
         previous = {index: (self.models / f"network_{index}.nn").read_bytes() for index in (5, 6)}
-        self.generate("network.conf", "1")
+        self.generate("network.yml", "1")
         self.assertTrue((self.models / "network_7.nn").is_file())
         self.assertEqual((self.models / "network_1.nn").read_text(), "do not overwrite")
         self.assertTrue((self.models / "network_2.nn").is_dir())
@@ -87,32 +87,32 @@ class CommandLineTests(unittest.TestCase):
     def test_same_basename_in_different_directories(self):
         for folder in ("a", "b"):
             (self.work / folder).mkdir()
-            (self.work / folder / "shared.conf").write_text(CONFIG)
-        self.generate("a/shared.conf", "1", "b/shared.conf", "1")
+            (self.work / folder / "shared.yml").write_text(CONFIG)
+        self.generate("a/shared.yml", "1", "b/shared.yml", "1")
         self.assertEqual({path.name for path in self.models.glob("*.nn")}, {"shared_1.nn", "shared_2.nn"})
 
     def test_config_name_with_spaces_and_multiple_dots(self):
-        (self.work / "my network.v1.conf").write_text(CONFIG)
-        self.generate("my network.v1.conf", "1")
+        (self.work / "my network.v1.yml").write_text(CONFIG)
+        self.generate("my network.v1.yml", "1")
         self.assertEqual(self.model("my network.v1_1.nn")["format"], "mytorch")
 
     def test_models_path_is_a_file(self):
         self.models.write_text("keep this file")
-        result = self.run_command("my_torch_generator", "network.conf", "1")
+        result = self.run_command("my_torch_generator", "network.yml", "1")
         self.assertEqual(result.returncode, 84)
         self.assertTrue(result.stderr)
         self.assertEqual(self.models.read_text(), "keep this file")
         self.assertEqual(list(self.work.glob("*.nn")), [])
 
     def test_seed_wraparound(self):
-        (self.work / "network.conf").write_text(CONFIG.replace("seed=42", "seed=4294967295"))
-        self.generate("network.conf", "2")
+        (self.work / "network.yml").write_text(CONFIG.replace("seed: 42", "seed: 4294967295"))
+        self.generate("network.yml", "2")
         self.assertEqual(self.model("network_1.nn")["config"]["seed"], 4294967295)
         self.assertEqual(self.model("network_2.nn")["config"]["seed"], 0)
 
     def test_invalid_arguments(self):
-        cases = [[], ["network.conf"], ["network.conf", "1", "network.conf"], ["--unknown"]]
-        cases += [["network.conf", count] for count in (
+        cases = [[], ["network.yml"], ["network.yml", "1", "network.yml"], ["--unknown"]]
+        cases += [["network.yml", count] for count in (
             "0", "-1", "1.5", "1abc", "+1", "", " 1", "1 ", "2147483648",
         )]
         for arguments in cases:
@@ -123,8 +123,8 @@ class CommandLineTests(unittest.TestCase):
                 self.assertEqual(list(self.models.glob("*.nn")), [])
 
     def test_missing_or_invalid_config(self):
-        (self.work / "invalid.conf").write_text("layers=3,0,1\n")
-        for config in ("missing.conf", "invalid.conf"):
+        (self.work / "invalid.yml").write_text("layers: [3, 0, 1]\n")
+        for config in ("missing.yml", "invalid.yml"):
             with self.subTest(config=config):
                 result = self.run_command("my_torch_generator", config, "1")
                 self.assertEqual(result.returncode, 84)
@@ -148,8 +148,8 @@ class CommandLineTests(unittest.TestCase):
         return messages
 
     def test_generation_log(self):
-        (self.work / "other.conf").write_text(CONFIG.replace("layers=3,2,1", "layers=2,1"))
-        result = self.generate("network.conf", "2", "other.conf", "1")
+        (self.work / "other.yml").write_text(CONFIG.replace("layers: [3, 2, 1]", "layers: [2, 1]"))
+        result = self.generate("network.yml", "2", "other.yml", "1")
         self.assertEqual(result.stdout, "")
         [log] = self.logs("generation")
         self.assertRegex(log.name, r"^generation_\d{4}-\d\d-\d\d_\d{6}\.log$")
@@ -157,24 +157,24 @@ class CommandLineTests(unittest.TestCase):
         settings = "hidden_activation=relu output_activation=sigmoid initialization=he learning_rate=0.01"
         self.assertEqual(messages[:-1], [
             "[INFO] Generation started",
-            f"[INFO] Configuration network.conf: layers=3,2,1 {settings} seed=42",
+            f"[INFO] Configuration network.yml: layers=3,2,1 {settings} seed=42",
             "[INFO] Generated models/network_1.nn (seed 42)",
             "[INFO] Generated models/network_2.nn (seed 43)",
-            f"[INFO] Configuration other.conf: layers=2,1 {settings} seed=42",
+            f"[INFO] Configuration other.yml: layers=2,1 {settings} seed=42",
             "[INFO] Generated models/other_1.nn (seed 42)",
         ])
         self.assertRegex(messages[-1], r"^\[INFO\] Generation complete: 3 models in \d+\.\d{3} s$")
 
     def test_each_generation_run_has_its_own_log(self):
-        self.generate("network.conf", "1")
-        self.generate("network.conf", "1")
+        self.generate("network.yml", "1")
+        self.generate("network.yml", "1")
         logs = self.logs("generation")
         self.assertEqual(len(logs), 2)
         self.assertIn("[INFO] Generated models/network_1.nn (seed 42)", self.log_messages(logs[0]))
         self.assertIn("[INFO] Generated models/network_2.nn (seed 42)", self.log_messages(logs[1]))
 
     def test_generation_logs_failures(self):
-        result = self.run_command("my_torch_generator", "network.conf", "0")
+        result = self.run_command("my_torch_generator", "network.yml", "0")
         self.assertEqual(result.returncode, 84)
         self.assertEqual(result.stdout, "")
         self.assertEqual(result.stderr, "my_torch_generator: network count must be a positive integer\n")
@@ -186,7 +186,7 @@ class CommandLineTests(unittest.TestCase):
 
     def test_generation_continues_without_log(self):
         (self.work / "logs").write_text("not a directory")
-        result = self.run_command("my_torch_generator", "network.conf", "1")
+        result = self.run_command("my_torch_generator", "network.yml", "1")
         self.assertEqual(result.returncode, 0)
         self.assertEqual(result.stdout, "")
         self.assertRegex(result.stderr, r"^warning: logging disabled: [^\n]*logs[^\n]*\n$")
@@ -198,9 +198,9 @@ class CommandLineTests(unittest.TestCase):
         self.assertFalse((self.work / "logs").exists())
 
     def analyzer_model(self):
-        path = self.work / "chess.conf"
-        path.write_text(CONFIG.replace("layers=3,2,1", "layers=777,3")
-                        .replace("output_activation=sigmoid", "output_activation=softmax"))
+        path = self.work / "chess.yml"
+        path.write_text(CONFIG.replace("layers: [3, 2, 1]", "layers: [777, 3]")
+                        .replace("output_activation: sigmoid", "output_activation: softmax"))
         self.generate(path.name, "1")
         return "models/chess_1.nn"
 

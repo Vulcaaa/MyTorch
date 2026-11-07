@@ -386,7 +386,7 @@ existing output directory. Never regenerate a manifest to conceal a changed file
 
 ### Experiment paths
 
-[`configs/experiments/compare-network-sizes.yml`](../configs/experiments/compare-network-sizes.yml) resolves train, validation,
+[`configs/protocols/compare-network-sizes.yml`](../configs/protocols/compare-network-sizes.yml) resolves train, validation,
 and metadata to `dataset/references/chess-v1/splits/`. The standalone comparison
 notebook defaults to this validation file too. Tests check the supplied config
 against a small frozen reference; the real paths and hashes were also checked

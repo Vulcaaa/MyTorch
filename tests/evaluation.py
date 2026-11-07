@@ -41,9 +41,9 @@ class EvaluationTests(unittest.TestCase):
     def test_real_analyzer_reports_and_failures(self):
         with tempfile.TemporaryDirectory(prefix="mytorch-eval-") as directory:
             work = Path(directory)
-            config = work / "constant.conf"
-            config.write_text("layers=777,3\nhidden_activation=relu\n"
-                              "output_activation=softmax\ninitialization=he\nseed=42\n")
+            config = work / "constant.yml"
+            config.write_text("layers: [777, 3]\nhidden_activation: relu\n"
+                              "output_activation: softmax\ninitialization: he\nseed: 42\n")
             result = subprocess.run([str(ROOT / "my_torch_generator"), str(config), "1"],
                                     cwd=work, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
