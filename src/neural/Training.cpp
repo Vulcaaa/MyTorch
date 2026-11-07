@@ -9,6 +9,7 @@
 
 namespace {
 
+#ifndef MYTORCH_USE_BLAS
 // Zero-filled values shaped like the given parameters.
 std::vector<Layer> zerosLike(const std::vector<Layer>& layers)
 {
@@ -30,6 +31,7 @@ void forEachValue(std::vector<Layer>& layers, Function function)
             function(value);
     }
 }
+#endif
 
 } // namespace
 
@@ -80,6 +82,9 @@ double NeuralNetwork::trainBatchView(SampleView batch)
 double NeuralNetwork::loss(const std::vector<TrainingSample>& samples) const
 {
     validateSamples(samples);
+#ifdef MYTORCH_USE_BLAS
+    return batchedLossGradients({samples, nullptr, samples.size()}, false).loss;
+#else
     double total = 0.0;
     ForwardPass pass(_layers);
     for (const auto& sample : samples) {
@@ -92,6 +97,7 @@ double NeuralNetwork::loss(const std::vector<TrainingSample>& samples) const
         throw std::runtime_error("loss is not finite: network outputs overflowed "
             "(try a lower learning_rate)");
     return mean;
+#endif
 }
 
 std::vector<Layer> NeuralNetwork::gradients(const std::vector<TrainingSample>& samples) const
@@ -103,6 +109,9 @@ NeuralNetwork::LossGradients NeuralNetwork::lossAndGradients(
     SampleView samples) const
 {
     validateSamples(samples);
+#ifdef MYTORCH_USE_BLAS
+    return batchedLossGradients(samples, true);
+#else
     LossGradients result{0.0, zerosLike(_layers)};
     ForwardPass pass(_layers);
     std::vector<std::vector<double>> deltas;
@@ -123,6 +132,7 @@ NeuralNetwork::LossGradients NeuralNetwork::lossAndGradients(
         throw std::runtime_error("loss or gradients are not finite: network outputs overflowed "
             "(try a lower learning_rate)");
     return result;
+#endif
 }
 
 double NeuralNetwork::backpropagate(const TrainingSample& sample, std::vector<Layer>& sums,

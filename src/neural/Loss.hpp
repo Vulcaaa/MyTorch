@@ -12,3 +12,5 @@
 // activation has no loss (only softmax and sigmoid do).
 double sampleLoss(const std::vector<double>& logits, const std::vector<double>& target,
                   const std::string& outputActivation);
+double sampleLoss(const double* logits, const double* target, std::size_t count,
+                  const std::string& outputActivation);

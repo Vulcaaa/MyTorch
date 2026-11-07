@@ -1,6 +1,7 @@
 #include "analyzer/Training.hpp"
 #include "chess/Encoding.hpp"
 #include "neural/ModelSerializer.hpp"
+#include "neural/CpuBackend.hpp"
 #include "TestSupport.hpp"
 
 #include <nlohmann/json.hpp>
@@ -475,6 +476,7 @@ void testTrainingLog()
         "[INFO] Train set " + arguments.chessFile + ": 5 positions",
         "[INFO] Validation set " + arguments.training.validationFile + ": 1 position",
         "[INFO] Settings: epochs=8 batch_size=2 patience=2 min_delta=0.1",
+        "[INFO] CPU backend=" + std::string(cpuBackendName()) + " threads=auto/environment",
         "[INFO] Initial validation_loss=1",
         "[INFO] History: " + arguments.training.historyFile,
         "[INFO] Epoch 1/8: train_loss=0.25 validation_loss=0.6 (...)",
@@ -495,7 +497,7 @@ void testTrainingLog()
         runWithProbe(network, failing.arguments, broken, progress);
     });
     const auto messages = logMessages(failing.directory.path / "logs");
-    test::check(messages.size() == 5 && messages.back() == "[INFO] History: "
+    test::check(messages.size() == 6 && messages.back() == "[INFO] History: "
         + failing.arguments.training.historyFile, "failed run logged unexpected entries");
 }
 

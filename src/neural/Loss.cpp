@@ -8,26 +8,26 @@ namespace {
 
 // -log(softmax(z)_k) = log(sum_j exp(z_j)) - z_k. The largest logit m is factored out
 // so exp never overflows: log(sum_j exp(z_j)) - z_k = (m - z_k) + log(sum_j exp(z_j - m)).
-double crossEntropy(const std::vector<double>& logits, const std::vector<double>& target)
+double crossEntropy(const double* logits, const double* target, std::size_t count)
 {
-    const double maximum = *std::max_element(logits.begin(), logits.end());
+    const double maximum = *std::max_element(logits, logits + count);
     double total = 0.0;
-    for (const double z : logits)
-        total += std::exp(z - maximum);
+    for (std::size_t k = 0; k < count; ++k)
+        total += std::exp(logits[k] - maximum);
     const double logTotal = std::log(total);
 
     double loss = 0.0;
-    for (std::size_t k = 0; k < logits.size(); ++k)
+    for (std::size_t k = 0; k < count; ++k)
         loss += target[k] * ((maximum - logits[k]) + logTotal);
     return loss;
 }
 
 // -[y log(p) + (1 - y) log(1 - p)] with p = sigmoid(z) rewritten as
 // max(z, 0) - z y + log(1 + exp(-|z|)), where exp never overflows.
-double binaryCrossEntropy(const std::vector<double>& logits, const std::vector<double>& target)
+double binaryCrossEntropy(const double* logits, const double* target, std::size_t count)
 {
     double loss = 0.0;
-    for (std::size_t k = 0; k < logits.size(); ++k) {
+    for (std::size_t k = 0; k < count; ++k) {
         const double z = logits[k];
         loss += std::max(z, 0.0) - z * target[k] + std::log1p(std::exp(-std::abs(z)));
     }
@@ -41,10 +41,18 @@ double sampleLoss(const std::vector<double>& logits, const std::vector<double>& 
 {
     if (logits.empty() || logits.size() != target.size())
         throw std::invalid_argument("loss requires one target value per output");
+    return sampleLoss(logits.data(), target.data(), logits.size(), outputActivation);
+}
+
+double sampleLoss(const double* logits, const double* target, std::size_t count,
+                  const std::string& outputActivation)
+{
+    if (count == 0)
+        throw std::invalid_argument("loss requires one target value per output");
     if (outputActivation == "softmax")
-        return crossEntropy(logits, target);
+        return crossEntropy(logits, target, count);
     if (outputActivation == "sigmoid")
-        return binaryCrossEntropy(logits, target);
+        return binaryCrossEntropy(logits, target, count);
     throw std::invalid_argument("no loss is defined for output activation '"
         + outputActivation + "'");
 }

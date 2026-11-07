@@ -14,19 +14,20 @@ double sigmoid(double value)
     return exponential / (1.0 + exponential);
 }
 
-void softmax(std::vector<double>& values)
+void softmax(double* values, std::size_t count)
 {
-    if (values.empty())
+    if (count == 0)
         return;
 
-    const double maximum = *std::max_element(values.begin(), values.end());
+    const double maximum = *std::max_element(values, values + count);
     double total = 0.0;
-    for (double& value : values) {
+    for (std::size_t i = 0; i < count; ++i) {
+        auto& value = values[i];
         value = std::exp(value - maximum);
         total += value;
     }
-    for (double& value : values)
-        value /= total;
+    for (std::size_t i = 0; i < count; ++i)
+        values[i] /= total;
 }
 
 } // namespace
@@ -34,8 +35,13 @@ void softmax(std::vector<double>& values)
 void applyActivation(std::vector<double>& values,
                      const std::string& activation)
 {
+    applyActivation(values.data(), values.size(), activation);
+}
+
+void applyActivation(double* values, std::size_t count, const std::string& activation)
+{
     if (activation == "softmax") {
-        softmax(values);
+        softmax(values, count);
         return;
     }
     if (activation == "linear")
@@ -43,7 +49,8 @@ void applyActivation(std::vector<double>& values,
     if (activation != "relu" && activation != "sigmoid" && activation != "tanh")
         throw std::invalid_argument("Unknown activation: " + activation);
 
-    for (double& value : values) {
+    for (std::size_t i = 0; i < count; ++i) {
+        auto& value = values[i];
         if (activation == "relu")
             value = std::max(0.0, value);
         else if (activation == "sigmoid")
@@ -66,8 +73,14 @@ void applyActivationDerivative(std::vector<double>& deltas,
 {
     if (deltas.size() != activated.size())
         throw std::invalid_argument("activation derivative dimensions do not match");
+    applyActivationDerivative(deltas.data(), activated.data(), activated.size(), activation);
+}
+
+void applyActivationDerivative(double* deltas, const double* activated,
+    std::size_t count, const std::string& activation)
+{
     const auto apply = [&](auto derivative) {
-        for (std::size_t i = 0; i < activated.size(); ++i)
+        for (std::size_t i = 0; i < count; ++i)
             deltas[i] *= derivative(activated[i]);
     };
 
