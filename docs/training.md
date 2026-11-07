@@ -411,7 +411,11 @@ finite nonnegative losses. Missing history is reported by the notebook; malforme
 history fails the run. Document the loss averaging and checkpoint policy.
 
 The runner records command arguments and elapsed time in `config.json`, and
-combines execution diagnostics in `training.log`. Failure or interruption preserves completed results and logs. It
+combines execution diagnostics in `training.log`. Training output is also streamed
+live to the terminal: each run shows its campaign index, epoch/maximum epochs,
+training and validation losses, and elapsed time per epoch. Evaluation and run
+completion are announced too. Custom trainers must flush their output to display
+it immediately. Failure or interruption preserves completed results and logs. It
 never substitutes an initial model for failed training, and never supplies test
 data to the backend.
 

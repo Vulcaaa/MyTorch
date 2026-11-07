@@ -8,13 +8,14 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.comparison import load_experiment, load_history
-from scripts.experiment import load_spec, run_experiment
+from scripts.experiment import load_spec, run_command, run_experiment
 from scripts.experiment import write_readme
 
 
@@ -44,6 +45,30 @@ history.write_text("epoch,train_loss,validation_loss\\n1,1.0,1.1\\n2,0.8,0.9\\n"
 
 
 class ExperimentTests(unittest.TestCase):
+    def test_command_streams_before_completion_and_retains_log(self):
+        with tempfile.TemporaryDirectory(prefix="mytorch-live-") as temporary:
+            work = Path(temporary)
+            release = work / "release"
+            log = work / "training.log"
+            script = ("import pathlib, sys, time\n"
+                      "print('Epoch 1/2: ready', flush=True)\n"
+                      "deadline = time.monotonic() + 5\n"
+                      "while not pathlib.Path(sys.argv[1]).exists():\n"
+                      "    if time.monotonic() > deadline: sys.exit(7)\n"
+                      "    time.sleep(0.01)\n"
+                      "print('finished', flush=True)\n")
+
+            def on_output(line, **kwargs):
+                if line.startswith("Epoch"):
+                    self.assertIn(line, log.read_text())
+                    release.touch()
+
+            with patch("scripts.experiment.print", side_effect=on_output) as output:
+                result = run_command([sys.executable, "-c", script, str(release)], work, log, live=True)
+            self.assertEqual(result["returncode"], 0)
+            self.assertEqual(log.read_text(), "Epoch 1/2: ready\nfinished\n")
+            self.assertEqual(output.call_count, 2)
+
     def setUp(self):
         temporary = tempfile.TemporaryDirectory(prefix="mytorch-experiment-")
         self.addCleanup(temporary.cleanup)

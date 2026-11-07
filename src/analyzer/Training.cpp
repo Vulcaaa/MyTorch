@@ -369,8 +369,9 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
         const double trainLoss = checkedLoss(working.loss(training));
         const double validationLoss = checkedLoss(working.loss(validation));
         history.write(historyRow(epoch, trainLoss, validationLoss));
-        progress << "Epoch " << epoch << ": train_loss=" << trainLoss
-            << " validation_loss=" << validationLoss << '\n';
+        progress << "Epoch " << epoch << '/' << arguments.training.epochs << ": train_loss=" << trainLoss
+            << " validation_loss=" << validationLoss
+            << " (" << formatSeconds(std::chrono::steady_clock::now() - epochStart) << ")" << std::endl;
         log.info("Epoch " + std::to_string(epoch) + "/" + std::to_string(arguments.training.epochs)
             + ": train_loss=" + formatLoss(trainLoss) + " validation_loss=" + formatLoss(validationLoss)
             + " (" + formatSeconds(std::chrono::steady_clock::now() - epochStart) + ")");

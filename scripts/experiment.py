@@ -205,10 +205,24 @@ def load_spec(path):
             "configurations": configurations, "seeds": seeds, "training": training}
 
 
-def run_command(command, cwd, log):
+def run_command(command, cwd, log, live=False):
     started = time.perf_counter()
     with log.open("w", encoding="utf-8") as stream:
-        result = subprocess.run(command, cwd=cwd, stdout=stream, stderr=subprocess.STDOUT, check=False)
+        if live:
+            with subprocess.Popen(command, cwd=cwd, stdout=subprocess.PIPE,
+                                  stderr=subprocess.STDOUT, text=True, bufsize=1) as result:
+                try:
+                    for line in result.stdout:
+                        stream.write(line)
+                        stream.flush()
+                        print(line, end="", flush=True)
+                    result.wait()
+                except BaseException:
+                    result.terminate()
+                    result.wait()
+                    raise
+        else:
+            result = subprocess.run(command, cwd=cwd, stdout=stream, stderr=subprocess.STDOUT, check=False)
     record = {"arguments": command, "seconds": time.perf_counter() - started,
               "returncode": result.returncode}
     if result.returncode:
@@ -304,6 +318,7 @@ def run_experiment(config_path, output, prepare=False, generator=None, analyzer=
                        "directory": str(directory.relative_to(output)), "status": "generating"}
                 manifest["runs"].append(run)
                 active_run = run
+                print(f"[{len(manifest['runs'])}/{count}] {config['name']} / seed {seed}", flush=True)
                 write_json(manifest_path, manifest)
                 with tempfile.TemporaryDirectory(prefix="mytorch-run-") as temporary:
                     work = Path(temporary)
@@ -353,7 +368,8 @@ def run_experiment(config_path, output, prepare=False, generator=None, analyzer=
                     write_json(manifest_path, manifest)
                     print(f"Train {config['name']} / seed {seed} (results: {directory})", flush=True)
                     try:
-                        run["command"] = run_command(command, work if builtin else ROOT, directory / "training.log")
+                        run["command"] = run_command(command, work if builtin else ROOT,
+                                                     directory / "training.log", live=True)
                     finally:
                         # The analyzer writes its detailed log in its working directory.
                         with (directory / "training.log").open("a", encoding="utf-8") as stream:
@@ -393,6 +409,7 @@ def run_experiment(config_path, output, prepare=False, generator=None, analyzer=
                     if not train_only:
                         run["status"] = "evaluating"
                         write_json(manifest_path, manifest)
+                        print("Evaluate initial and trained models on validation data", flush=True)
                         before, _, _ = predict_metrics(initial, Path(values["validation"]), Path(values["analyzer"]))
                         metrics, _, _ = predict_metrics(trained, Path(values["validation"]), Path(values["analyzer"]))
                         metrics["experiment"] = {"configuration": config["name"], "seed": seed,
@@ -405,6 +422,8 @@ def run_experiment(config_path, output, prepare=False, generator=None, analyzer=
                         run["initial_model"].pop("path")
                         run["initial_model"]["generated"] = True
                     run["status"] = "completed"
+                    print(f"Completed {config['name']} / seed {seed} "
+                          f"(training: {run['training_seconds']:.1f}s)", flush=True)
                     write_json(manifest_path, manifest)
         manifest["status"] = "prepared" if prepare else "completed"
         write_json(manifest_path, manifest)
