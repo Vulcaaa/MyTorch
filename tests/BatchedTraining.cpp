@@ -22,7 +22,8 @@ int main()
             for (std::size_t s = 0; s < 259; ++s) {
                 TrainingSample sample{std::vector<double>(7), std::vector<double>(3, 0.0)};
                 for (std::size_t k = 0; k < 7; ++k)
-                    sample.inputs[k] = s % 3 == 0 ? 0.0 : std::sin(double(s + 3 * k)) * 0.4;
+                    sample.inputs[k] = s < 256 && k != s % 7 ? 0.0
+                        : std::sin(double(s + 3 * k)) * 0.4;
                 sample.target[s % 3] = 1.0;
                 samples.push_back(sample);
             }
