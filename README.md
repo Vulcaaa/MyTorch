@@ -31,11 +31,11 @@ for dependencies, thread settings and benchmarks.
 Generate three networks from the example configuration:
 
 ```sh
-./my_torch_generator configs/basic_network.conf 3
+./my_torch_generator configs/networks/basic-network.conf 3
 ```
 
-Models are saved in `models/` under the current directory as `basic_network_1.nn`,
-`basic_network_2.nn`, and `basic_network_3.nn`. The folder is created automatically
+Models are saved in `models/` under the current directory as `basic-network_1.nn`,
+`basic-network_2.nn`, and `basic-network_3.nn`. The folder is created automatically
 and ignored by Git. Existing names are skipped.
 The configuration controls the network architecture and initialization seed.
 Each run is recorded in `logs/generation_<UTC time>.log`; see the
@@ -44,7 +44,7 @@ Each run is recorded in `logs/generation_<UTC time>.log`; see the
 Classify positions from a FEN dataset using a saved model:
 
 ```sh
-./my_torch_analyzer --predict models/basic_network_1.nn positions.txt
+./my_torch_analyzer --predict models/basic-network_1.nn positions.txt
 ```
 
 The analyzer prints one class (`Nothing`, `Check`, or `Checkmate`) per position,
@@ -52,29 +52,24 @@ in order. A generated model is untrained, so its predictions are only
 illustrative. See the [chess data guide](docs/datasets.md#prediction-command)
 for input and model requirements.
 
-Train a saved model on labeled positions, with an independent validation set:
+Train the reference network with the frozen train/validation datasets:
 
 ```sh
-./my_torch_analyzer --train --validation validation.txt --save models/trained.nn \
-  models/basic_network_1.nn train.txt
+python3 scripts/experiment.py configs/experiments/train-reference.json \
+  --train-only --output results/training/YYYY-MM-DD-reference-01
 ```
 
-Progress and the path of the per-epoch loss history are printed on stderr. The
-best model on validation is saved to `--save` (or back to the loaded file).
-Without `--validation`, the analyzer splits the loaded data into approximately
-90% training / 10% validation, by class and model-visible input groups, using the
-model seed. Supply validation explicitly for existing reference splits.
-Each training run is also recorded in `logs/train_<UTC time>.log`, with its data,
-settings, epoch durations, and saved model.
+The result directory groups the selected `model.nn`, loss history, execution log,
+parameters and a readable `README.md`. See the [training guide](docs/training.md)
+for the analyzer's direct command-line interface and checkpoint policy.
 
 Run either executable with `--help` for its command-line options.
 
-Evaluate a saved model on labeled positions with
-`python3 scripts/evaluate.py MODEL DATASET --output results/RUN`.
-Prepare a configuration/seed experiment with
-`make experiment OUTPUT=results/experiments/preparation OPTIONS=--prepare`.
-Full experiments await the training adapter. See the
-[evaluation guide](docs/evaluation.md) for the workflow and two analysis notebooks.
+Use the [training and evaluation workflow](docs/evaluation.md) to run standalone
+training, evaluate a saved model, or compare configurations. Results are grouped
+under `results/training/`, `results/evaluation/`, `results/experiments/` and
+`results/smoke-tests/`. Each result starts with a readable `README.md`; notebooks
+show curves and confusion matrices.
 
 ## Development
 
@@ -85,7 +80,8 @@ training, experiment, and defense checklist.
 - `src/generator/` — model generator
 - `src/analyzer/` — chess analyzer
 - `src/logging/` — run logs shared by both programs
-- `configs/` — example configurations
+- `configs/networks/` — network architectures and parameters
+- `configs/experiments/` — training and comparison protocols
 - `tests/` — tests
 
 C++ handles network computation and the command-line programs. Python handles

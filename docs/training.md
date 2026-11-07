@@ -24,7 +24,7 @@ Run from the repository root after `make` and [dataset preparation](datasets.md)
 Generate an initial model first (the generator skips existing filenames):
 
 ```sh
-./my_torch_generator configs/basic_network.conf 1
+./my_torch_generator configs/networks/basic-network.conf 1
 ```
 
 Then train it. Replace `train.txt` and `validation.txt` with your prepared,
@@ -34,13 +34,13 @@ labeled split paths:
 ./my_torch_analyzer --train \
   --validation validation.txt \
   --save models/trained.nn \
-  models/basic_network_1.nn train.txt
+  models/basic-network_1.nn train.txt
 ```
 
 For a single labeled file, omit `--validation`:
 
 ```sh
-./my_torch_analyzer --train --save models/trained.nn models/basic_network_1.nn positions.txt
+./my_torch_analyzer --train --save models/trained.nn models/basic-network_1.nn positions.txt
 ```
 
 `LOADFILE` must be an existing model with 777 inputs and 3 outputs. Both datasets
@@ -356,13 +356,21 @@ inputs, got 2`. Samples are validated before any computation.
 
 ## 6. Experiment runner
 
-**Pending:** the C++ training command works, but no adapter connects it to
-`scripts/experiment.py`. Consequently, `training.command` and `training.settings`
-remain `null` in `configs/experiment.json`. Full experiments fail before creating
-an output directory; `--prepare` can already generate initial models.
+The runner has a built-in adapter for the real C++ analyzer. Set
+`training.command` to `"builtin"` and provide exactly these settings:
 
-See the [evaluation guide](evaluation.md) for campaigns, metrics, and notebooks.
-The integration contract below is for implementing the adapter.
+```json
+{"epochs": 400, "batch_size": 32, "patience": 20, "min_delta": 0.0001}
+```
+
+Integer settings must be positive; min_delta must be finite and nonnegative.
+Unknown keys are rejected before execution. The runner passes the explicit
+validation path and all settings to the analyzer and saves `model.nn`,
+`history.csv` and `training.log` in the run directory.
+See the [evaluation guide](evaluation.md) for the directory conventions, standalone
+training, continuation protocols and before/after validation scores.
+
+### Optional external backend
 
 ### Request and command
 
@@ -373,25 +381,27 @@ without a shell. It must consume `{initial_model}`, `{trained_model}`, and
 | Placeholder | Value |
 | --- | --- |
 | `{initial_model}` | Generated input model; must remain unchanged |
-| `{trained_model}` | Per-run `trained.nn` destination |
-| `{training_config}` | Per-run `training.json`: seed, settings, train/validation paths and hashes |
+| `{trained_model}` | Per-run `model.nn` destination |
+| `{training_config}` | Temporary request JSON: seed, settings, train/validation paths and hashes |
 | `{history}` | Per-run `history.csv` destination |
-| `{seed}` | Requested seed, also recorded in `training.json` |
+| `{seed}` | Requested seed, also recorded in `config.json` |
 | `{train}`, `{validation}` | Prepared dataset paths |
 | `{analyzer}`, `{root}` | Analyzer executable and repository root |
 
 `training.settings` must be a nonempty object. The adapter must validate and
 apply its fields, reject unknown settings, and ensure that the model seed matches
-the request. The settings schema and command still need to be agreed. CLI
-options for epochs, batch size, patience, and minimum improvement already exist;
-passing `training.json` alone does not apply them.
+the request. External backends define their own settings schema. Passing `training.json`
+alone does not apply any settings.
 
 ### Result and history
 
 The backend returns nonzero on failure. Success requires a valid model at
 `{trained_model}`, with the original configuration and seed preserved. The runner
 rejects a missing output, a modified initial model, a changed configuration, or
-unchanged weights and biases. It then uses the analyzer for validation predictions.
+unchanged weights and biases for external backends. With the built-in trainer,
+keeping the original checkpoint is valid if training finishes without a lower
+validation loss; a complete history and checkpoint diagnostic are required.
+It then evaluates both input and selected models on the same validation data.
 These checks detect a no-op backend; model quality still requires evaluation.
 
 For the analyzer, pass `{history}` through `--history`. Other backends may omit
@@ -400,8 +410,8 @@ with at least one epoch, strictly increasing positive integer epoch numbers, and
 finite nonnegative losses. Missing history is reported by the notebook; malformed
 history fails the run. Document the loss averaging and checkpoint policy.
 
-The runner retains command arguments, working directory, stdout/stderr, and
-elapsed time. Failure or interruption preserves completed results and logs. It
+The runner records command arguments and elapsed time in `config.json`, and
+combines execution diagnostics in `training.log`. Failure or interruption preserves completed results and logs. It
 never substitutes an initial model for failed training, and never supplies test
 data to the backend.
 
@@ -439,7 +449,7 @@ backpropagation and CLI tests verify actual learning and integration.
 | --- | --- |
 | Chess quality | An operational training pipeline does not establish good classification; run full validation comparisons before final test evaluation |
 | CLI compatibility | Minimal subject invocation supported through automatic validation; explicit validation preserves reference splits |
-| Automated campaigns | Implement the adapter and freeze its settings schema and comparison grid |
+| Automated campaigns | Built-in adapter and reports available; execute and interpret controlled comparisons |
 | Optimizer | Plain mini-batch SGD; momentum, Adam, dropout, and weight decay are not implemented |
 | Activations | Training supports softmax/sigmoid outputs; hidden derivatives support sigmoid/tanh/ReLU/linear, while file configurations accept sigmoid/tanh/ReLU |
 | Memory | Train and validation samples are loaded into memory as dense vectors |

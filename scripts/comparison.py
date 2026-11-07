@@ -26,6 +26,7 @@ def load_comparison(run_directories, validation_dataset):
     for directory in directories:
         try:
             metrics = json.loads((directory / "metrics.json").read_text(encoding="utf-8"))
+            metrics = metrics.get("validation", metrics)
             matrix = metrics["confusion_matrix"]
             if (matrix["labels"] != list(CLASSES) or matrix["rows"] != "actual"
                     or matrix["columns"] != "predicted"):
@@ -113,6 +114,25 @@ def load_history(path):
     return rows
 
 
+def load_run_history(directory):
+    """Display continuation epochs after the recorded source checkpoint."""
+    directory = Path(directory).resolve()
+    current = load_history(directory / "history.csv")
+    for base in (directory, directory.parent.parent):
+        config = base / "config.json"
+        if not config.exists():
+            continue
+        manifest = json.loads(config.read_text(encoding="utf-8"))
+        run = next((item for item in manifest.get("runs", [])
+                    if (base / item["directory"]).resolve() == directory), None)
+        if run and "previous_history" in run:
+            checkpoint = run["previous_checkpoint_epoch"]
+            previous = load_history(run["previous_history"]["path"])
+            return ([row for row in previous if row["epoch"] <= checkpoint] +
+                    [dict(row, epoch=row["epoch"] + checkpoint) for row in current])
+    return current
+
+
 def load_experiment(directory):
     """Build a fresh summary from a frozen campaign and its completed reports.
 
@@ -120,7 +140,7 @@ def load_experiment(directory):
     cannot establish a leading configuration until every planned run completes.
     """
     directory = Path(directory).resolve()
-    manifest = json.loads((directory / "experiment.json").read_text(encoding="utf-8"))
+    manifest = json.loads((directory / "config.json").read_text(encoding="utf-8"))
     if manifest.get("version") != 1:
         raise ValueError("unsupported experiment version")
     plan = manifest["plan"]
@@ -137,9 +157,9 @@ def load_experiment(directory):
         if pair in seen or pair[0] not in configurations or pair[1] not in seeds:
             raise ValueError("duplicate or unexpected configuration/seed in experiment")
         seen.add(pair)
-        if run["status"] == "completed":
+        if run["status"] == "completed" and not manifest.get("train_only"):
             completed.append(run)
-    paths = [directory / run["directory"] / "evaluation" for run in completed]
+    paths = [directory / run["directory"] for run in completed]
     reports = load_comparison(paths, plan["datasets"]["validation"]["path"]) if paths else []
     by_path = {report["directory"]: report for report in reports}
     grouped = {name: [] for name in configurations}

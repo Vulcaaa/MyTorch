@@ -20,7 +20,7 @@ class ReferenceDatasetTests(unittest.TestCase):
         temporary = tempfile.TemporaryDirectory(prefix="mytorch-reference-test-")
         self.addCleanup(temporary.cleanup)
         self.root = Path(temporary.name)
-        for relative in (*TOOLS, "configs/experiment.json", "configs/basic_network.conf"):
+        for relative in (*TOOLS, "configs/experiments/compare-network-sizes.json", "configs/networks/basic-network.conf"):
             path = self.root / relative
             path.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / relative, path)
@@ -157,7 +157,7 @@ class ReferenceDatasetTests(unittest.TestCase):
         self.assertFalse(rejected.exists())
 
     def test_default_experiment_resolves_frozen_artifacts_and_excludes_test(self):
-        plan = load_spec(self.root / "configs/experiment.json")
+        plan = load_spec(self.root / "configs/experiments/compare-network-sizes.json")
         self.assertEqual(set(plan["datasets"]), {"train", "validation", "split_metadata"})
         for role, entry in plan["datasets"].items():
             self.assertEqual(Path(entry["path"]).resolve(), self.artifact(role).resolve())

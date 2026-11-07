@@ -77,7 +77,7 @@ reference under `dataset/references/`, with a tracked manifest in
 `dataset/manifests/`. Experiments use the [frozen reference](datasets.md).
 `make dataset` does not exist.
 
-Experiment commands use `CONFIG` (defaults to `configs/experiment.json`),
+Experiment commands use `CONFIG` (defaults to `configs/experiments/compare-network-sizes.json`),
 `OUTPUT` (required new directory) and optional `OPTIONS`. Python commands use
 the `PYTHON` variable, which defaults to `python3`. Third-party dependencies
 will be declared in a dedicated file and installed in a virtual environment.

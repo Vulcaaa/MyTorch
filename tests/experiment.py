@@ -4,6 +4,7 @@ import copy
 import json
 from pathlib import Path
 import statistics
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -12,6 +13,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.comparison import load_experiment, load_history
 from scripts.experiment import load_spec, run_experiment
+from scripts.experiment import write_readme
 
 
 # This fixture tests the adapter contract, not learning quality. Production code
@@ -60,7 +62,7 @@ class ExperimentTests(unittest.TestCase):
             "configurations": [{"name": "small", "network": "base.conf", "overrides": {}},
                                {"name": "large", "network": "base.conf", "overrides": {"layers": "777,2,3"}}],
             "training": {"command": None, "settings": None}}
-        self.config = self.work / "experiment.json"
+        self.config = self.work / "config.json"
         self.output = self.work / "results with spaces"
 
     def write_spec(self):
@@ -81,7 +83,7 @@ class ExperimentTests(unittest.TestCase):
         self.assertEqual(summary["status"], "prepared")
         self.assertFalse(summary["selection_ready"])
         self.assertEqual(summary["leading_configurations"], [])
-        manifest = json.loads((self.output / "experiment.json").read_text())
+        manifest = json.loads((self.output / "config.json").read_text())
         self.assertEqual(len(manifest["runs"]), 6)
         for run in manifest["runs"]:
             model = json.loads(Path(run["initial_model"]["path"]).read_text())
@@ -115,13 +117,13 @@ class ExperimentTests(unittest.TestCase):
             self.assertAlmostEqual(row["macro_f1"]["std"], statistics.stdev(scores))
             self.assertEqual(row["missing_seeds"], [])
             for report in entries:
-                run_directory = Path(report["directory"]).parent
+                run_directory = Path(report["directory"])
                 self.assertEqual(len(load_history(run_directory / "history.csv")), 2)
-                self.assertTrue((run_directory / "train.command.json").is_file())
+                self.assertTrue((run_directory / "training.log").is_file())
         # Re-reading uses the frozen plan, even if the authoring config changes.
         self.config.write_text("{}")
         self.assertEqual(load_experiment(self.output)["expected_seeds"], [42, 43, 44])
-        manifest_path = self.output / "experiment.json"
+        manifest_path = self.output / "config.json"
         original_manifest = json.loads(manifest_path.read_text())
         duplicate = copy.deepcopy(original_manifest)
         duplicate["runs"].append(duplicate["runs"][0])
@@ -134,7 +136,7 @@ class ExperimentTests(unittest.TestCase):
         self.assertFalse(load_experiment(self.output)["selection_ready"])
         manifest_path.write_text(json.dumps(original_manifest))
         # Corrupting a delivered model invalidates the experiment summary.
-        path = Path(summary["runs"][0]["directory"]).parent / "trained.nn"
+        path = Path(summary["runs"][0]["directory"]) / "model.nn"
         path.write_text("changed")
         with self.assertRaisesRegex(ValueError, "trained model differs"):
             load_experiment(self.output)
@@ -160,14 +162,14 @@ class ExperimentTests(unittest.TestCase):
         partial = next(row for row in summary["configurations"] if row["configuration"] == "small")
         self.assertIsNone(partial["macro_f1"]["std"])
         self.assertEqual(partial["missing_seeds"], [43, 44])
-        self.assertTrue((self.output / "summary.json").exists())
-        manifest = json.loads((self.output / "experiment.json").read_text())
+        self.assertTrue((self.output / "README.md").exists())
+        manifest = json.loads((self.output / "config.json").read_text())
         self.assertEqual(manifest["runs"][1]["status"], "failed")
 
     def test_noop_backend_never_evaluates_initial_models(self):
         self.enable_fixture()
         self.adapter.write_text("# Backend returns success but produces no model.\n")
-        with self.assertRaisesRegex(ValueError, "without writing trained.nn"):
+        with self.assertRaisesRegex(ValueError, "without writing model.nn"):
             self.run_campaign()
         self.assertEqual(load_experiment(self.output)["runs"], [])
         self.assertEqual(list(self.output.rglob("metrics.json")), [])
@@ -193,6 +195,123 @@ class ExperimentTests(unittest.TestCase):
             mutation(self.spec)
             self.write_spec()
             with self.subTest(spec=self.spec), self.assertRaises(ValueError):
+                load_spec(self.config)
+        self.assertFalse(self.output.exists())
+
+    def enable_builtin(self):
+        # The real analyzer rejects the artificial adapter fixture's overlap.
+        validation = self.work / "validation.txt"
+        validation.write_text(validation.read_text().replace("8/8/8/8/8/8/8/8", "8/8/8/8/8/8/P7/8"))
+        self.spec["seeds"] = [42]
+        self.spec["configurations"] = self.spec["configurations"][:1]
+        self.spec["training"] = {"command": "builtin", "settings": {
+            "epochs": 3, "batch_size": 2, "patience": 2, "min_delta": 0.0001}}
+
+    def test_real_builtin_training_and_before_after_evidence(self):
+        self.enable_builtin()
+        summary = self.run_campaign()
+        self.assertEqual(summary["status"], "completed")
+        manifest = json.loads((self.output / "config.json").read_text())
+        run = manifest["runs"][0]
+        directory = self.output / run["directory"]
+        command = run["command"]
+        arguments = command["arguments"]
+        self.assertEqual(command["returncode"], 0)
+        for flag, value in [("--epochs", "3"), ("--batch-size", "2"),
+                            ("--patience", "2"), ("--min-delta", "0.0001")]:
+            self.assertEqual(arguments[arguments.index(flag) + 1], value)
+        self.assertEqual(arguments[arguments.index("--validation") + 1], str(self.work / "validation.txt"))
+        metrics = json.loads((directory / "metrics.json").read_text())
+        self.assertEqual(set(metrics), {"before", "validation"})
+        self.assertTrue((directory / "training.log").is_file())
+        self.assertLessEqual(run["stopping"]["epochs_completed"], 3)
+        self.assertEqual(directory, self.output)  # Single runs have no nested folders.
+        self.assertFalse((self.output / "report.html").exists())
+        self.assertFalse((self.output / "sources").exists())
+        self.assertFalse((self.output / "runs").exists())
+        readme = self.output / "README.md"
+        readme.write_text(readme.read_text().replace("Conclusion: pending review.", "Keep this manual interpretation."))
+        write_readme(self.output, manifest)
+        self.assertIn("Keep this manual interpretation.", readme.read_text())
+
+    def test_train_only_produces_no_classification_reports(self):
+        self.enable_builtin()
+        self.write_spec()
+        summary = run_experiment(self.config, self.output, train_only=True)
+        self.assertEqual(summary["status"], "completed")
+        self.assertFalse(summary["selection_ready"])
+        self.assertTrue((self.output / "model.nn").exists())
+        self.assertTrue((self.output / "history.csv").exists())
+        self.assertFalse((self.output / "metrics.json").exists())
+        self.assertEqual(summary["runs"], [])
+        self.assertEqual(set(p.name for p in self.output.iterdir()),
+                         {"README.md", "config.json", "model.nn", "history.csv", "training.log"})
+
+    def test_continuation_references_source_and_preserves_configuration(self):
+        self.enable_builtin()
+        subprocess.run([str(ROOT / "my_torch_generator"), str(self.network), "1"],
+                       cwd=self.work, check=True)
+        original = self.work / "models/base_1.nn"
+        initial_bytes = original.read_bytes()
+        self.spec["seeds"] = [999]
+        self.spec["configurations"] = [{"name": "continued", "initial_model": str(original)}]
+        self.run_campaign()
+        manifest = json.loads((self.output / "config.json").read_text())
+        run = manifest["runs"][0]
+        self.assertEqual(run["starting_mode"], "continue_weights")
+        self.assertEqual(original.read_bytes(), initial_bytes)
+        self.assertEqual(Path(run["initial_model"]["path"]).read_bytes(), initial_bytes)
+        self.assertEqual(json.loads(Path(run["trained_model"]["path"]).read_text())["config"],
+                         json.loads(initial_bytes)["config"])
+        self.assertEqual(run["initial_model"]["path"], str(original))
+        self.assertFalse((self.output / "initial-model.nn").exists())
+        self.spec["seeds"] = [42]
+        self.write_spec()
+        with self.assertRaisesRegex(ValueError, "saved model's seed"):
+            load_spec(self.config)
+        self.spec["seeds"] = [999]
+        previous = self.work / "prior.csv"
+        previous.write_text("epoch,train_loss,validation_loss\n1,1.0,1.1\n")
+        self.spec["configurations"][0].update(previous_history=str(previous), previous_checkpoint_epoch=2)
+        self.write_spec()
+        with self.assertRaisesRegex(ValueError, "previous_checkpoint_epoch"):
+            load_spec(self.config)
+
+    def test_builtin_failure_retains_diagnostics_and_failed_report(self):
+        self.enable_builtin()
+        # Deliberately share model-visible inputs while keeping file hashes distinct.
+        validation = self.work / "validation.txt"
+        validation.write_text(validation.read_text().replace("8/8/8/8/8/8/P7/8", "8/8/8/8/8/8/8/8"))
+        with self.assertRaisesRegex(ValueError, "exited with 84"):
+            self.run_campaign()
+        manifest = json.loads((self.output / "config.json").read_text())
+        self.assertEqual(manifest["status"], "failed")
+        self.assertTrue((self.output / "README.md").is_file())
+        self.assertFalse(load_experiment(self.output)["selection_ready"])
+        run_directory = self.output / manifest["runs"][0]["directory"]
+        self.assertIn("share a model-visible input", (run_directory / "training.log").read_text())
+        self.assertFalse((run_directory / "evaluation").exists())
+
+    def test_builtin_accepts_initial_checkpoint_when_validation_does_not_improve(self):
+        self.enable_builtin()
+        self.spec["configurations"][0]["overrides"] = {"learning_rate": "1e-30"}
+        self.run_campaign()
+        manifest = json.loads((self.output / "config.json").read_text())
+        run = manifest["runs"][0]
+        self.assertEqual(run["stopping"]["best_epoch"], 0)
+        self.assertTrue(run["stopping"]["unchanged_checkpoint"])
+        self.assertEqual(run["stopping"]["reason"], "patience")
+        self.assertEqual(run["stopping"]["epochs_completed"], 2)
+
+    def test_builtin_rejects_unused_or_invalid_settings(self):
+        self.enable_builtin()
+        for settings in [{"epochs": 3},
+                         {"epochs": True, "batch_size": 2, "patience": 2, "min_delta": 0.1},
+                         {"epochs": 3, "batch_size": 2, "patience": 2, "min_delta": -1},
+                         {"epochs": 3, "batch_size": 2, "patience": 2, "min_delta": 0.1, "typo": 1}]:
+            self.spec["training"]["settings"] = settings
+            self.write_spec()
+            with self.subTest(settings=settings), self.assertRaises(ValueError):
                 load_spec(self.config)
         self.assertFalse(self.output.exists())
 

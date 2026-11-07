@@ -1,22 +1,48 @@
 """Prepare or run a reproducible configuration-by-seed experiment."""
 
 import argparse
+import csv
 from collections import Counter
 from datetime import datetime, timezone
 import json
+import math
 from pathlib import Path
 import platform
 import re
+import shutil
 import string
 import subprocess
 import sys
 import time
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
-from scripts.evaluate import CLASSES, evaluate, fingerprint, read_labels
+from scripts.evaluate import CLASSES, predict_metrics, fingerprint, read_labels
 from scripts.comparison import load_experiment, load_history
+
+
+def training_settings(settings):
+    """The built-in trainer applies every declared setting; reject silent typos."""
+    expected = {"epochs", "batch_size", "patience", "min_delta"}
+    if not isinstance(settings, dict) or set(settings) != expected:
+        raise ValueError("builtin training.settings requires epochs, batch_size, patience, min_delta")
+    for name in ("epochs", "batch_size", "patience"):
+        if type(settings[name]) is not int or not 0 < settings[name] <= 2**32 - 1:
+            raise ValueError(f"{name} must be a positive 32-bit integer")
+    delta = settings["min_delta"]
+    if isinstance(delta, bool) or not isinstance(delta, (int, float)) or not math.isfinite(delta) or delta < 0:
+        raise ValueError("min_delta must be finite and nonnegative")
+    return settings
+
+
+def builtin_command(values, settings):
+    command = [values["analyzer"], "--train", "--validation", values["validation"],
+               "--save", values["trained_model"], "--history", values["history"]]
+    for key, value in training_settings(settings).items():
+        command += ["--" + key.replace("_", "-"), str(value)]
+    return command + [values["initial_model"], values["train"]]
 
 
 NETWORK_KEYS = {"layers", "hidden_activation", "output_activation", "learning_rate", "initialization", "seed"}
@@ -64,9 +90,11 @@ def load_spec(path):
     spec = json.loads(path.read_text(encoding="utf-8"))
     json.dumps(spec, allow_nan=False)
     required = {"version", "seeds", "datasets", "configurations", "training"}
-    if (not isinstance(spec, dict) or set(spec) != required or
+    if (not isinstance(spec, dict) or not required <= spec.keys() or set(spec) - (required | {"hypothesis"}) or
             type(spec["version"]) is not int or spec["version"] != 1):
         raise ValueError("experiment config must contain version=1, seeds, datasets, configurations, training")
+    if "hypothesis" in spec and (not isinstance(spec["hypothesis"], str) or not spec["hypothesis"].strip()):
+        raise ValueError("hypothesis must be a non-empty statement")
     seeds = spec["seeds"]
     if (not isinstance(seeds, list) or not seeds or
             any(type(seed) is not int or not 0 <= seed <= 4294967295 for seed in seeds) or
@@ -94,11 +122,44 @@ def load_spec(path):
     if not isinstance(spec["configurations"], list) or not spec["configurations"]:
         raise ValueError("select at least one configuration")
     for configuration in spec["configurations"]:
-        if not isinstance(configuration, dict) or set(configuration) != {"name", "network", "overrides"}:
-            raise ValueError("each configuration needs name, network, overrides")
+        if not isinstance(configuration, dict):
+            raise ValueError("each configuration must be an object")
+        resumed = "initial_model" in configuration
+        if ((not resumed and set(configuration) != {"name", "network", "overrides"}) or
+                (resumed and (not {"name", "initial_model"} <= configuration.keys() or
+                              set(configuration) - {"name", "initial_model", "previous_history", "previous_checkpoint_epoch"}))):
+            raise ValueError("each configuration needs name/network/overrides or name/initial_model with optional previous_history")
         name = configuration["name"]
         if not isinstance(name, str) or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name):
             raise ValueError("configuration names must use lowercase kebab-case")
+        if resumed:
+            if not isinstance(configuration["initial_model"], str) or not configuration["initial_model"]:
+                raise ValueError("initial_model must be a path")
+            initial = (path.parent / configuration["initial_model"]).resolve()
+            saved = json.loads(initial.read_text(encoding="utf-8"))
+            model_config = saved["config"]
+            if seeds != [model_config["seed"]]:
+                raise ValueError("continuation requires exactly the saved model's seed; it is not a new random initialization")
+            if model_config["layers"][0] != 777 or model_config["layers"][-1] != 3:
+                raise ValueError("experiment networks require 777 inputs and 3 outputs")
+            item = {"name": name, "initial_model": fingerprint(initial)}
+            if "previous_history" in configuration:
+                previous = configuration["previous_history"]
+                if not isinstance(previous, str) or not previous:
+                    raise ValueError("previous_history must be a path")
+                previous = (path.parent / previous).resolve()
+                previous_rows = load_history(previous)
+                if not previous_rows:
+                    raise ValueError("previous_history must exist and contain epochs")
+                checkpoint = configuration.get("previous_checkpoint_epoch")
+                if type(checkpoint) is not int or checkpoint not in {row["epoch"] for row in previous_rows}:
+                    raise ValueError("previous_history requires a declared previous_checkpoint_epoch in that history")
+                item["previous_history"] = fingerprint(previous)
+                item["previous_checkpoint_epoch"] = checkpoint
+            elif "previous_checkpoint_epoch" in configuration:
+                raise ValueError("previous_checkpoint_epoch requires previous_history")
+            configurations.append(item)
+            continue
         if not isinstance(configuration["network"], str) or not configuration["network"]:
             raise ValueError("configuration.network must be a path")
         source = (path.parent / configuration["network"]).resolve()
@@ -110,7 +171,9 @@ def load_spec(path):
     if not isinstance(training, dict) or set(training) != {"command", "settings"}:
         raise ValueError("training must declare command and settings (null until the backend is ready)")
     command = training["command"]
-    if command is not None:
+    if command == "builtin":
+        training_settings(training["settings"])
+    elif command is not None:
         if not isinstance(command, list) or not command or any(not isinstance(arg, str) or not arg for arg in command):
             raise ValueError("training.command must be an argument list, never a shell string")
         used_fields = set()
@@ -124,25 +187,70 @@ def load_spec(path):
             raise ValueError("training.command must consume {initial_model}, {trained_model}, and {training_config}")
     if training["settings"] is not None and (not isinstance(training["settings"], dict) or not training["settings"]):
         raise ValueError("training.settings must be a non-empty object or null")
+    if any("initial_model" in config for config in configurations) and command != "builtin":
+        raise ValueError("continuation requires the builtin trainer")
     return {"source": fingerprint(path), "spec": spec, "datasets": datasets,
             "configurations": configurations, "seeds": seeds, "training": training}
 
 
-def run_command(command, cwd, prefix):
+def run_command(command, cwd, log):
     started = time.perf_counter()
-    record = {"arguments": command, "cwd": str(cwd), "seconds": None, "returncode": None}
-    write_json(prefix.with_suffix(".command.json"), record)
-    result = None
-    try:
-        with prefix.with_suffix(".stdout.log").open("w") as stdout, prefix.with_suffix(".stderr.log").open("w") as stderr:
-            result = subprocess.run(command, cwd=cwd, stdout=stdout, stderr=stderr, check=False)
-    finally:
-        record.update(seconds=time.perf_counter() - started,
-                      returncode=result.returncode if result is not None else None)
-        write_json(prefix.with_suffix(".command.json"), record)
+    with log.open("w", encoding="utf-8") as stream:
+        result = subprocess.run(command, cwd=cwd, stdout=stream, stderr=subprocess.STDOUT, check=False)
+    record = {"arguments": command, "seconds": time.perf_counter() - started,
+              "returncode": result.returncode}
     if result.returncode:
-        raise ValueError(f"command exited with {result.returncode}; see {prefix}.stderr.log")
-    return record["seconds"]
+        raise ValueError(f"command exited with {result.returncode}; see {log}")
+    return record
+
+
+def write_readme(output, manifest):
+    """Refresh the factual overview; leave the human conclusion untouched."""
+    readme = output / "README.md"
+    marker = "<!-- conclusion -->"
+    conclusion = "Conclusion: pending review.\n"
+    if readme.exists() and marker in readme.read_text(encoding="utf-8"):
+        conclusion = readme.read_text(encoding="utf-8").split(marker, 1)[1].lstrip("\n")
+    lines = [f"# {output.name}", "", f"Status: **{manifest['status']}**", "",
+             manifest["plan"]["spec"].get("hypothesis", "No hypothesis declared."), "",
+             "Parameters and provenance: `config.json`. Data stays in `dataset/`; code stays in Git.", ""]
+    if manifest.get("error"):
+        lines += [f"Failure: {manifest['error']}", ""]
+    rows = []
+    for run in manifest["runs"]:
+        directory = output / run["directory"]
+        name = f"{run['configuration']}-seed-{run['seed']}"
+        lines += [f"## {name}", "", f"Status: {run['status']}", ""]
+        if directory != output:
+            lines += [f"Files: [{run['directory']}/]({run['directory']}/)", ""]
+        stop = run.get("stopping")
+        if stop:
+            lines += [f"Epochs completed: {stop['epochs_completed']}; selected epoch: {stop['best_epoch']}; "
+                      f"validation loss: {stop['best_validation_loss']:.6f}; stop: {stop['reason']}.", ""]
+        metrics_path = directory / "metrics.json"
+        if metrics_path.exists():
+            phases = json.loads(metrics_path.read_text())
+            lines += ["| Phase | Accuracy | Macro F1 | Recall Nothing | Recall Check | Recall Checkmate |",
+                      "| --- | ---: | ---: | ---: | ---: | ---: |"]
+            for phase, metrics in phases.items():
+                recalls = [metrics['per_class'][label]['recall'] for label in CLASSES]
+                values = [metrics['accuracy'], metrics['macro_f1'], *recalls]
+                lines.append(f"| {phase} | " + " | ".join(f"{v:.2%}" for v in values) + " |")
+                rows.append([run['configuration'], run['seed'], phase, *values, run.get('training_seconds')])
+            lines += ["", "Scores use validation data, not the reserved test set.", ""]
+    lines += ["## Files", "", "- `model.nn`: selected model (after training).",
+              "- `history.csv`: training and validation loss per epoch.",
+              "- `training.log`: execution diagnostics.",
+              "- `metrics.json`: before/after validation scores, when evaluated.",
+              "- Notebooks display curves and confusion matrices; no HTML or image exports.", "",
+              "## Conclusion", "", marker, conclusion]
+    readme.write_text("\n".join(lines), encoding="utf-8")
+    if len(manifest["runs"]) > 1 and rows:
+        with (output / "comparison.csv").open("w", newline="", encoding="utf-8") as stream:
+            writer = csv.writer(stream)
+            writer.writerow(["configuration", "seed", "phase", "accuracy", "macro_f1",
+                             "recall_nothing", "recall_check", "recall_checkmate", "training_seconds"])
+            writer.writerows(rows)
 
 
 def check_artifacts(artifacts):
@@ -151,111 +259,158 @@ def check_artifacts(artifacts):
             raise ValueError(f"{name} changed during the experiment; start a new experiment")
 
 
-def run_experiment(config_path, output, prepare=False, generator=None, analyzer=None):
+def run_experiment(config_path, output, prepare=False, generator=None, analyzer=None, train_only=False):
     plan = load_spec(config_path)
     output = Path(output).resolve()
     if output.exists():
-        raise ValueError(f"{output}: output already exists; choose a new experiment directory")
+        raise ValueError(f"{output}: output already exists; choose a new result directory")
+    count = len(plan["configurations"]) * len(plan["seeds"])
+    if train_only and count != 1:
+        raise ValueError("--train-only requires one configuration and one seed")
     training = plan["training"]
     if not prepare and (training["command"] is None or training["settings"] is None):
-        raise ValueError("training is not configured yet; use --prepare. Agree on command/settings with Gustave first")
+        raise ValueError("training is not configured yet; use --prepare or configure builtin command/settings")
     tools = {"generator": fingerprint(Path(generator or ROOT / "my_torch_generator").resolve()),
              "analyzer": fingerprint(Path(analyzer or ROOT / "my_torch_analyzer").resolve())}
-    code = {path.name: fingerprint(path) for path in
-            (Path(__file__), ROOT / "scripts/evaluate.py", ROOT / "scripts/comparison.py")}
     manifest = {"version": 1, "status": "preparing", "created_utc": datetime.now(timezone.utc).isoformat(),
-                "plan": plan, "tools": tools, "code": code,
+                "plan": plan, "tools": tools, "train_only": train_only,
                 "machine": {"platform": platform.platform(), "python": platform.python_version()}, "runs": []}
+    revision = subprocess.run(["git", "rev-parse", "HEAD"], cwd=ROOT, capture_output=True, text=True)
+    dirty = subprocess.run(["git", "status", "--porcelain"], cwd=ROOT, capture_output=True, text=True)
+    manifest["git"] = {"revision": revision.stdout.strip() or None,
+                       "dirty": bool(dirty.stdout.strip()), "status": dirty.stdout.splitlines()}
     output.mkdir(parents=True)
-    manifest_path = output / "experiment.json"
+    manifest_path = output / "config.json"
     write_json(manifest_path, manifest)
     active_run = None
     try:
-        # Prepare every configuration first, so malformed generation cannot start a partial training campaign.
         for config in plan["configurations"]:
             for seed in plan["seeds"]:
-                directory = output / "runs" / config["name"] / f"seed-{seed}"
-                directory.mkdir(parents=True)
-                network_config = directory / "network.conf"
-                network_config.write_text("".join(f"{key}={value}\n" for key, value in config["options"].items())
-                                          + f"seed={seed}\n", encoding="utf-8")
+                directory = output if count == 1 else output / "runs" / f"{config['name']}-seed-{seed}"
+                directory.mkdir(parents=True, exist_ok=True)
                 run = {"configuration": config["name"], "seed": seed,
                        "directory": str(directory.relative_to(output)), "status": "generating"}
                 manifest["runs"].append(run)
                 active_run = run
                 write_json(manifest_path, manifest)
-                print(f"Generate {config['name']} / seed {seed}", flush=True)
-                run_command([tools["generator"]["path"], str(network_config), "1"], directory, directory / "generate")
-                initial = directory / "models/network_1.nn"
-                model_config = json.loads(initial.read_text(encoding="utf-8"))["config"]
-                if model_config["seed"] != seed:
-                    raise ValueError("generator did not preserve the requested seed")
-                run.update(status="prepared", initial_model=fingerprint(initial))
-                write_json(directory / "training.json", {"seed": seed, "settings": training["settings"],
-                           "train": plan["datasets"]["train"], "validation": plan["datasets"]["validation"]})
-                write_json(manifest_path, manifest)
-        if prepare:
-            check_artifacts({**plan["datasets"], **tools})
-            manifest["status"] = "prepared"
-            print("Prepared initial models only. No training or evaluation performed.", flush=True)
-        else:
-            manifest["status"] = "running"
-            for run in manifest["runs"]:
-                active_run = run
-                directory = output / run["directory"]
-                check_artifacts({**plan["datasets"], **tools})
-                values = {"root": str(ROOT), "analyzer": tools["analyzer"]["path"],
-                          "initial_model": run["initial_model"]["path"], "trained_model": str(directory / "trained.nn"),
-                          "train": plan["datasets"]["train"]["path"], "validation": plan["datasets"]["validation"]["path"],
-                          "seed": str(run["seed"]), "training_config": str(directory / "training.json"),
-                          "history": str(directory / "history.csv")}
-                command = [arg.format_map(values) for arg in training["command"]]
-                run["status"] = "training"
-                write_json(manifest_path, manifest)
-                print(f"Train {run['configuration']} / seed {run['seed']} (logs: {directory})", flush=True)
-                seconds = run_command(command, ROOT, directory / "train")
-                check_artifacts({"initial_model": run["initial_model"]})
-                trained = Path(values["trained_model"])
-                if not trained.is_file():
-                    raise ValueError("training returned success without writing trained.nn; no evaluation was run")
-                saved_model = json.loads(trained.read_text(encoding="utf-8"))
-                initial_model = json.loads(Path(values["initial_model"]).read_text(encoding="utf-8"))
-                if saved_model["config"] != initial_model["config"]:
-                    raise ValueError("trained model must preserve its network configuration and seed")
-                if saved_model["layers"] == initial_model["layers"]:
-                    raise ValueError("training did not change any weights or biases; refusing to evaluate an unchanged initial model")
-                load_history(directory / "history.csv")
-                run.update(status="evaluating", training_seconds=seconds, trained_model=fingerprint(trained),
-                           model_bytes=trained.stat().st_size)
-                check_artifacts({**plan["datasets"], **tools})
-                write_json(manifest_path, manifest)
-                print(f"Evaluate {run['configuration']} / seed {run['seed']} on validation", flush=True)
-                metrics = evaluate(trained, Path(values["validation"]), Path(values["analyzer"]), directory / "evaluation")
-                metrics["experiment"] = {"configuration": run["configuration"], "seed": run["seed"],
-                                         "training_seconds": seconds, "model_bytes": run["model_bytes"]}
-                write_json(directory / "evaluation/metrics.json", metrics)
-                run["status"] = "completed"
-                write_json(manifest_path, manifest)
-            check_artifacts({**plan["datasets"], **tools})
-            manifest["status"] = "completed"
+                with tempfile.TemporaryDirectory(prefix="mytorch-run-") as temporary:
+                    work = Path(temporary)
+                    check_artifacts({**plan["datasets"], **tools})
+                    if "initial_model" in config:
+                        check_artifacts({"source_model": config["initial_model"]})
+                        initial = Path(config["initial_model"]["path"])
+                        run["starting_mode"] = "continue_weights"
+                        run["source_model"] = config["initial_model"]
+                        if "previous_history" in config:
+                            check_artifacts({"previous_history": config["previous_history"]})
+                            run["previous_history"] = config["previous_history"]
+                            run["previous_checkpoint_epoch"] = config["previous_checkpoint_epoch"]
+                    else:
+                        network_config = work / "network.conf"
+                        network_config.write_text("".join(f"{key}={value}\n" for key, value in config["options"].items())
+                                                  + f"seed={seed}\n", encoding="utf-8")
+                        print(f"Generate {config['name']} / seed {seed}", flush=True)
+                        run["generation"] = run_command([tools["generator"]["path"], str(network_config), "1"],
+                                                        work, directory / "generation.log")
+                        (directory / "generation.log").unlink()
+                        initial = work / "models/network_1.nn"
+                        run["starting_mode"] = "fresh"
+                    model_config = json.loads(initial.read_text(encoding="utf-8"))["config"]
+                    if model_config["seed"] != seed:
+                        raise ValueError("generator did not preserve the requested seed")
+                    run.update(status="prepared", network_config=model_config, initial_model=fingerprint(initial))
+                    if prepare:
+                        if run["starting_mode"] == "fresh":
+                            shutil.copyfile(initial, directory / "initial-model.nn")
+                            run["initial_model"] = fingerprint(directory / "initial-model.nn")
+                        write_json(manifest_path, manifest)
+                        continue
+                    request = work / "training.json"
+                    write_json(request, {"seed": seed, "settings": training["settings"],
+                                         "train": plan["datasets"]["train"], "validation": plan["datasets"]["validation"]})
+                    values = {"root": str(ROOT), "analyzer": tools["analyzer"]["path"],
+                              "initial_model": str(initial), "trained_model": str(directory / "model.nn"),
+                              "train": plan["datasets"]["train"]["path"],
+                              "validation": plan["datasets"]["validation"]["path"],
+                              "seed": str(seed), "training_config": str(request), "history": str(directory / "history.csv")}
+                    builtin = training["command"] == "builtin"
+                    command = (builtin_command(values, training["settings"]) if builtin else
+                               [arg.format_map(values) for arg in training["command"]])
+                    run["status"] = "training"
+                    run["command"] = {"arguments": command, "seconds": None, "returncode": None}
+                    write_json(manifest_path, manifest)
+                    print(f"Train {config['name']} / seed {seed} (results: {directory})", flush=True)
+                    try:
+                        run["command"] = run_command(command, work if builtin else ROOT, directory / "training.log")
+                    finally:
+                        # The analyzer writes its detailed log in its working directory.
+                        with (directory / "training.log").open("a", encoding="utf-8") as stream:
+                            for log in sorted((work / "logs").glob("train_*.log")):
+                                stream.write("\n" + log.read_text(encoding="utf-8"))
+                    check_artifacts({"initial_model": run["initial_model"]})
+                    trained = Path(values["trained_model"])
+                    if not trained.is_file():
+                        raise ValueError("training returned success without writing model.nn; no evaluation was run")
+                    saved_model = json.loads(trained.read_text(encoding="utf-8"))
+                    initial_model = json.loads(initial.read_text(encoding="utf-8"))
+                    if saved_model["config"] != initial_model["config"]:
+                        raise ValueError("trained model must preserve its network configuration and seed")
+                    if saved_model["layers"] == initial_model["layers"] and not builtin:
+                        raise ValueError("training did not change any weights or biases; refusing to evaluate an unchanged initial model")
+                    history = load_history(directory / "history.csv")
+                    if builtin:
+                        if not history:
+                            raise ValueError("builtin training must produce a history")
+                        diagnostics = (directory / "training.log").read_text(encoding="utf-8")
+                        complete = re.search(r"Training complete: best_epoch=(\d+) validation_loss=([\deE.+-]+)", diagnostics)
+                        if complete is None:
+                            raise ValueError("builtin training did not confirm its selected checkpoint")
+                        best_epoch = int(complete[1])
+                        if best_epoch not in {0, *(row["epoch"] for row in history)}:
+                            raise ValueError("selected checkpoint is outside the training history")
+                        initial_loss = re.search(r"Initial validation_loss=([\deE.+-]+)", diagnostics)
+                        run["stopping"] = {"epochs_completed": len(history), "best_epoch": best_epoch,
+                                           "best_validation_loss": float(complete[2]),
+                                           "initial_validation_loss": float(initial_loss[1]) if initial_loss else None,
+                                           "reason": "patience" if len(history) < training["settings"]["epochs"] or
+                                                      "Early stopping after epoch" in diagnostics else "epoch_limit_reached",
+                                           "unchanged_checkpoint": saved_model["layers"] == initial_model["layers"]}
+                    run.update(training_seconds=run["command"]["seconds"], trained_model=fingerprint(trained),
+                               model_bytes=trained.stat().st_size)
+                    check_artifacts({**plan["datasets"], **tools})
+                    if not train_only:
+                        run["status"] = "evaluating"
+                        write_json(manifest_path, manifest)
+                        before, _, _ = predict_metrics(initial, Path(values["validation"]), Path(values["analyzer"]))
+                        metrics, _, _ = predict_metrics(trained, Path(values["validation"]), Path(values["analyzer"]))
+                        metrics["experiment"] = {"configuration": config["name"], "seed": seed,
+                                                 "training_seconds": run["training_seconds"], "model_bytes": run["model_bytes"]}
+                        if run["starting_mode"] == "fresh":
+                            before["artifacts"]["model"].pop("path")
+                            before["artifacts"]["model"]["generated"] = True
+                        write_json(directory / "metrics.json", {"before": before, "validation": metrics})
+                    if run["starting_mode"] == "fresh":
+                        run["initial_model"].pop("path")
+                        run["initial_model"]["generated"] = True
+                    run["status"] = "completed"
+                    write_json(manifest_path, manifest)
+        manifest["status"] = "prepared" if prepare else "completed"
         write_json(manifest_path, manifest)
-        summary = load_experiment(output)
-        write_json(output / "summary.json", summary)
+        return load_experiment(output)
     except (OSError, ValueError, KeyError, KeyboardInterrupt) as error:
         manifest["status"] = "interrupted" if isinstance(error, KeyboardInterrupt) else "failed"
         manifest["error"] = str(error) or "Interrupted"
         if active_run is not None and active_run["status"] != "completed":
-            active_run["status"] = manifest["status"]
-            active_run["error"] = manifest["error"]
-        write_json(manifest_path, manifest)
-        try:
-            write_json(output / "summary.json", load_experiment(output))
-        except (OSError, ValueError, KeyError) as summary_error:
-            manifest["summary_error"] = str(summary_error)
+            active_run.update(status=manifest["status"], error=manifest["error"])
         raise
     finally:
+        for run in manifest["runs"]:
+            initial = run.get("initial_model", {})
+            if run.get("starting_mode") == "fresh" and not prepare:
+                initial.pop("path", None)
+                initial["generated"] = True
         write_json(manifest_path, manifest)
-    return summary
+        write_readme(output, manifest)
 
 
 def main():
@@ -263,9 +418,10 @@ def main():
     parser.add_argument("config", type=Path)
     parser.add_argument("--output", type=Path, required=True, help="new experiment directory")
     parser.add_argument("--prepare", action="store_true", help="generate initial models; never train or evaluate")
+    parser.add_argument("--train-only", action="store_true", help="train one model without running classification evaluation")
     args = parser.parse_args()
     try:
-        summary = run_experiment(args.config, args.output, args.prepare)
+        summary = run_experiment(args.config, args.output, args.prepare, train_only=args.train_only)
     except (OSError, ValueError, KeyError) as error:
         print(f"Experiment: {error}", file=sys.stderr)
         return 1
@@ -273,6 +429,7 @@ def main():
         print("Experiment interrupted; completed runs and logs were retained", file=sys.stderr)
         return 130
     print(f"Status: {summary['status']} | Results: {args.output}")
+    print(f"Read: {args.output / 'README.md'}")
     return 0
 
 

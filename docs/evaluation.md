@@ -1,85 +1,150 @@
-# Evaluation workflow
+# Training and evaluation workflow
 
-## One experiment, one configuration file
+## Where files belong
 
-Edit [configs/experiment.json](../configs/experiment.json): it defines the network
-configurations, common training settings, dataset paths, and seeds **once**.
-Paths in this file are relative to its directory. The supplied compact/reference
-pair is an initial capacity comparison, not a tuned grid or a final choice.
-
-The default paths use the frozen `chess-v1` reference. On a fresh checkout,
-[recreate and verify it](datasets.md) before preparing an experiment. The
-reference files are retained locally, separately from notebook outputs.
-
-Until the training adapter is connected, prepare all initial models:
-
-```sh
-make experiment OUTPUT=results/experiments/preparation OPTIONS=--prepare
-```
-
-This generates one model per configuration/seed, freezes the plan and file hashes,
-and writes a manifest and an empty-results summary. It performs **no training or
-evaluation**. `training.command` and `training.settings` intentionally remain null.
-
-After agreeing on and connecting the [training interface](training.md#6-experiment-runner):
-
-```sh
-make experiment OUTPUT=results/experiments/comparison-01
-```
-
-The same command now generates, trains, evaluates on validation, and summarizes.
-Use `CONFIG=PATH` for another experiment file. Each output directory must be new;
-there is no automatic resume. Start a new experiment after changing the plan.
-
-## Read the results
-
-| Goal | Notebook | Setting |
-| --- | --- | --- |
-| Compare configurations, variability across seeds, costs, and available training curves | [comparison.ipynb](../notebooks/comparison.ipynb) | `EXPERIMENT`: experiment output directory |
-| Inspect one model's class scores and confusion matrix | [evaluation.ipynb](../notebooks/evaluation.ipynb) | `RUN`: its `runs/CONFIG/seed-SEED/evaluation` directory |
-
-Each notebook runs independently; neither trains nor predicts. Use the project's
-`.venv` kernel. Install dependencies there with
-`python -m pip install -r notebooks/requirements.txt`.
-
-The comparison notebook can still compare standalone validation reports with
-`EXPERIMENT = None` and `RUNS`. Without an experiment plan, it cannot infer seeds
-or group configurations. This mode is for individual-run inspection.
-
-An experiment retains:
-
-- `experiment.json`: frozen plan, datasets/class counts, source and binary hashes,
-  machine information, run states, and errors.
-- `summary.json`: configuration means/sample standard deviations and completed
-  run details. The notebook recomputes it from the reports rather than trusting a stale cache.
-- `runs/CONFIG/seed-SEED/`: network/training settings, initial/trained models,
-  generation/training commands and logs, elapsed training time, model size,
-  optional history, and evaluation reports.
-
-Failed experiments retain completed runs and logs. Partial groups show missing
-seeds; they cannot establish a leading configuration. A singleton has no estimated
-standard deviation. Preparing models does not produce quality scores.
-
-## Evaluate one model independently
-
-```sh
-python3 scripts/evaluate.py MODEL DATASET --output results/RUN
-```
-
-Use a saved `.nn` model, a labeled [FEN dataset](datasets.md), and a new output
-directory. This command remains the entry point for the selected model's final
-test evaluation, and for inspecting an existing model without retraining.
-
-| Report | Contents |
+| Directory | Purpose |
 | --- | --- |
-| `metrics.json` | Accuracy, macro F1, precision/recall/F1 and support per class; artifact hashes, prediction command and elapsed time. |
-| `predictions.csv` | Original dataset line number, actual class, predicted class. |
-| `confusion_matrix.csv` | Actual classes in rows, predictions in columns: Nothing, Check, Checkmate. |
+| `configs/networks/` | Network architecture and parameters |
+| `configs/experiments/` | Training and comparison protocols: data, initial model, budget, hypothesis |
+| `dataset/` | Shared datasets and frozen versions; never copied into results |
+| `results/training/` | Standalone training or checkpoint continuation |
+| `results/evaluation/` | Standalone validation or final test evaluation |
+| `results/experiments/` | Controlled comparisons of configurations and seeds |
+| `results/smoke-tests/` | Technical checks, model preparation and previews |
+| `models/` | Reusable reference and selected models |
+| `notebooks/` | Dataset exploration, curves and result inspection |
+| `scripts/` | Reusable processing and the single experiment runner |
+| `docs/` | Methods, conventions and conclusions |
 
-Undefined scores are zero. Macro F1 includes all three classes. Prediction time
-includes startup, model loading, parsing, inference, and output capture; training
-time includes the training command's startup/loading. These are single elapsed
-measurements, not isolated speed benchmarks.
+Use English kebab-case and name result directories `YYYY-MM-DD-purpose-01`,
+for example `2026-11-07-continue-reference-01`. Use a new directory for every
+execution; existing results are never overwritten. Runs inside an experiment
+stay there; do not duplicate them under `training/` or `evaluation/`.
+
+Open **README.md first** in any result directory. No HTML reports, source-code
+snapshots, exported PNGs, or dataset-analysis directory are generated. Dataset
+analysis remains in its notebook and [dataset documentation](datasets.md).
+
+## Train one model
+
+Build with `make`. Protocol paths are relative to the configuration file.
+For a fresh reference model:
+
+```sh
+python3 scripts/experiment.py configs/experiments/train-reference.json \
+  --train-only --output results/training/YYYY-MM-DD-reference-01
+```
+
+The supplied continuation starts from `models/reference-epoch-100.nn` (seed 43).
+It allows **400 additional epochs**, batch size 32, patience 20 and min_delta
+0.0001. To reuse it, retain that checkpoint and its referenced history, or edit
+the protocol to select your own initial model.
+
+```sh
+python3 scripts/experiment.py configs/experiments/continue-reference.json \
+  --train-only --output results/training/2026-11-07-continue-reference-02
+```
+
+A single run is flat:
+
+```text
+README.md       Goal, status, checkpoint and conclusion
+config.json     Resolved parameters, dataset/model hashes, commands and Git revision
+model.nn        Selected checkpoint
+history.csv     Per-epoch train and validation losses
+training.log    Execution diagnostics and detailed analyzer log
+```
+
+The source model stays in place and is not modified or copied. Previous history
+is referenced rather than copied. A fresh initialization is generated in a
+temporary directory; its network settings, seed and fingerprint are recorded.
+`--prepare` retains `initial-model.nn` instead and performs no training/evaluation.
+Generation failures retain `generation.log`.
+
+`--train-only` requires one configuration and one seed. Omit it to also evaluate
+the initial and selected models on validation; this adds one `metrics.json`
+containing `before` and `validation` scores.
+
+Continuation restores weights; shuffle randomness and early-stopping state
+restart. `previous_history` and `previous_checkpoint_epoch` describe the earlier
+trace, but the model format does not authenticate that relationship.
+
+## Evaluate an existing model
+
+Use validation while tuning, then evaluate the selected model on the reserved
+test split. This command does not train:
+
+```sh
+python3 scripts/evaluate.py \
+  results/training/2026-11-07-continue-reference-01/model.nn \
+  dataset/references/chess-v1/splits/test.txt \
+  --output results/evaluation/2026-11-07-reference-test-02
+```
+
+The directory contains only:
+
+```text
+README.md               Model, dataset and readable scores
+metrics.json            Detailed scores, fingerprints and inference timing
+confusion-matrix.csv    Actual classes in rows, predicted classes in columns
+```
+
+Add `--predictions` only when individual predictions are needed for error
+analysis. It exports `predictions.csv` with original line numbers and labels.
+Undefined scores are zero; macro F1 includes Nothing, Check and Checkmate.
+
+## Compare configurations
+
+Edit `configs/experiments/compare-network-sizes.json`. It declares architectures,
+seeds, prepared train/validation datasets and common training settings once.
+The compact/reference pair is a starting comparison, not a tuned final choice.
+Verify the [frozen dataset](datasets.md) before a campaign.
+
+```sh
+python3 scripts/experiment.py configs/experiments/compare-network-sizes.json \
+  --output results/experiments/2026-11-10-compare-network-sizes-01
+
+# Technical preparation only; no training or evaluation.
+make experiment OUTPUT=results/smoke-tests/2026-11-10-prepare-networks-01 OPTIONS=--prepare
+```
+
+Only campaigns with multiple runs add a level of folders:
+
+```text
+README.md
+config.json
+comparison.csv
+runs/
+  compact-seed-42/
+  compact-seed-43/
+  reference-seed-42/
+  reference-seed-43/
+```
+
+Each run contains `model.nn`, `history.csv`, `training.log` and `metrics.json`.
+The root README groups their results; `comparison.csv` gives before/after scores.
+`config.json` records run states, costs and provenance. No separate summary,
+command, training-config or decision files are needed. Write your conclusion in
+the README's Conclusion section; refreshing the overview preserves that section.
+
+Failures retain completed runs and diagnostics. Missing seeds remain visible;
+a single seed is exploratory, with no estimate of variability. Timing includes
+process startup/loading and is not an isolated benchmark.
+
+## Read results in notebooks
+
+Use the project's `.venv` kernel with `notebooks/requirements.txt` installed.
+Notebooks read saved results; they do not launch training or inference.
+
+| Notebook | Select |
+| --- | --- |
+| `evaluation.ipynb` | `RUN`: a standalone evaluation or a training/experiment run containing metrics; `PHASE`: before or validation for grouped metrics |
+| `comparison.ipynb` | `EXPERIMENT`: a directory containing `config.json`; or `RUNS`: standalone validation directories relative to the project |
+| `dataset_analysis.ipynb` | Frozen dataset version; displays findings directly, without exporting files |
+
+Training curves are also shown in the evaluation notebook when `history.csv`
+is present. The comparison notebook recomputes statistics from the saved scores
+and checks dataset/build compatibility and model integrity.
 
 ## Comparison protocol v1
 
@@ -106,6 +171,8 @@ measurements, not isolated speed benchmarks.
    model** before test evaluation. Do not cherry-pick a seed or tune using test
    results. The runner reports leaders; it does not choose/export a final model.
 
-The training adapter (command and settings in `configs/experiment.json`) remains to
-be connected. Final training comparisons, test results, interpretation, and model
-delivery remain open parts of issue #8.
+The built-in command applies every declared training setting and rejects unknown
+keys. Checkpoint selection uses minimum validation loss, including the starting
+model if no epoch improves it. Macro-F1 is measured afterwards, not used to
+select an epoch. Final training comparisons, test results and interpretation
+remain open parts of issue #8.

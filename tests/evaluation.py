@@ -58,7 +58,7 @@ class EvaluationTests(unittest.TestCase):
                                "8/8/8/8/8/8/8/8 b - - 0 1 Check Black\n")
             output = work / "run"
             command = [sys.executable, str(ROOT / "scripts/evaluate.py"), str(model),
-                       str(dataset), "--output", str(output)]
+                       str(dataset), "--output", str(output), "--predictions"]
             result = subprocess.run(command, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             metrics = json.loads((output / "metrics.json").read_text())
@@ -70,10 +70,15 @@ class EvaluationTests(unittest.TestCase):
                 self.assertEqual(list(csv.reader(source)), [
                     ["dataset_line", "actual", "predicted"],
                     ["2", "Nothing", "Nothing"], ["4", "Check", "Nothing"]])
-            with (output / "confusion_matrix.csv").open() as source:
+            with (output / "confusion-matrix.csv").open() as source:
                 self.assertEqual(list(csv.reader(source))[1:], [
                     ["Nothing", "1", "0", "0"], ["Check", "1", "0", "0"],
                     ["Checkmate", "0", "0", "0"]])
+            default_output = work / "default-report"
+            result_default = subprocess.run(command[:-2] + [str(default_output)], capture_output=True, text=True)
+            self.assertEqual(result_default.returncode, 0, result_default.stderr)
+            self.assertEqual(set(p.name for p in default_output.iterdir()),
+                             {"README.md", "metrics.json", "confusion-matrix.csv"})
             self.assertEqual(model.read_bytes(), original)
             result = subprocess.run(command, capture_output=True, text=True)
             self.assertNotEqual(result.returncode, 0)

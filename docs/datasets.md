@@ -124,7 +124,7 @@ Blank lines are skipped. The encoder validates FEN fields, but does not check
 whether a position is legal chess.
 
 ```sh
-./my_torch_analyzer --predict models/basic_network_1.nn positions.txt
+./my_torch_analyzer --predict models/basic-network_1.nn positions.txt
 ```
 
 The command prints one class per nonblank line in the same order. It returns 0
@@ -386,7 +386,7 @@ existing output directory. Never regenerate a manifest to conceal a changed file
 
 ### Experiment paths
 
-[`configs/experiment.json`](../configs/experiment.json) resolves train, validation,
+[`configs/experiments/compare-network-sizes.json`](../configs/experiments/compare-network-sizes.json) resolves train, validation,
 and metadata to `dataset/references/chess-v1/splits/`. The standalone comparison
 notebook defaults to this validation file too. Tests check the supplied config
 against a small frozen reference; the real paths and hashes were also checked
@@ -397,7 +397,7 @@ Train only on `train.txt`, choose settings/models on `validation.txt`, and reser
 test dataset. After verification, the usual preparation command is:
 
 ```sh
-make experiment OUTPUT=results/experiments/chess-v1-preparation OPTIONS=--prepare
+make experiment OUTPUT=results/smoke-tests/YYYY-MM-DD-prepare-chess-v1-01 OPTIONS=--prepare
 ```
 
 The runner captures the resolved dataset paths and hashes in its experiment
@@ -420,9 +420,9 @@ or label audit.
 
 Two train-fitted diagnostic rules (global majority and majority by side to
 move/piece count) quantify simple sampling shortcuts on validation. These rules
-do not replace the supervised neural model. Exports in
-`results/dataset-analysis/summary.json` and five PNG figures retain the values
-behind the plots; those generated files are ignored by Git.
+do not replace the supervised neural model. Numerical findings and charts stay
+in the notebook; no files are exported into `results/`. Its conclusion section
+records the observations for the checked dataset version.
 
 Use the findings alongside model errors to justify a controlled experiment,
 such as training-only balancing, material-coverage enrichment or a longer

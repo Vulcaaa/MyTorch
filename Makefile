@@ -2,9 +2,9 @@ GENERATOR = my_torch_generator
 ANALYZER = my_torch_analyzer
 CXX = g++
 PYTHON = python3
-CONFIG ?= configs/experiment.json
+CONFIG ?= configs/experiments/compare-network-sizes.json
 CPPFLAGS = -Isrc -Isrc/chess/ -Isrc/neural/ -Iinclude -MMD -MP
-CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -O2
+CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -O8
 
 # BLAS=auto uses Accelerate on macOS, OpenBLAS via pkg-config on Linux,
 # and keeps the portable scalar backend when neither is available.

@@ -25,7 +25,7 @@ training loss history; they replace neither.
 ## Entry format
 
 ```text
-2026-11-05T19:00:28.070Z [INFO] Generated models/basic_network_1.nn (seed 42)
+2026-11-05T19:00:28.070Z [INFO] Generated models/basic-network_1.nn (seed 42)
 ```
 
 Each entry is one line: a UTC timestamp with milliseconds, a level, and a
@@ -48,7 +48,7 @@ its seed, and the total time. Example for `./my_torch_generator basic_network.co
 ```text
 2026-11-05T19:00:28.028Z [INFO] Generation started
 2026-11-05T19:00:28.028Z [INFO] Configuration basic_network.conf: layers=777,128,64,3 hidden_activation=sigmoid output_activation=softmax initialization=xavier learning_rate=0.01 seed=42
-2026-11-05T19:00:28.070Z [INFO] Generated models/basic_network_1.nn (seed 42)
+2026-11-05T19:00:28.070Z [INFO] Generated models/basic-network_1.nn (seed 42)
 2026-11-05T19:00:28.109Z [INFO] Generated models/basic_network_2.nn (seed 43)
 2026-11-05T19:00:28.109Z [INFO] Generation complete: 2 models in 0.081 s
 ```
@@ -70,7 +70,7 @@ positions with an explicit validation file:
 
 ```text
 2026-11-05T20:21:16.927Z [INFO] Training started
-2026-11-05T20:21:16.945Z [INFO] Model models/basic_network_1.nn: layers=777,128,64,3 hidden_activation=sigmoid output_activation=softmax initialization=xavier learning_rate=0.01 seed=42
+2026-11-05T20:21:16.945Z [INFO] Model models/basic-network_1.nn: layers=777,128,64,3 hidden_activation=sigmoid output_activation=softmax initialization=xavier learning_rate=0.01 seed=42
 2026-11-05T20:21:16.949Z [INFO] Train set train.txt: 1200 positions
 2026-11-05T20:21:16.949Z [INFO] Validation set val.txt: 300 positions
 2026-11-05T20:21:16.949Z [INFO] Settings: epochs=3 batch_size=32 patience=10 min_delta=0.0001
