@@ -1,0 +1,732 @@
+{
+  "manifest": {
+    "kind": "batch-learning-rate-screen",
+    "status": "completed",
+    "started_utc": "2026-11-07T21:25:56.467594+00:00",
+    "inputs": {
+      "analyzer": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/tools/my_torch_analyzer",
+        "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+      },
+      "train": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/data/train.fen",
+        "sha256": "76b038dda01a24c50e0980d407038d068538394d760c9637e717902b9540e167"
+      },
+      "validation": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/data/validation.fen",
+        "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+      }
+    },
+    "initial_models": {
+      "batch-32-lr-001": {
+        "artifact": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/models/batch-32-lr-001-initial.nn",
+          "sha256": "0cb65341739e6cceddae4d02f9b73b3ccd49a7a7cfbc07d4deb9d3143c960ccb"
+        },
+        "config": {
+          "hidden_activation": "sigmoid",
+          "initialization": "xavier",
+          "layers": [
+            777,
+            128,
+            64,
+            3
+          ],
+          "learning_rate": 0.01,
+          "output_activation": "softmax",
+          "seed": 43
+        },
+        "weights_sha256": "cc7a3aaa690acffdaaedb5c99edcba820f32e3d2b79f6c3cf44c77f4e6798a0c"
+      },
+      "batch-128-lr-004": {
+        "artifact": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/models/batch-128-lr-004-initial.nn",
+          "sha256": "5945cc636815bd68663fa661c7f00812038486362c128a1d5b9479ca93c8bcd4"
+        },
+        "config": {
+          "hidden_activation": "sigmoid",
+          "initialization": "xavier",
+          "layers": [
+            777,
+            128,
+            64,
+            3
+          ],
+          "learning_rate": 0.04,
+          "output_activation": "softmax",
+          "seed": 43
+        },
+        "weights_sha256": "cc7a3aaa690acffdaaedb5c99edcba820f32e3d2b79f6c3cf44c77f4e6798a0c"
+      }
+    },
+    "settings": {
+      "epochs": 5,
+      "patience": 20,
+      "min_delta": 0.0001,
+      "threads": 1,
+      "seed": 43,
+      "repeats": 3,
+      "arms": [
+        {
+          "key": "batch-32-lr-001",
+          "batch": 32,
+          "learning_rate": 0.01
+        },
+        {
+          "key": "batch-128-lr-004",
+          "batch": 128,
+          "learning_rate": 0.04
+        }
+      ]
+    },
+    "schedule": [
+      {
+        "key": "batch-128-lr-004",
+        "batch": 128,
+        "learning_rate": 0.04,
+        "repeat": 1
+      },
+      {
+        "key": "batch-32-lr-001",
+        "batch": 32,
+        "learning_rate": 0.01,
+        "repeat": 1
+      },
+      {
+        "key": "batch-32-lr-001",
+        "batch": 32,
+        "learning_rate": 0.01,
+        "repeat": 2
+      },
+      {
+        "key": "batch-128-lr-004",
+        "batch": 128,
+        "learning_rate": 0.04,
+        "repeat": 2
+      },
+      {
+        "key": "batch-128-lr-004",
+        "batch": 128,
+        "learning_rate": 0.04,
+        "repeat": 3
+      },
+      {
+        "key": "batch-32-lr-001",
+        "batch": 32,
+        "learning_rate": 0.01,
+        "repeat": 3
+      }
+    ],
+    "previous_screen": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-screen-01",
+    "previous_unscaled_128": {
+      "batch": 128,
+      "median_5_epochs_seconds": 40.579,
+      "min_5_epochs_seconds": 40.428,
+      "max_5_epochs_seconds": 40.62,
+      "median_epoch_seconds": 8.1158,
+      "median_process_seconds": 44.406649896998715,
+      "updates_per_epoch": 4473,
+      "last_validation_loss": 1.0413823537207338,
+      "selected_checkpoint_macro_f1": 0.31844157630226183,
+      "selected_checkpoint_accuracy": 0.4322409335476207,
+      "reproducible_model_sha256": "78254a1fada0defda3322621473423f35b4c8fba46c6bc54d7c31dbae5505002",
+      "speedup_vs_32": 1.3724586608837082
+    },
+    "machine": {
+      "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+      "cpu": "Architecture:                            x86_64\nCPU op-mode(s):                          32-bit, 64-bit\nAddress sizes:                           48 bits physical, 48 bits virtual\nByte Order:                              Little Endian\nCPU(s):                                  16\nOn-line CPU(s) list:                     0-15\nVendor ID:                               AuthenticAMD\nModel name:                              AMD Ryzen 7 7840HS w/ Radeon 780M Graphics\nCPU family:                              25\nModel:                                   116\nThread(s) per core:                      2\nCore(s) per socket:                      8\nSocket(s):                               1\nStepping:                                1\nFrequency boost:                         enabled\nCPU(s) scaling MHz:                      38%\nCPU max MHz:                             5137.9038\nCPU min MHz:                             419.4210\nBogoMIPS:                                7585.55\nFlags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm constant_tsc rep_good amd_lbr_v2 nopl xtopology nonstop_tsc cpuid extd_apicid aperfmperf rapl pni pclmulqdq monitor ssse3 fma cx16 sse4_1 sse4_2 x2apic movbe popcnt aes xsave avx f16c rdrand lahf_lm cmp_legacy svm extapic cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw ibs skinit wdt tce topoext perfctr_core perfctr_nb bpext perfctr_llc mwaitx cpuid_fault cpb cat_l3 cdp_l3 hw_pstate ssbd mba perfmon_v2 ibrs ibpb stibp ibrs_enhanced vmmcall fsgsbase bmi1 avx2 smep bmi2 erms invpcid cqm rdt_a avx512f avx512dq rdseed adx smap avx512ifma clflushopt clwb avx512cd sha_ni avx512bw avx512vl xsaveopt xsavec xgetbv1 xsaves cqm_llc cqm_occup_llc cqm_mbm_total cqm_mbm_local user_shstk avx512_bf16 clzero irperf xsaveerptr rdpru wbnoinvd cppc arat npt lbrv svm_lock nrip_save tsc_scale vmcb_clean flushbyasid decodeassists pausefilter pfthreshold vgif x2avic v_spec_ctrl vnmi avx512vbmi umip pku ospke avx512_vbmi2 gfni vaes vpclmulqdq avx512_vnni avx512_bitalg avx512_vpopcntdq rdpid overflow_recov succor smca fsrm flush_l1d amd_lbr_pmc_freeze\nVirtualization:                          AMD-V\nL1d cache:                               256 KiB (8 instances)\nL1i cache:                               256 KiB (8 instances)\nL2 cache:                                8 MiB (8 instances)\nL3 cache:                                16 MiB (1 instance)\nNUMA node(s):                            1\nNUMA node0 CPU(s):                       0-15\nVulnerability Gather data sampling:      Not affected\nVulnerability Ghostwrite:                Not affected\nVulnerability Indirect target selection: Not affected\nVulnerability Itlb multihit:             Not affected\nVulnerability L1tf:                      Not affected\nVulnerability Mds:                       Not affected\nVulnerability Meltdown:                  Not affected\nVulnerability Mmio stale data:           Not affected\nVulnerability Old microcode:             Not affected\nVulnerability Reg file data sampling:    Not affected\nVulnerability Retbleed:                  Not affected\nVulnerability Spec rstack overflow:      Vulnerable: Safe RET, no microcode\nVulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl\nVulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization\nVulnerability Spectre v2:                Mitigation; Enhanced / Automatic IBRS; IBPB conditional; STIBP always-on; PBRSB-eIBRS Not affected; BHI Not affected\nVulnerability Srbds:                     Not affected\nVulnerability Tsa:                       Mitigation; Clear CPU buffers\nVulnerability Tsx async abort:           Not affected\nVulnerability Vmscape:                   Mitigation; IBPB before exit to userspace\n"
+    },
+    "runs": [
+      {
+        "key": "batch-128-lr-004",
+        "batch": 128,
+        "learning_rate": 0.04,
+        "repeat": 1,
+        "directory": "runs/batch-128-lr-004-repeat-1",
+        "status": "completed",
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/tools/my_torch_analyzer",
+          "--train",
+          "--threads",
+          "1",
+          "--validation",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/data/validation.fen",
+          "--save",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-128-lr-004-repeat-1/model.nn",
+          "--history",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-128-lr-004-repeat-1/history.csv",
+          "--epochs",
+          "5",
+          "--batch-size",
+          "128",
+          "--patience",
+          "20",
+          "--min-delta",
+          "0.0001",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/models/batch-128-lr-004-initial.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/data/train.fen"
+        ],
+        "started_utc": "2026-11-07T21:25:56.566570+00:00",
+        "process_seconds": 44.730608423000376,
+        "returncode": 0,
+        "finished_utc": "2026-11-07T21:26:42.367211+00:00",
+        "epoch_seconds": [
+          8.173,
+          8.198,
+          8.177,
+          8.2,
+          8.061
+        ],
+        "total_epoch_seconds": 40.809,
+        "history": [
+          {
+            "epoch": "1",
+            "train_loss": "1.0537092030267772",
+            "validation_loss": "1.053709500861657"
+          },
+          {
+            "epoch": "2",
+            "train_loss": "0.99008572868246636",
+            "validation_loss": "0.99061886587143577"
+          },
+          {
+            "epoch": "3",
+            "train_loss": "0.94894343710639573",
+            "validation_loss": "0.95088687759005153"
+          },
+          {
+            "epoch": "4",
+            "train_loss": "0.91066508818425096",
+            "validation_loss": "0.91303174055730307"
+          },
+          {
+            "epoch": "5",
+            "train_loss": "0.90340670345506724",
+            "validation_loss": "0.90544519325856276"
+          }
+        ],
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-128-lr-004-repeat-1/model.nn",
+          "sha256": "340206898c441d783de0a658fb1bba7b3f6920cef47d77373123267e4631856e"
+        },
+        "validation_macro_f1": 0.5417040516504392,
+        "validation_accuracy": 0.5532527426455174
+      },
+      {
+        "key": "batch-32-lr-001",
+        "batch": 32,
+        "learning_rate": 0.01,
+        "repeat": 1,
+        "directory": "runs/batch-32-lr-001-repeat-1",
+        "status": "completed",
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/tools/my_torch_analyzer",
+          "--train",
+          "--threads",
+          "1",
+          "--validation",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/data/validation.fen",
+          "--save",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-32-lr-001-repeat-1/model.nn",
+          "--history",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-32-lr-001-repeat-1/history.csv",
+          "--epochs",
+          "5",
+          "--batch-size",
+          "32",
+          "--patience",
+          "20",
+          "--min-delta",
+          "0.0001",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/models/batch-32-lr-001-initial.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/data/train.fen"
+        ],
+        "started_utc": "2026-11-07T21:26:42.415246+00:00",
+        "process_seconds": 58.97273232299631,
+        "returncode": 0,
+        "finished_utc": "2026-11-07T21:27:42.460599+00:00",
+        "epoch_seconds": [
+          11.024,
+          11.001,
+          11.071,
+          10.907,
+          11.137
+        ],
+        "total_epoch_seconds": 55.14,
+        "history": [
+          {
+            "epoch": "1",
+            "train_loss": "1.0525993644867577",
+            "validation_loss": "1.0526200564456065"
+          },
+          {
+            "epoch": "2",
+            "train_loss": "0.9902666670790039",
+            "validation_loss": "0.99089565265734658"
+          },
+          {
+            "epoch": "3",
+            "train_loss": "0.925145771833213",
+            "validation_loss": "0.92669997507581114"
+          },
+          {
+            "epoch": "4",
+            "train_loss": "0.90647092093799397",
+            "validation_loss": "0.90878296056704133"
+          },
+          {
+            "epoch": "5",
+            "train_loss": "0.89627400394693268",
+            "validation_loss": "0.89854588188303619"
+          }
+        ],
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-32-lr-001-repeat-1/model.nn",
+          "sha256": "ae6508a300f6bbdc360dda5ce6fc51b1a5c2996fd33bd02b41dd772328c22327"
+        },
+        "validation_macro_f1": 0.5379949445010911,
+        "validation_accuracy": 0.5570120886031724
+      },
+      {
+        "key": "batch-32-lr-001",
+        "batch": 32,
+        "learning_rate": 0.01,
+        "repeat": 2,
+        "directory": "runs/batch-32-lr-001-repeat-2",
+        "status": "completed",
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/tools/my_torch_analyzer",
+          "--train",
+          "--threads",
+          "1",
+          "--validation",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/data/validation.fen",
+          "--save",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-32-lr-001-repeat-2/model.nn",
+          "--history",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-32-lr-001-repeat-2/history.csv",
+          "--epochs",
+          "5",
+          "--batch-size",
+          "32",
+          "--patience",
+          "20",
+          "--min-delta",
+          "0.0001",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/models/batch-32-lr-001-initial.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/data/train.fen"
+        ],
+        "started_utc": "2026-11-07T21:27:42.507387+00:00",
+        "process_seconds": 59.68001566300518,
+        "returncode": 0,
+        "finished_utc": "2026-11-07T21:28:43.257133+00:00",
+        "epoch_seconds": [
+          11.22,
+          11.043,
+          11.225,
+          11.21,
+          11.073
+        ],
+        "total_epoch_seconds": 55.771,
+        "history": [
+          {
+            "epoch": "1",
+            "train_loss": "1.0525993644867577",
+            "validation_loss": "1.0526200564456065"
+          },
+          {
+            "epoch": "2",
+            "train_loss": "0.9902666670790039",
+            "validation_loss": "0.99089565265734658"
+          },
+          {
+            "epoch": "3",
+            "train_loss": "0.925145771833213",
+            "validation_loss": "0.92669997507581114"
+          },
+          {
+            "epoch": "4",
+            "train_loss": "0.90647092093799397",
+            "validation_loss": "0.90878296056704133"
+          },
+          {
+            "epoch": "5",
+            "train_loss": "0.89627400394693268",
+            "validation_loss": "0.89854588188303619"
+          }
+        ],
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-32-lr-001-repeat-2/model.nn",
+          "sha256": "ae6508a300f6bbdc360dda5ce6fc51b1a5c2996fd33bd02b41dd772328c22327"
+        },
+        "validation_macro_f1": 0.5379949445010911,
+        "validation_accuracy": 0.5570120886031724
+      },
+      {
+        "key": "batch-128-lr-004",
+        "batch": 128,
+        "learning_rate": 0.04,
+        "repeat": 2,
+        "directory": "runs/batch-128-lr-004-repeat-2",
+        "status": "completed",
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/tools/my_torch_analyzer",
+          "--train",
+          "--threads",
+          "1",
+          "--validation",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/data/validation.fen",
+          "--save",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-128-lr-004-repeat-2/model.nn",
+          "--history",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-128-lr-004-repeat-2/history.csv",
+          "--epochs",
+          "5",
+          "--batch-size",
+          "128",
+          "--patience",
+          "20",
+          "--min-delta",
+          "0.0001",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/models/batch-128-lr-004-initial.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/data/train.fen"
+        ],
+        "started_utc": "2026-11-07T21:28:43.303481+00:00",
+        "process_seconds": 45.09586071099329,
+        "returncode": 0,
+        "finished_utc": "2026-11-07T21:29:29.469535+00:00",
+        "epoch_seconds": [
+          8.202,
+          8.248,
+          8.256,
+          8.37,
+          8.206
+        ],
+        "total_epoch_seconds": 41.282,
+        "history": [
+          {
+            "epoch": "1",
+            "train_loss": "1.0537092030267772",
+            "validation_loss": "1.053709500861657"
+          },
+          {
+            "epoch": "2",
+            "train_loss": "0.99008572868246636",
+            "validation_loss": "0.99061886587143577"
+          },
+          {
+            "epoch": "3",
+            "train_loss": "0.94894343710639573",
+            "validation_loss": "0.95088687759005153"
+          },
+          {
+            "epoch": "4",
+            "train_loss": "0.91066508818425096",
+            "validation_loss": "0.91303174055730307"
+          },
+          {
+            "epoch": "5",
+            "train_loss": "0.90340670345506724",
+            "validation_loss": "0.90544519325856276"
+          }
+        ],
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-128-lr-004-repeat-2/model.nn",
+          "sha256": "340206898c441d783de0a658fb1bba7b3f6920cef47d77373123267e4631856e"
+        },
+        "validation_macro_f1": 0.5417040516504392,
+        "validation_accuracy": 0.5532527426455174
+      },
+      {
+        "key": "batch-128-lr-004",
+        "batch": 128,
+        "learning_rate": 0.04,
+        "repeat": 3,
+        "directory": "runs/batch-128-lr-004-repeat-3",
+        "status": "completed",
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/tools/my_torch_analyzer",
+          "--train",
+          "--threads",
+          "1",
+          "--validation",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/data/validation.fen",
+          "--save",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-128-lr-004-repeat-3/model.nn",
+          "--history",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-128-lr-004-repeat-3/history.csv",
+          "--epochs",
+          "5",
+          "--batch-size",
+          "128",
+          "--patience",
+          "20",
+          "--min-delta",
+          "0.0001",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/models/batch-128-lr-004-initial.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/data/train.fen"
+        ],
+        "started_utc": "2026-11-07T21:29:29.518117+00:00",
+        "process_seconds": 44.83036666500266,
+        "returncode": 0,
+        "finished_utc": "2026-11-07T21:30:15.455092+00:00",
+        "epoch_seconds": [
+          8.236,
+          8.286,
+          8.142,
+          8.102,
+          8.275
+        ],
+        "total_epoch_seconds": 41.041,
+        "history": [
+          {
+            "epoch": "1",
+            "train_loss": "1.0537092030267772",
+            "validation_loss": "1.053709500861657"
+          },
+          {
+            "epoch": "2",
+            "train_loss": "0.99008572868246636",
+            "validation_loss": "0.99061886587143577"
+          },
+          {
+            "epoch": "3",
+            "train_loss": "0.94894343710639573",
+            "validation_loss": "0.95088687759005153"
+          },
+          {
+            "epoch": "4",
+            "train_loss": "0.91066508818425096",
+            "validation_loss": "0.91303174055730307"
+          },
+          {
+            "epoch": "5",
+            "train_loss": "0.90340670345506724",
+            "validation_loss": "0.90544519325856276"
+          }
+        ],
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-128-lr-004-repeat-3/model.nn",
+          "sha256": "340206898c441d783de0a658fb1bba7b3f6920cef47d77373123267e4631856e"
+        },
+        "validation_macro_f1": 0.5417040516504392,
+        "validation_accuracy": 0.5532527426455174
+      },
+      {
+        "key": "batch-32-lr-001",
+        "batch": 32,
+        "learning_rate": 0.01,
+        "repeat": 3,
+        "directory": "runs/batch-32-lr-001-repeat-3",
+        "status": "completed",
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/tools/my_torch_analyzer",
+          "--train",
+          "--threads",
+          "1",
+          "--validation",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/data/validation.fen",
+          "--save",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-32-lr-001-repeat-3/model.nn",
+          "--history",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-32-lr-001-repeat-3/history.csv",
+          "--epochs",
+          "5",
+          "--batch-size",
+          "32",
+          "--patience",
+          "20",
+          "--min-delta",
+          "0.0001",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/models/batch-32-lr-001-initial.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/data/train.fen"
+        ],
+        "started_utc": "2026-11-07T21:30:15.502555+00:00",
+        "process_seconds": 59.294270972997765,
+        "returncode": 0,
+        "finished_utc": "2026-11-07T21:31:15.864687+00:00",
+        "epoch_seconds": [
+          11.03,
+          11.005,
+          11.12,
+          11.244,
+          11.054
+        ],
+        "total_epoch_seconds": 55.453,
+        "history": [
+          {
+            "epoch": "1",
+            "train_loss": "1.0525993644867577",
+            "validation_loss": "1.0526200564456065"
+          },
+          {
+            "epoch": "2",
+            "train_loss": "0.9902666670790039",
+            "validation_loss": "0.99089565265734658"
+          },
+          {
+            "epoch": "3",
+            "train_loss": "0.925145771833213",
+            "validation_loss": "0.92669997507581114"
+          },
+          {
+            "epoch": "4",
+            "train_loss": "0.90647092093799397",
+            "validation_loss": "0.90878296056704133"
+          },
+          {
+            "epoch": "5",
+            "train_loss": "0.89627400394693268",
+            "validation_loss": "0.89854588188303619"
+          }
+        ],
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-07-batch-lr-screen-01/runs/batch-32-lr-001-repeat-3/model.nn",
+          "sha256": "ae6508a300f6bbdc360dda5ce6fc51b1a5c2996fd33bd02b41dd772328c22327"
+        },
+        "validation_macro_f1": 0.5379949445010911,
+        "validation_accuracy": 0.5570120886031724
+      }
+    ],
+    "timing": "Five native epoch durations, including full train/validation loss; process wall time also saved. Evaluation after training is outside those timers.",
+    "scope": "Short test only. LR multiplied by four while batch grows from 32 to 128; not assumed equivalent; no full training.",
+    "finished_utc": "2026-11-07T21:31:15.932968+00:00"
+  },
+  "summary": {
+    "status": "completed",
+    "results": [
+      {
+        "key": "batch-32-lr-001",
+        "batch": 32,
+        "learning_rate": 0.01,
+        "median_5_epochs_seconds": 55.453,
+        "min_5_epochs_seconds": 55.14,
+        "max_5_epochs_seconds": 55.771,
+        "median_process_seconds": 59.294270972997765,
+        "median_cumulative_epoch_seconds": [
+          11.03,
+          22.035,
+          33.155,
+          44.399,
+          55.453
+        ],
+        "last_validation_loss": 0.8985458818830362,
+        "history": [
+          {
+            "epoch": "1",
+            "train_loss": "1.0525993644867577",
+            "validation_loss": "1.0526200564456065"
+          },
+          {
+            "epoch": "2",
+            "train_loss": "0.9902666670790039",
+            "validation_loss": "0.99089565265734658"
+          },
+          {
+            "epoch": "3",
+            "train_loss": "0.925145771833213",
+            "validation_loss": "0.92669997507581114"
+          },
+          {
+            "epoch": "4",
+            "train_loss": "0.90647092093799397",
+            "validation_loss": "0.90878296056704133"
+          },
+          {
+            "epoch": "5",
+            "train_loss": "0.89627400394693268",
+            "validation_loss": "0.89854588188303619"
+          }
+        ],
+        "selected_epoch": 5,
+        "selected_checkpoint_macro_f1": 0.5379949445010911,
+        "selected_checkpoint_accuracy": 0.5570120886031724,
+        "model_sha256": "ae6508a300f6bbdc360dda5ce6fc51b1a5c2996fd33bd02b41dd772328c22327",
+        "speedup_vs_control": 1.0,
+        "common_budget_epochs_completed": 3,
+        "common_budget_best_validation_loss": 0.9266999750758111,
+        "first_observed_epoch_at_loss_target": 5,
+        "first_observed_compute_seconds_at_loss_target": 55.453,
+        "selected_checkpoint_f1_meets_prior_control_target": true
+      },
+      {
+        "key": "batch-128-lr-004",
+        "batch": 128,
+        "learning_rate": 0.04,
+        "median_5_epochs_seconds": 41.041,
+        "min_5_epochs_seconds": 40.809,
+        "max_5_epochs_seconds": 41.282,
+        "median_process_seconds": 44.83036666500266,
+        "median_cumulative_epoch_seconds": [
+          8.202,
+          16.45,
+          24.664,
+          32.766,
+          41.041
+        ],
+        "last_validation_loss": 0.9054451932585628,
+        "history": [
+          {
+            "epoch": "1",
+            "train_loss": "1.0537092030267772",
+            "validation_loss": "1.053709500861657"
+          },
+          {
+            "epoch": "2",
+            "train_loss": "0.99008572868246636",
+            "validation_loss": "0.99061886587143577"
+          },
+          {
+            "epoch": "3",
+            "train_loss": "0.94894343710639573",
+            "validation_loss": "0.95088687759005153"
+          },
+          {
+            "epoch": "4",
+            "train_loss": "0.91066508818425096",
+            "validation_loss": "0.91303174055730307"
+          },
+          {
+            "epoch": "5",
+            "train_loss": "0.90340670345506724",
+            "validation_loss": "0.90544519325856276"
+          }
+        ],
+        "selected_epoch": 5,
+        "selected_checkpoint_macro_f1": 0.5417040516504392,
+        "selected_checkpoint_accuracy": 0.5532527426455174,
+        "model_sha256": "340206898c441d783de0a658fb1bba7b3f6920cef47d77373123267e4631856e",
+        "speedup_vs_control": 1.3511610340878635,
+        "common_budget_epochs_completed": 5,
+        "common_budget_best_validation_loss": 0.9054451932585628,
+        "first_observed_epoch_at_loss_target": null,
+        "first_observed_compute_seconds_at_loss_target": null,
+        "selected_checkpoint_f1_meets_prior_control_target": true
+      }
+    ],
+    "previous_unscaled_128": {
+      "batch": 128,
+      "median_5_epochs_seconds": 40.579,
+      "min_5_epochs_seconds": 40.428,
+      "max_5_epochs_seconds": 40.62,
+      "median_epoch_seconds": 8.1158,
+      "median_process_seconds": 44.406649896998715,
+      "updates_per_epoch": 4473,
+      "last_validation_loss": 1.0413823537207338,
+      "selected_checkpoint_macro_f1": 0.31844157630226183,
+      "selected_checkpoint_accuracy": 0.4322409335476207,
+      "reproducible_model_sha256": "78254a1fada0defda3322621473423f35b4c8fba46c6bc54d7c31dbae5505002",
+      "speedup_vs_32": 1.3724586608837082
+    },
+    "control_reproduces_previous_screen": true,
+    "note": "Early learning only; no conclusion about final convergence or test performance."
+  },
+  "targets": {
+    "recorded_utc": "2026-11-07T21:26:48.890558+00:00",
+    "source": "Prior completed batch-32/LR0.01 screen, five epochs, same initialization and frozen analyzer",
+    "macro_f1_checkpoint_target": 0.5379949445010911,
+    "validation_loss_target": 0.8985458818830362,
+    "assessment": "Report both metrics, gaps and epoch timing. Loss crossing is checked at epoch boundaries. Macro F1 is measured only on the saved loss-selected checkpoint; do not infer its first attainment time. Five epochs cannot establish final convergence."
+  },
+  "common_compute_budget_seconds": 41.041
+}

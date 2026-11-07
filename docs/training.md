@@ -630,3 +630,8 @@ not discard a successfully saved model.
 The Python experiment runner also exports loss charts, evaluated confusion
 matrices, and comparisons of completed trials. See [chart exports and backfill](evaluation.md#charts-and-existing-results)
 for regenerating charts from recorded results without retraining.
+
+## Experiment reports
+
+Training comparisons, measurements and interpretation are kept in the
+[experiment reports](report/README.md).
