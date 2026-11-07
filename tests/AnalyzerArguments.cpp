@@ -32,12 +32,15 @@ int main()
     test::check(arguments.training.validationFile == "validation.txt", "incorrect validation path");
     test::check(arguments.training.historyFile.empty(), "history path must default to automatic");
     test::check(arguments.training.epochs == 100 && arguments.training.batchSize == 32
-        && arguments.training.patience == 10 && arguments.training.minDelta == 0.0001,
+        && arguments.training.patience == 10 && arguments.training.minDelta == 0.0001
+        && arguments.training.threads == 0,
         "incorrect training defaults");
 
     arguments = parse({"--train", "model.nn", "positions.txt"});
     test::check(arguments.training.validationFile.empty() && arguments.saveFile == "model.nn",
         "bare training must select automatic validation and save in LOADFILE");
+    arguments = parse({"--train", "--threads", "4", "model.nn", "positions.txt"});
+    test::check(arguments.training.threads == 4, "thread count override was not applied");
     arguments = parse({"--train", "--save", "trained.nn", "model.nn", "positions.txt"});
     test::check(arguments.training.validationFile.empty() && arguments.saveFile == "trained.nn",
         "minimal subject syntax with --save must be accepted");
@@ -88,10 +91,10 @@ int main()
     }
 
     for (const auto* option : {"--validation", "--save", "--history", "--epochs",
-        "--batch-size", "--patience", "--min-delta"}) {
+        "--batch-size", "--patience", "--min-delta", "--threads"}) {
         const auto* value = std::string(option) == "--min-delta" ? "0.01"
             : std::string(option) == "--epochs" || std::string(option) == "--batch-size"
-                || std::string(option) == "--patience" ? "1" : "file";
+                || std::string(option) == "--patience" || std::string(option) == "--threads" ? "1" : "file";
         const std::vector<std::vector<const char*>> cases = {
             {"--predict", option, value, "model.nn", "train.txt"},
             {"--train", option},
@@ -104,7 +107,7 @@ int main()
             test::expectThrow<std::invalid_argument>([&] { parse(argv); });
         }
     }
-    for (const auto* option : {"--epochs", "--batch-size", "--patience", "--min-delta"}) {
+    for (const auto* option : {"--epochs", "--batch-size", "--patience", "--min-delta", "--threads"}) {
         std::vector<const char*> values = {"-1", "+1", "1abc", " 1", "1 ", "nan", "inf",
             "1e9999", "0x10", "9999999999999999999999999999999999999999"};
         if (std::string(option) == "--min-delta") {

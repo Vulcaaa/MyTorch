@@ -1,6 +1,7 @@
 #include "Training.hpp"
 #include "chess/Dataset.hpp"
 #include "neural/ModelSerializer.hpp"
+#include "neural/CpuBackend.hpp"
 
 #include <algorithm>
 #include <array>
@@ -312,6 +313,7 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
     std::ostream& progress, Logger& log)
 {
     validateRequest(network, arguments);
+    configureCpuThreads(arguments.training.threads);
     auto training = numericSamples(loadDataset(arguments.chessFile, DatasetMode::Training));
     std::vector<TrainingSample> validation;
     const bool automatic = arguments.training.validationFile.empty();
@@ -334,6 +336,9 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
         log.info("Validation set " + arguments.training.validationFile + ": "
             + positionCount(validation.size()));
     log.info("Settings: " + describeSettings(arguments.training));
+    log.info("CPU backend=" + std::string(cpuBackendName()) + " threads="
+        + (arguments.training.threads == 0 ? std::string("auto/environment")
+                                          : std::to_string(arguments.training.threads)));
 
     NeuralNetwork working = network;
     NeuralNetwork best = working;

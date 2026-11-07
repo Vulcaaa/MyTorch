@@ -15,6 +15,7 @@ struct TrainingArguments {
     std::size_t batchSize = 32;
     std::size_t patience = 10;
     double minDelta = 0.0001;
+    std::size_t threads = 0; // Zero means preserve BLAS library/environment defaults.
 };
 
 struct AnalyzerArguments {

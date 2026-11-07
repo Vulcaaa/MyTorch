@@ -337,12 +337,14 @@ class CommandLineTests(unittest.TestCase):
                 history.unlink(missing_ok=True)
                 result = self.run_command(
                     "my_torch_analyzer", "--train", "--validation", "val.txt",
-                    "--epochs", "2", "--batch-size", "1", "--history", history.name,
+                    "--epochs", "2", "--batch-size", "1", "--threads", "1", "--history", history.name,
                     *save_options, model, "train.txt",
                 )
                 self.assertEqual(result.returncode, 0, result.stderr)
                 self.assertEqual(result.stdout, "")
                 self.assertIn("Training complete", result.stderr)
+                self.assertTrue(any(re.fullmatch(r"\[INFO\] CPU backend=(scalar|openblas|accelerate) threads=1", msg)
+                                    for log in self.logs("train") for msg in self.log_messages(log)))
                 rows = history.read_text().splitlines()
                 self.assertEqual(rows[0], "epoch,train_loss,validation_loss")
                 self.assertEqual([row.split(",")[0] for row in rows[1:]], ["1", "2"])
@@ -430,6 +432,10 @@ class CommandLineTests(unittest.TestCase):
         """Check a successful training log; losses and durations vary, so they are matched."""
         [log] = self.logs("train")
         messages = self.log_messages(log)
+        backend = [m for m in messages if m.startswith("[INFO] CPU backend=")]
+        self.assertEqual(len(backend), 1)
+        self.assertRegex(backend[0], r"^\[INFO\] CPU backend=(scalar|openblas|accelerate) threads=auto/environment$")
+        messages.remove(backend[0])
         self.assertEqual(messages[:len(expected_start)], expected_start)
         loss = r"\d+(\.\d+)?(e-?\d+)?"
         rest = messages[len(expected_start):]

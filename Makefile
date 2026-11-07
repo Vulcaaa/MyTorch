@@ -6,19 +6,49 @@ CONFIG ?= configs/experiment.json
 CPPFLAGS = -Isrc -Isrc/chess/ -Isrc/neural/ -Iinclude -MMD -MP
 CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -O2
 
+# BLAS=auto uses Accelerate on macOS, OpenBLAS via pkg-config on Linux,
+# and keeps the portable scalar backend when neither is available.
+BLAS ?= auto
+UNAME_S := $(shell uname -s)
+ifeq ($(BLAS),auto)
+  ifeq ($(UNAME_S),Darwin)
+    BLAS_BACKEND := accelerate
+  else ifeq ($(shell pkg-config --exists openblas 2>/dev/null && echo yes),yes)
+    BLAS_BACKEND := openblas
+  else
+    BLAS_BACKEND := none
+  endif
+else
+  BLAS_BACKEND := $(BLAS)
+endif
+ifeq ($(filter $(BLAS_BACKEND),none openblas accelerate),)
+  $(error BLAS must be auto, none, openblas, or accelerate)
+endif
+ifeq ($(BLAS_BACKEND),openblas)
+  BLAS_CFLAGS ?= $(shell pkg-config --cflags openblas)
+  BLAS_LIBS ?= $(shell pkg-config --libs openblas)
+  CPPFLAGS += -DMYTORCH_USE_BLAS $(BLAS_CFLAGS)
+  LDLIBS += $(BLAS_LIBS)
+endif
+ifeq ($(BLAS_BACKEND),accelerate)
+  CPPFLAGS += -DMYTORCH_USE_BLAS -DMYTORCH_USE_ACCELERATE -Wno-deprecated-declarations
+  LDLIBS += -framework Accelerate
+endif
+BUILD_DIR = build/$(BLAS_BACKEND)
+
 COMMON_SRC = $(wildcard src/neural/*.cpp)
 GENERATOR_SRC = $(wildcard src/generator/*.cpp)
 ANALYZER_SRC = $(wildcard src/analyzer/*.cpp)
 CHESS_SRC = $(wildcard src/chess/*.cpp)
 LOGGING_SRC = $(wildcard src/logging/*.cpp)
-CHESS_OBJ = $(CHESS_SRC:src/%.cpp=build/%.o)
-LOGGING_OBJ = $(LOGGING_SRC:src/%.cpp=build/%.o)
-COMMON_OBJ = $(COMMON_SRC:src/%.cpp=build/%.o)
-GENERATOR_OBJ = $(GENERATOR_SRC:src/%.cpp=build/%.o)
-ANALYZER_OBJ = $(ANALYZER_SRC:src/%.cpp=build/%.o)
+CHESS_OBJ = $(CHESS_SRC:src/%.cpp=$(BUILD_DIR)/%.o)
+LOGGING_OBJ = $(LOGGING_SRC:src/%.cpp=$(BUILD_DIR)/%.o)
+COMMON_OBJ = $(COMMON_SRC:src/%.cpp=$(BUILD_DIR)/%.o)
+GENERATOR_OBJ = $(GENERATOR_SRC:src/%.cpp=$(BUILD_DIR)/%.o)
+ANALYZER_OBJ = $(ANALYZER_SRC:src/%.cpp=$(BUILD_DIR)/%.o)
 TEST_SRC = $(wildcard tests/*.cpp)
-TEST_OBJ = $(TEST_SRC:tests/%.cpp=build/tests/%.o)
-TEST_BIN = $(TEST_SRC:tests/%.cpp=build/tests/%_tests)
+TEST_OBJ = $(TEST_SRC:tests/%.cpp=$(BUILD_DIR)/tests/%.o)
+TEST_BIN = $(TEST_SRC:tests/%.cpp=$(BUILD_DIR)/tests/%_tests)
 DEP = $(COMMON_OBJ:.o=.d) $(GENERATOR_OBJ:.o=.d) $(ANALYZER_OBJ:.o=.d) $(TEST_OBJ:.o=.d) $(CHESS_OBJ:.o=.d) $(LOGGING_OBJ:.o=.d)
 
 all: $(GENERATOR) $(ANALYZER)
@@ -29,34 +59,34 @@ $(GENERATOR): $(COMMON_OBJ) $(GENERATOR_OBJ) $(LOGGING_OBJ)
 $(ANALYZER): $(COMMON_OBJ) $(ANALYZER_OBJ) $(CHESS_OBJ) $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-build/%.o: src/%.cpp
+$(BUILD_DIR)/%.o: src/%.cpp
 	mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-build/tests/%.o: tests/%.cpp
+$(BUILD_DIR)/tests/%.o: tests/%.cpp
 	mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
-build/tests/%_tests: build/tests/%.o $(COMMON_OBJ)
+$(BUILD_DIR)/tests/%_tests: $(BUILD_DIR)/tests/%.o $(COMMON_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-build/tests/Encoding_tests: build/tests/Encoding.o build/chess/Encoding.o
+$(BUILD_DIR)/tests/Encoding_tests: $(BUILD_DIR)/tests/Encoding.o $(BUILD_DIR)/chess/Encoding.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-build/tests/Dataset_tests: build/tests/Dataset.o $(CHESS_OBJ)
+$(BUILD_DIR)/tests/Dataset_tests: $(BUILD_DIR)/tests/Dataset.o $(CHESS_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-build/tests/AnalyzerArguments_tests: build/tests/AnalyzerArguments.o build/analyzer/Arguments.o
+$(BUILD_DIR)/tests/AnalyzerArguments_tests: $(BUILD_DIR)/tests/AnalyzerArguments.o $(BUILD_DIR)/analyzer/Arguments.o
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-build/tests/Logger_tests: build/tests/Logger.o $(LOGGING_OBJ)
+$(BUILD_DIR)/tests/Logger_tests: $(BUILD_DIR)/tests/Logger.o $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-build/tests/AnalyzerSaving_tests: build/tests/AnalyzerSaving.o build/analyzer/Training.o $(COMMON_OBJ) $(CHESS_OBJ) $(LOGGING_OBJ)
+$(BUILD_DIR)/tests/AnalyzerSaving_tests: $(BUILD_DIR)/tests/AnalyzerSaving.o $(BUILD_DIR)/analyzer/Training.o $(COMMON_OBJ) $(CHESS_OBJ) $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 # This test defines scripted neural methods instead of linking src/neural/Training.cpp.
-build/tests/Training_tests: build/tests/Training.o build/analyzer/Training.o $(filter-out build/neural/Training.o,$(COMMON_OBJ)) $(CHESS_OBJ) $(LOGGING_OBJ)
+$(BUILD_DIR)/tests/Training_tests: $(BUILD_DIR)/tests/Training.o $(BUILD_DIR)/analyzer/Training.o $(filter-out $(BUILD_DIR)/neural/Training.o,$(COMMON_OBJ)) $(CHESS_OBJ) $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 test: all $(TEST_BIN)
@@ -83,5 +113,5 @@ re:
 
 -include $(DEP)
 
-.PHONY: all clean fclean re test experiment
+.PHONY: all clean fclean re test experiment $(GENERATOR) $(ANALYZER)
 .SECONDARY: $(TEST_OBJ)

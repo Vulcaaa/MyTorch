@@ -443,7 +443,7 @@ backpropagation and CLI tests verify actual learning and integration.
 | Optimizer | Plain mini-batch SGD; momentum, Adam, dropout, and weight decay are not implemented |
 | Activations | Training supports softmax/sigmoid outputs; hidden derivatives support sigmoid/tanh/ReLU/linear, while file configurations accept sigmoid/tanh/ReLU |
 | Memory | Train and validation samples are loaded into memory as dense vectors |
-| Speed | Sparse forward/gradient loops and reused buffers are implemented; execution remains on one CPU thread, without GPU acceleration |
+| Speed | Whole-block CPU BLAS training/loss evaluation when available; scalar sparse fallback and scalar prediction retained; no GPU dependency |
 
 Gustave's development measurement on an Apple M5: eight epochs on 2,400 positions
 with a `777 → 128 → 64 → 3` network took 2.3 seconds with `-O2`, versus 20.2
@@ -486,3 +486,121 @@ Fixture SHA-256 hashes (UTF-8 rows copied unchanged from the prepared splits):
 train:      2064f8819727aafa7d2c083443d35fede56efbd3cf2291d7ad22775c554af11c
 validation: 1dc35a438600fc452f053f7130e15584662f56a8e0908947436c9011787541f2
 ```
+
+### CPU BLAS backend
+
+The accelerated backend processes dense layers together as contiguous matrices.
+Forward uses `A * W^T`, weight gradients use `D^T * A`, and hidden deltas use
+`D * W`. Sparse first-layer inputs retain indexed forward/gradient accumulation,
+avoiding dense multiplications by the zeros in the chess encoding. Mixed sparse
+and dense blocks still contribute to the same logical batch gradient.
+Activations, stable losses, backpropagation and SGD remain our own code;
+BLAS provides matrix multiplication only. Arithmetic stays FP64 (`double`), with
+the same mean batch gradient, learning rate, shuffle and model format. Different
+addition orders can cause small floating-point differences.
+
+Training and full train/validation loss evaluation both use this backend.
+Temporary matrices are bounded to 256 positions and reused within each call;
+larger logical batches accumulate their gradients over blocks and perform only
+one parameter update. Dense weights are packed once per call; sparse first-layer
+weights need no packed copy. Prediction retains the
+portable scalar sparse path, so deployed models do not require a BLAS backend.
+Failed updates still leave all live parameters unchanged.
+
+On Ubuntu/Debian, install the optional development dependency:
+
+```sh
+sudo apt-get install libopenblas-dev pkg-config
+make BLAS=openblas
+./my_torch_analyzer --train --threads 1 --validation validation.txt \
+  --save models/trained.nn models/initial.nn train.txt
+```
+
+The Linux reference measurements below favor `--threads 1` for this architecture.
+Compare 1, 2, 4 and 8 on the actual training machine; more threads can slow small
+products. The best thread limit on macOS has not been measured here.
+`--threads N` takes a positive integer and logs the backend and requested thread
+limit. Without it, library/environment defaults apply. The scalar backend
+accepts only `--threads 1`. Libraries may use fewer threads for small products.
+Environment controls remain available: `OPENBLAS_NUM_THREADS` for pthread builds,
+`OMP_NUM_THREADS` for OpenMP builds, and `VECLIB_MAXIMUM_THREADS` for Accelerate.
+
+On macOS, the system Accelerate framework is used by default:
+
+```sh
+make BLAS=accelerate
+./my_torch_analyzer --train --threads 1 --validation validation.txt \
+  --save models/trained.nn models/initial.nn train.txt
+```
+
+Plain `make` selects Accelerate on macOS, OpenBLAS when `pkg-config` finds it on
+Linux, or the scalar backend otherwise. `make BLAS=none` explicitly builds the
+portable fallback. Backend objects are kept in separate build directories, and
+executables are relinked when switching backends. For nonstandard installations,
+override `BLAS_CFLAGS` and `BLAS_LIBS`. A BLAS-linked binary requires that library
+at runtime; build with `BLAS=none` for deployment on machines without it.
+
+Validation: the complete `make test` suite passes on Linux with OpenBLAS and
+with `BLAS=none`, including finite differences, overflow/rollback, indexed
+batches and XOR. Additional tests compare batched loss with scalar predictions
+and batched gradients/updates with the mean of per-sample gradients across a
+256-position block boundary for all eight activation pairs. macOS build support
+is implemented but has not been executed on a Mac in this environment.
+
+### CPU BLAS measurements
+
+The independent protocol and harness live in
+[`benchmarks/cpu_blas/`](../benchmarks/cpu_blas/README.md). Preserve the evidence
+directory separately from experiment outputs when reorganizing the project.
+Baseline and optimized source snapshots are frozen before either is timed.
+
+<!-- cpu-blas-measurements:start -->
+
+Measured on an AMD Ryzen 7 7840HS with GCC and OpenBLAS 0.3.26 (pthread).
+Both versions use `-O2`, FP64, `777 → 128 → 64 → 3`, sigmoid/softmax, seed 43,
+learning rate 0.01 and batch 32. All timings started after the existing experiment exited.
+Every run starts from the same fresh Xavier initialization, not the continued
+experiment's trained checkpoint.
+
+**Full dataset:** 572,445 train / 71,555 validation positions, one epoch,
+three runs per configuration. Times include all SGD updates and complete train/validation
+loss evaluation; parsing, initialization, warm-up and serialization are excluded.
+
+| Backend | Thread limit | Median epoch (s) | Min–max (s) | Speedup |
+| --- | ---: | ---: | ---: | ---: |
+| baseline | 1 | 18.994 | 18.828–19.032 | 1.00× |
+| candidate-scalar | 1 | 19.144 | 18.677–19.271 | 0.99× |
+| candidate-blas | 1 | 11.062 | 11.023–11.212 | 1.72× |
+| candidate-blas | 4 | 11.404 | 11.366–11.533 | 1.67× |
+
+**Use `--threads 1` for this reference network on this Linux machine.** More threads did not help.
+Maximum absolute final parameter difference: `7.77e-16`; validation-loss difference:
+`0`. All comparisons have identical validation accuracy.
+
+![Full-dataset CPU timings](../benchmarks/cpu_blas/results/linux-2026-11-07/timings.png)
+
+**Thread sweep on a subset:** 8,192 train / 2,048 validation positions, five epochs,
+five runs per configuration. Median time for all five epochs:
+
+| Backend | Thread limit | Median (s) | Speedup |
+| --- | ---: | ---: | ---: |
+| baseline | 1 | 1.404846 | 1.00× |
+| candidate-scalar | 1 | 1.405156 | 1.00× |
+| candidate-blas | 1 | 0.827516 | 1.70× |
+| candidate-blas | 2 | 0.860165 | 1.63× |
+| candidate-blas | 4 | 0.883152 | 1.59× |
+| candidate-blas | 8 | 0.931980 | 1.51× |
+
+The dense-only BLAS prototype reached approximately 1.50× on the same subset;
+retaining sparse first-layer work improved the best result to approximately 1.70×.
+The scalar candidate agrees exactly with the baseline, isolating the BLAS/hybrid changes.
+
+Versioned [raw timings, manifests and figures](../benchmarks/cpu_blas/results/linux-2026-11-07/README.md)
+are kept apart from experiment outputs. Larger local evidence, source snapshots, fixture bytes
+and final models: `/home/mathys/3/CNA/mytorch-blas-evidence/`.
+
+Limits: fixed-epoch throughput, not time to a validation-quality target. Thermal state and
+CPU governor were not pinned; observed timing ranges are retained. macOS/Accelerate speed
+has not been measured. Keep explicit thread settings when reproducing these results.
+
+<!-- cpu-blas-measurements:end -->

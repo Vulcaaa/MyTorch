@@ -2,6 +2,7 @@
 
 #include <charconv>
 #include <cmath>
+#include <limits>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -45,7 +46,11 @@ void setTrainingOption(AnalyzerArguments& arguments, const std::string& option,
         arguments.training.epochs = positiveInteger(option, value);
     else if (option == "--batch-size")
         arguments.training.batchSize = positiveInteger(option, value);
-    else if (option == "--patience")
+    else if (option == "--threads") {
+        arguments.training.threads = positiveInteger(option, value);
+        if (arguments.training.threads > static_cast<std::size_t>(std::numeric_limits<int>::max()))
+            throw std::invalid_argument("--threads exceeds the supported integer range");
+    } else if (option == "--patience")
         arguments.training.patience = positiveInteger(option, value);
     else if (option == "--min-delta")
         arguments.training.minDelta = nonnegativeNumber(option, value);
@@ -69,7 +74,7 @@ AnalyzerArguments parseAnalyzerArguments(int ac, const char* const av[])
 
     const std::set<std::string> trainingOptions = {
         "--save", "--validation", "--history", "--epochs", "--batch-size",
-        "--patience", "--min-delta"
+        "--patience", "--min-delta", "--threads"
     };
     std::set<std::string> seen;
     int next = 2;

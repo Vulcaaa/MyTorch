@@ -91,6 +91,10 @@ class NeuralNetwork {
 
         // Mean loss and gradients over validated samples, from one forward pass per sample.
         LossGradients lossAndGradients(SampleView samples) const;
+#ifdef MYTORCH_USE_BLAS
+        // Validated samples, processed in bounded contiguous blocks; optional backprop.
+        LossGradients batchedLossGradients(SampleView samples, bool gradients) const;
+#endif
         // Adds the gradients of one sample's loss to sums and returns that loss.
         double backpropagate(const TrainingSample& sample, std::vector<Layer>& sums,
             ForwardPass& pass, std::vector<std::vector<double>>& deltas) const;

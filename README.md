@@ -16,6 +16,9 @@ backpropagation, checkpoints, and experiment integration.
 ## Build
 
 Requires GNU Make and a C++17 compiler (GCC by default); tests also require Python 3.
+Training uses Accelerate on macOS or OpenBLAS when detected on Linux, with a
+portable scalar fallback. See [CPU acceleration](docs/training.md#cpu-blas-backend)
+for dependencies, thread settings and benchmarks.
 
 - `make` — build both programs
 - `make test` — build and run all tests

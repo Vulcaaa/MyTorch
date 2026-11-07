@@ -64,6 +64,7 @@ int main(int ac, char** av)
                   << "\t--validation FILE  Independent validation dataset (default: seeded 90/10 split)\n"
                   << "\t--epochs N         Maximum epochs (positive integer; default: 100)\n"
                   << "\t--batch-size N     Mini-batch size (positive integer; default: 32)\n"
+                  << "\t--threads N        BLAS thread limit (positive integer; default: library/environment)\n"
                   << "\t--patience N       Early-stopping patience (positive integer; default: 10)\n"
                   << "\t--min-delta X      Minimum loss improvement (finite, >= 0; default: 0.0001)\n"
                   << "\t--history FILE     Override automatic per-run history CSV path\n"
