@@ -149,6 +149,7 @@ class ExperimentTests(unittest.TestCase):
         self.assertTrue(summary["selection_ready"])
         self.assertEqual(len(summary["runs"]), 6)
         self.assertEqual(summary["leading_configurations"], ["small"])
+        self.assertTrue((self.output / "comparison.svg").is_file())
         small = next(row for row in summary["configurations"] if row["configuration"] == "small")
         self.assertAlmostEqual(small["macro_f1"]["mean"], 31 / 54)
         self.assertGreater(small["macro_f1"]["std"], 0)
@@ -162,6 +163,8 @@ class ExperimentTests(unittest.TestCase):
                 run_directory = Path(report["directory"])
                 self.assertEqual(len(load_history(run_directory / "history.csv")), 2)
                 self.assertTrue((run_directory / "training.log").is_file())
+                for chart in ("history.svg", "confusion-matrix-before.svg", "confusion-matrix-validation.svg"):
+                    self.assertTrue((run_directory / chart).is_file())
         # Re-reading uses the frozen plan, even if the authoring config changes.
         self.config.write_text("{}")
         self.assertEqual(load_experiment(self.output)["expected_seeds"], [42, 43, 44])
@@ -287,7 +290,7 @@ class ExperimentTests(unittest.TestCase):
         self.assertFalse((self.output / "metrics.json").exists())
         self.assertEqual(summary["runs"], [])
         self.assertEqual(set(p.name for p in self.output.iterdir()),
-                         {"README.md", "config.json", "model.nn", "history.csv", "training.log"})
+                         {"README.md", "config.json", "model.nn", "history.csv", "history.svg", "training.log"})
 
     def test_continuation_references_source_and_preserves_configuration(self):
         self.enable_builtin()

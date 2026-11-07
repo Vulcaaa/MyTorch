@@ -470,6 +470,11 @@ class CommandLineTests(unittest.TestCase):
             "--batch-size", "1", "--save", "trained.nn", model, "train.txt",
         )
         self.assertEqual(result.returncode, 0, result.stderr)
+        chart = self.work / next(line.removeprefix("Training chart: ")
+                                 for line in result.stderr.splitlines() if line.startswith("Training chart: "))
+        self.assertTrue(chart.exists())
+        self.assertIn("selected checkpoint: epoch", chart.read_text())
+        self.assertIn("stopped: epoch", chart.read_text())
         self.assertEqual(result.stdout, "")
         self.assertNotIn("warning", result.stderr)
         self.check_training_log([

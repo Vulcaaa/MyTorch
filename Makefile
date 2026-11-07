@@ -85,11 +85,11 @@ $(BUILD_DIR)/tests/AnalyzerArguments_tests: $(BUILD_DIR)/tests/AnalyzerArguments
 $(BUILD_DIR)/tests/Logger_tests: $(BUILD_DIR)/tests/Logger.o $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-$(BUILD_DIR)/tests/AnalyzerSaving_tests: $(BUILD_DIR)/tests/AnalyzerSaving.o $(BUILD_DIR)/analyzer/Training.o $(COMMON_OBJ) $(CHESS_OBJ) $(LOGGING_OBJ)
+$(BUILD_DIR)/tests/AnalyzerSaving_tests: $(BUILD_DIR)/tests/AnalyzerSaving.o $(BUILD_DIR)/analyzer/Training.o $(BUILD_DIR)/analyzer/LossChart.o $(COMMON_OBJ) $(CHESS_OBJ) $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 # This test defines scripted neural methods instead of linking src/neural/Training.cpp.
-$(BUILD_DIR)/tests/Training_tests: $(BUILD_DIR)/tests/Training.o $(BUILD_DIR)/analyzer/Training.o $(filter-out $(BUILD_DIR)/neural/Training.o,$(COMMON_OBJ)) $(CHESS_OBJ) $(LOGGING_OBJ)
+$(BUILD_DIR)/tests/Training_tests: $(BUILD_DIR)/tests/Training.o $(BUILD_DIR)/analyzer/Training.o $(BUILD_DIR)/analyzer/LossChart.o $(filter-out $(BUILD_DIR)/neural/Training.o,$(COMMON_OBJ)) $(CHESS_OBJ) $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 # The outer temporary directory also cleans artifacts after a test process crashes.

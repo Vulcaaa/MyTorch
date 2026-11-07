@@ -70,15 +70,13 @@ class EvaluationTests(unittest.TestCase):
                 self.assertEqual(list(csv.reader(source)), [
                     ["dataset_line", "actual", "predicted"],
                     ["2", "Nothing", "Nothing"], ["4", "Check", "Nothing"]])
-            with (output / "confusion-matrix.csv").open() as source:
-                self.assertEqual(list(csv.reader(source))[1:], [
-                    ["Nothing", "1", "0", "0"], ["Check", "1", "0", "0"],
-                    ["Checkmate", "0", "0", "0"]])
+            self.assertTrue((output / "confusion-matrix.svg").exists())
+            self.assertFalse((output / "confusion-matrix.csv").exists())
             default_output = work / "default-report"
             result_default = subprocess.run(command[:-2] + [str(default_output)], capture_output=True, text=True)
             self.assertEqual(result_default.returncode, 0, result_default.stderr)
             self.assertEqual(set(p.name for p in default_output.iterdir()),
-                             {"README.md", "metrics.json", "confusion-matrix.csv"})
+                             {"README.md", "metrics.json", "confusion-matrix.svg"})
             self.assertEqual(model.read_bytes(), original)
             result = subprocess.run(command, capture_output=True, text=True)
             self.assertNotEqual(result.returncode, 0)

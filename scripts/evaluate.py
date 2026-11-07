@@ -1,4 +1,4 @@
-"""Evaluate a saved chess model through the C++ analyzer (standard library only)."""
+"""Evaluate a saved chess model through the C++ analyzer (with chart exports)."""
 
 import argparse
 import csv
@@ -10,8 +10,11 @@ import sys
 import time
 
 
-CLASSES = ("Nothing", "Check", "Checkmate")
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+CLASSES = ("Nothing", "Check", "Checkmate")
 
 
 def read_labels(path):
@@ -113,11 +116,8 @@ def evaluate(model, dataset, analyzer, output, predictions=False):
             writer.writerow(["dataset_line", "actual", "predicted"])
             writer.writerows((line, label, prediction)
                              for (line, label), prediction in zip(samples, predicted))
-    with (output / "confusion-matrix.csv").open("w", newline="", encoding="utf-8") as target:
-        writer = csv.writer(target)
-        writer.writerow(["actual / predicted", *CLASSES])
-        writer.writerows((label, *row) for label, row in
-                         zip(CLASSES, metrics["confusion_matrix"]["counts"]))
+    from scripts.charts import render_directory
+    render_directory(output)
     return metrics
 
 

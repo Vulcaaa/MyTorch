@@ -268,9 +268,11 @@ def write_readme(output, manifest):
               "- `history.csv`: training and validation loss per epoch.",
               "- `training.log`: execution diagnostics.",
               "- `metrics.json`: before/after validation scores, when evaluated.",
-              "- Notebooks display curves and confusion matrices; no HTML or image exports.", "",
+              "- SVG charts: loss curves, confusion matrices when evaluated, and comparisons for multiple completed trials.", "",
               "## Conclusion", "", marker, conclusion]
     readme.write_text("\n".join(lines), encoding="utf-8")
+    from scripts.charts import render_directory
+    render_directory(output)
     if len(manifest["runs"]) > 1 and rows:
         with (output / "comparison.csv").open("w", newline="", encoding="utf-8") as stream:
             writer = csv.writer(stream)
