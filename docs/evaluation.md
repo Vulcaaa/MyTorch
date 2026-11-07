@@ -5,12 +5,11 @@
 | Directory | Purpose |
 | --- | --- |
 | `configs/networks/` | Network architecture and parameters |
-| `configs/experiments/` | Training and comparison protocols: data, initial model, budget, hypothesis |
+| `configs/experiments/` | YAML training and comparison protocols: data, initial model, budget, hypothesis |
 | `dataset/` | Shared datasets and frozen versions; never copied into results |
 | `results/training/` | Standalone training or checkpoint continuation |
 | `results/evaluation/` | Standalone validation or final test evaluation |
 | `results/experiments/` | Controlled comparisons of configurations and seeds |
-| `results/smoke-tests/` | Technical checks, model preparation and previews |
 | `models/` | Reusable reference and selected models |
 | `notebooks/` | Dataset exploration, curves and result inspection |
 | `scripts/` | Reusable processing and the single experiment runner |
@@ -31,7 +30,7 @@ Build with `make`. Protocol paths are relative to the configuration file.
 For a fresh reference model:
 
 ```sh
-python3 scripts/experiment.py configs/experiments/train-reference.json \
+python3 scripts/experiment.py configs/experiments/train-reference.yml \
   --train-only --output results/training/YYYY-MM-DD-reference-01
 ```
 
@@ -41,7 +40,7 @@ It allows **400 additional epochs**, batch size 32, patience 20 and min_delta
 the protocol to select your own initial model.
 
 ```sh
-python3 scripts/experiment.py configs/experiments/continue-reference.json \
+python3 scripts/experiment.py configs/experiments/continue-reference.yml \
   --train-only --output results/training/2026-11-07-continue-reference-02
 ```
 
@@ -95,17 +94,17 @@ Undefined scores are zero; macro F1 includes Nothing, Check and Checkmate.
 
 ## Compare configurations
 
-Edit `configs/experiments/compare-network-sizes.json`. It declares architectures,
+Edit `configs/experiments/compare-network-sizes.yml`. It declares architectures,
 seeds, prepared train/validation datasets and common training settings once.
 The compact/reference pair is a starting comparison, not a tuned final choice.
 Verify the [frozen dataset](datasets.md) before a campaign.
 
 ```sh
-python3 scripts/experiment.py configs/experiments/compare-network-sizes.json \
+python3 scripts/experiment.py configs/experiments/compare-network-sizes.yml \
   --output results/experiments/2026-11-10-compare-network-sizes-01
 
-# Technical preparation only; no training or evaluation.
-make experiment OUTPUT=results/smoke-tests/2026-11-10-prepare-networks-01 OPTIONS=--prepare
+# Quick technical check on tiny temporary datasets; automatically cleaned.
+make smoke
 ```
 
 Only campaigns with multiple runs add a level of folders:
@@ -176,3 +175,15 @@ keys. Checkpoint selection uses minimum validation loss, including the starting
 model if no epoch improves it. Macro-F1 is measured afterwards, not used to
 select an epoch. Final training comparisons, test results and interpretation
 remain open parts of issue #8.
+
+## Test artifacts
+
+`make smoke` selects the existing real generation/training/evaluation integration
+test; `make test` includes it in the full suite. Both use temporary directories
+that are removed automatically, including when a test fails. No keep-files option
+or permanent `results/smoke-tests/` directory is used. Tests do not delete real
+training results or models.
+
+Install `requirements.txt` for the YAML protocol reader. Network files remain
+`.conf`; generated `config.json` and metrics remain JSON. YAML comments document
+choices in editable protocols without adding extra metadata files.

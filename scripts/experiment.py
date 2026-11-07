@@ -16,6 +16,8 @@ import sys
 import time
 import tempfile
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
@@ -87,7 +89,10 @@ def network_options(path, overrides):
 
 def load_spec(path):
     path = Path(path).resolve()
-    spec = json.loads(path.read_text(encoding="utf-8"))
+    try:
+        spec = yaml.safe_load(path.read_text(encoding="utf-8"))
+    except yaml.YAMLError as error:
+        raise ValueError(f"{path}: invalid YAML: {error}") from error
     json.dumps(spec, allow_nan=False)
     required = {"version", "seeds", "datasets", "configurations", "training"}
     if (not isinstance(spec, dict) or not required <= spec.keys() or set(spec) - (required | {"hypothesis"}) or

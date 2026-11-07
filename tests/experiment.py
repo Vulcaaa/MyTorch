@@ -9,6 +9,8 @@ import sys
 import tempfile
 import unittest
 
+import yaml
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from scripts.comparison import load_experiment, load_history
@@ -62,11 +64,11 @@ class ExperimentTests(unittest.TestCase):
             "configurations": [{"name": "small", "network": "base.conf", "overrides": {}},
                                {"name": "large", "network": "base.conf", "overrides": {"layers": "777,2,3"}}],
             "training": {"command": None, "settings": None}}
-        self.config = self.work / "config.json"
+        self.config = self.work / "protocol.yml"
         self.output = self.work / "results with spaces"
 
     def write_spec(self):
-        self.config.write_text(json.dumps(self.spec))
+        self.config.write_text("# Test protocol with comments\n" + yaml.safe_dump(self.spec, sort_keys=False))
 
     def enable_fixture(self):
         self.spec["training"] = {
@@ -94,6 +96,12 @@ class ExperimentTests(unittest.TestCase):
             self.assertIsNone(configuration["macro_f1"]["mean"])
         with self.assertRaisesRegex(ValueError, "already exists"):
             self.run_campaign(prepare=True)
+
+    def test_malformed_yaml_fails_before_creating_output(self):
+        self.config.write_text("version: 1\nseeds: [42\n")
+        with self.assertRaisesRegex(ValueError, "invalid YAML"):
+            run_experiment(self.config, self.output)
+        self.assertFalse(self.output.exists())
 
     def test_unconfigured_training_fails_before_creating_output(self):
         with self.assertRaisesRegex(ValueError, "use --prepare"):

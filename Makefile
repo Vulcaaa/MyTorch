@@ -2,7 +2,7 @@ GENERATOR = my_torch_generator
 ANALYZER = my_torch_analyzer
 CXX = g++
 PYTHON = python3
-CONFIG ?= configs/experiments/compare-network-sizes.json
+CONFIG ?= configs/experiments/compare-network-sizes.yml
 CPPFLAGS = -Isrc -Isrc/chess/ -Isrc/neural/ -Iinclude -MMD -MP
 CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -O8
 
@@ -89,13 +89,26 @@ $(BUILD_DIR)/tests/AnalyzerSaving_tests: $(BUILD_DIR)/tests/AnalyzerSaving.o $(B
 $(BUILD_DIR)/tests/Training_tests: $(BUILD_DIR)/tests/Training.o $(BUILD_DIR)/analyzer/Training.o $(filter-out $(BUILD_DIR)/neural/Training.o,$(COMMON_OBJ)) $(CHESS_OBJ) $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
+# The outer temporary directory also cleans artifacts after a test process crashes.
 test: all $(TEST_BIN)
-	@set -e; for executable in $(TEST_BIN); do ./$$executable; done
-	$(PYTHON) tests/cli.py
-	$(PYTHON) -m unittest discover -s tests -p 'test_*.py'
-	$(PYTHON) tests/evaluation.py
-	$(PYTHON) tests/comparison.py
+	@set -eu; \
+	test_tmp=$$(mktemp -d); \
+	trap 'rm -rf "$$test_tmp"' EXIT; \
+	export TMPDIR="$$test_tmp"; \
+	for executable in $(TEST_BIN); do ./$$executable; done; \
+	$(PYTHON) tests/cli.py; \
+	$(PYTHON) -m unittest discover -s tests -p 'test_*.py'; \
+	$(PYTHON) tests/evaluation.py; \
+	$(PYTHON) tests/comparison.py; \
 	$(PYTHON) tests/experiment.py
+
+# Reuse the integration test: real generation -> training -> validation evaluation.
+smoke: all
+	@set -eu; \
+	test_tmp=$$(mktemp -d); \
+	trap 'rm -rf "$$test_tmp"' EXIT; \
+	export TMPDIR="$$test_tmp"; \
+	$(PYTHON) tests/experiment.py ExperimentTests.test_real_builtin_training_and_before_after_evidence
 
 experiment: all
 	@test -n "$(OUTPUT)" || (echo 'Set OUTPUT=results/experiments/NAME'; exit 1)
@@ -113,5 +126,5 @@ re:
 
 -include $(DEP)
 
-.PHONY: all clean fclean re test experiment $(GENERATOR) $(ANALYZER)
+.PHONY: all clean fclean re test smoke experiment $(GENERATOR) $(ANALYZER)
 .SECONDARY: $(TEST_OBJ)

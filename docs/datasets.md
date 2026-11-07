@@ -386,7 +386,7 @@ existing output directory. Never regenerate a manifest to conceal a changed file
 
 ### Experiment paths
 
-[`configs/experiments/compare-network-sizes.json`](../configs/experiments/compare-network-sizes.json) resolves train, validation,
+[`configs/experiments/compare-network-sizes.yml`](../configs/experiments/compare-network-sizes.yml) resolves train, validation,
 and metadata to `dataset/references/chess-v1/splits/`. The standalone comparison
 notebook defaults to this validation file too. Tests check the supplied config
 against a small frozen reference; the real paths and hashes were also checked
@@ -394,10 +394,10 @@ against this manifest.
 
 Train only on `train.txt`, choose settings/models on `validation.txt`, and reserve
 `test.txt` for the final selected model. The experiment config does not include a
-test dataset. After verification, the usual preparation command is:
+test dataset. After verification, launch a configured comparison with:
 
 ```sh
-make experiment OUTPUT=results/smoke-tests/YYYY-MM-DD-prepare-chess-v1-01 OPTIONS=--prepare
+make experiment OUTPUT=results/experiments/YYYY-MM-DD-compare-network-sizes-01
 ```
 
 The runner captures the resolved dataset paths and hashes in its experiment

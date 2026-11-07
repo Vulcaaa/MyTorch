@@ -15,12 +15,14 @@ backpropagation, checkpoints, and experiment integration.
 
 ## Build
 
-Requires GNU Make and a C++17 compiler (GCC by default); tests also require Python 3.
+Requires GNU Make and a C++17 compiler (GCC by default). Python tools and tests
+require Python 3 and `python3 -m pip install -r requirements.txt`.
 Training uses Accelerate on macOS or OpenBLAS when detected on Linux, with a
 portable scalar fallback. See [CPU acceleration](docs/training.md#cpu-blas-backend)
 for dependencies, thread settings and benchmarks.
 
 - `make` — build both programs
+- `make smoke` — quickly check generation, real training and evaluation
 - `make test` — build and run all tests
 - `make clean` — remove build files
 - `make fclean` — remove build files and executables
@@ -55,7 +57,7 @@ for input and model requirements.
 Train the reference network with the frozen train/validation datasets:
 
 ```sh
-python3 scripts/experiment.py configs/experiments/train-reference.json \
+python3 scripts/experiment.py configs/experiments/train-reference.yml \
   --train-only --output results/training/YYYY-MM-DD-reference-01
 ```
 
@@ -67,8 +69,7 @@ Run either executable with `--help` for its command-line options.
 
 Use the [training and evaluation workflow](docs/evaluation.md) to run standalone
 training, evaluate a saved model, or compare configurations. Results are grouped
-under `results/training/`, `results/evaluation/`, `results/experiments/` and
-`results/smoke-tests/`. Each result starts with a readable `README.md`; notebooks
+under `results/training/`, `results/evaluation/`, `results/experiments/` only. Each result starts with a readable `README.md`; notebooks
 show curves and confusion matrices.
 
 ## Development
