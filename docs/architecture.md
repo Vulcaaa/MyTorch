@@ -1,102 +1,104 @@
-# Project architecture
+# Architecture and configuration
 
-This is the proposed architecture and may evolve during development.
+MyTorch separates a generic dense neural network from its chess application.
+**C++17 performs inference and learning; Python prepares data, runs protocols and
+analyzes saved results.** Python never computes the shipped model's predictions
+or weight updates.
 
-MyTorch uses **C++17 for network computation and executables**, and **Python for
-dataset preparation, experiment orchestration, and result analysis**. The
-Makefile handles builds, tests, and experiments; notebooks launch dataset preparation.
+## Components and data flow
 
-## Components
-
-| Component | Language | Responsibility |
-| --- | --- | --- |
-| `src/neural/` | C++ | Generic network: configuration, initialization, serialization, forward propagation, and [training](training.md). |
-| `src/chess/` | C++ | FEN parsing, feature encoding, and dataset label handling. |
-| `src/generator/` | C++ | `my_torch_generator`: create models from configuration files. |
-| `src/analyzer/` | C++ | `my_torch_analyzer`: coordinate training and prediction. |
-| `src/logging/` | C++ | Timestamped [run logs](logging.md) for generation and training. |
-| `scripts/` | Python | Clean/split datasets, orchestrate experiments, evaluate models, and aggregate comparable runs. |
-| `notebooks/` | Python | Launch dataset preparation, inspect evaluation reports, and compare validation runs. |
-| `tests/` | C++ and Python | Function tests and executable tests. |
-
-The network module operates on numeric vectors without knowledge of chess or
-FEN. The chess module implements the [input](datasets.md) and
-[output](output-encoding.md) contracts. The analyzer connects both modules.
-
-## Planned data flow
-
-Training:
-
-```text
-Source datasets → Python preparation → train / validation / test files
-Configuration → C++ generator → initial model
-Initial model + data → C++ analyzer --train → trained model
-Experiment results → Python analysis → metrics and plots
-```
-
-Prediction:
-
-```text
-FEN file → C++ parsing and encoding → C++ network → class predictions
-```
-
-Python scripts invoke the executables through `subprocess`, exchanging files
-and command output. Language bindings are unnecessary. Computation and weight
-updates stay in C++; Python organizes the experiments.
-
-## Testing
-
-- **C++:** test functions directly, including encoding, layer calculations,
-  gradients, and serialization, using known expected results.
-- **Python:** run the executables and check arguments, stdout, stderr, exit
-  codes, and generated files. Cover generation, training, saving, and prediction
-  together once that workflow is available.
-
-These levels cover calculations and executable behavior respectively; tests
-need not be duplicated across languages.
-
-## Build and scripts
-
-| Command | Purpose |
+| Component | Responsibility |
 | --- | --- |
-| `make` | Build both C++ executables |
-| `make test` | Run C++ tests and Python executable tests |
-| `make experiment OUTPUT=PATH OPTIONS=--prepare` | Freeze an experiment and generate initial models; full execution awaits training integration |
-| `make clean` | Remove build artifacts |
-| `make fclean` | Also remove executables |
-| `make re` | Clean and rebuild |
+| `src/neural/` | Network configuration, initialization, forward pass, backpropagation, SGD/Adam and serialization; no chess dependencies |
+| `src/chess/` | Six-field FEN parsing, 777-input encoding and three-class target mapping |
+| `src/generator/` | `my_torch_generator`: create initialized networks from YAML |
+| `src/analyzer/` | `my_torch_analyzer`: prediction, validation, mini-batches, checkpoint selection and saving |
+| `src/logging/` | Per-run generation/training logs |
+| `scripts/` | Dataset preparation/augmentation/freezing, experiment orchestration, metrics and charts |
+| `notebooks/` | Dataset inspection and visualization of saved results |
 
-Dataset preparation runs in
-[`notebooks/prepare_dataset.ipynb`](../notebooks/prepare_dataset.ipynb): first
-`scripts/clean_dataset.py` reads `dataset/raw/` and writes `dataset/processed/`,
-then `scripts/split_dataset.py` writes train/validation/test files to
-`dataset/splits/`. Settings and reports are grouped in this single notebook.
-These are disposable outputs.
-`scripts/reference_dataset.py` reuses both preparation tools to freeze a named
-reference under `dataset/references/`, with a tracked manifest in
-`dataset/manifests/`. Experiments use the [frozen reference](datasets.md).
-`make dataset` does not exist.
+```text
+Raw FENs → clean and split → frozen datasets + manifests
+Network YAML → C++ generator → initialized .nn model
+Model + train + validation → C++ analyzer --train → selected checkpoint + losses
+Saved checkpoint + FENs → C++ analyzer --predict → ordered class predictions
+Run artifacts → Python evaluation/comparison → metrics, SVG charts and reports
+```
 
-Experiment commands use `CONFIG` (defaults to `configs/protocols/compare-network-sizes.yml`),
-`OUTPUT` (required new directory) and optional `OPTIONS`. Python commands use
-the `PYTHON` variable, which defaults to `python3`. Install the YAML dependency from `requirements.txt` in a virtual environment.
-Notebook dependencies are listed in `notebooks/requirements.txt`.
+The experiment runner invokes the C++ programs through subprocesses. It records
+commands, configuration, seeds, data/build fingerprints and execution status.
+Standalone C++ commands remain usable without Python or a chess-rules library.
 
-Scripts will be versioned `.py` files. Experiments must retain configurations,
-seeds, commands, and dataset references for reproducibility. Training datasets
-must remain available for the project defense, without requiring Git tracking.
+## Network configuration
 
-## Current status
+The [basic configuration](../configs/networks/basic-network.yml) is a starting
+point, not a declaration of the final selected model:
 
-Model generation, initialization, serialization, FEN encoding, dataset loading,
-forward propagation, backpropagation with mini-batch gradient descent, and
-analyzer training and prediction are implemented. Generation and training runs
-are [logged](logging.md) in `logs/`. C++ tests and Python CLI tests run through
-`make test`.
+```yaml
+layers: [777, 128, 64, 3]
+hidden_activation: sigmoid
+output_activation: softmax
+initialization: xavier
+learning_rate: 0.01
+seed: 42
+optimizer: sgd
+```
 
-The Python evaluation script computes classification metrics through the analyzer;
-see the [evaluation guide](evaluation.md). `evaluation.ipynb` inspects one model's
-report; `comparison.ipynb` compares individual validation runs and configuration
-statistics independently. `experiment.py` prepares/runs the configuration-by-seed
-plan, reusing `evaluate.py` and `comparison.py`. Dataset cleaning and splitting
-are implemented. The backend training adapter remains to be implemented.
+| Setting | Supported values and meaning |
+| --- | --- |
+| `layers` | At least two positive widths, including input and output; arbitrary dimensions in the generic module, 777 inputs/3 outputs in the chess analyzer |
+| `hidden_activation` | `sigmoid`, `tanh`, `relu` |
+| `output_activation` | `softmax` or `sigmoid`; chess uses mutually exclusive classes and softmax/categorical cross-entropy |
+| `initialization` | `xavier`: uniform ±sqrt(6 / (fan-in + fan-out)); `he`: normal with standard deviation sqrt(2 / fan-in); biases start at zero |
+| `learning_rate` | Finite positive value; default `0.01` |
+| `seed` | Unsigned 32-bit integer; default `42`; successive generated models use successive seeds |
+| `optimizer` | `sgd` (default) or `adam`; loaded with the model, not selected by a training CLI flag |
+
+Unknown/duplicate keys, unsupported values and missing required fields are
+rejected. Only learning rate, seed and optimizer have defaults. Protocols can
+override network settings and specify a seed list; see [evaluation](evaluation.md).
+
+Sigmoid is retained as a baseline. Tanh and ReLU test different gradient and
+convergence behavior; He is a ReLU-oriented alternative to Xavier. These are
+choices to compare, not automatic improvements. Architecture, learning rate and
+optimizer interact, so changing several together measures a complete setting.
+See [training calculations](training.md#5-neural-calculations) for the formulas
+and [experiment reports](report/README.md) for observed outcomes.
+The [hyperparameter guide](hyperparameters.md) connects each setting to its
+tested alternatives and distinguishes the delivered model from later candidates.
+
+## Saved models and continuation
+
+`.nn` files are versioned JSON containing configuration, weights and biases.
+Adam checkpoints also retain the two moment tensors and update counter. Loading
+checks dimensions and finite values; legacy files without an optimizer field use
+SGD. See [`ModelSerializer`](../src/neural/ModelSerializer.hpp).
+
+Saving and loading preserves learned parameters. Continuing training also restores
+Adam state, but starts a new shuffle sequence and early-stopping window; it does
+not reproduce an uninterrupted run. Model files do not contain training datasets
+or authenticate the provenance of a separate loss history.
+
+`my_torch_network.nn` at the root is the delivered model. The explicitly tracked
+candidate in [models/](../models/README.md) is a separate artifact; other generated
+networks and raw results are ignored. Promotion must update the delivered file
+and its provenance together.
+
+## Performance, correctness and limits
+
+Training stores binary chess inputs as active indices and expands them for
+computation, preserving the 777-input contract. Sparse first-layer operations
+avoid multiplication by zero; dense blocks optionally use CPU BLAS. Matrix
+multiplication is delegated to BLAS, while activations, losses, gradients and
+optimizer updates remain project code. There is no GPU backend.
+
+Validation loss, best-checkpoint restoration and early stopping address
+overfitting; they do not guarantee generalization. The encoder validates syntax,
+not full chess legality. Prediction classifies a position; it does not play a
+move or run a rules engine. See [input](datasets.md#1-fen-encoding-and-c-dataset-contract)
+and [output](output-encoding.md) contracts.
+
+C++ tests check calculations, finite-difference gradients, serialization and
+failure guarantees. Python tests cover CLI behavior, data preparation and the
+runner's real integration. Build/test commands and dependencies are in the
+[README](../README.md); datasets stay outside result folders.

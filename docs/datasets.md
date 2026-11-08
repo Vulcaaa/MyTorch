@@ -1,17 +1,19 @@
 # Chess datasets
 
-This guide covers the input format, cleaning, and reproducible dataset splits.
-Follow the preparation workflow: **raw data → cleaning → train/validation/test**.
+This guide covers the input format, reproducible splits and training-only
+enrichment. The workflow is **raw data → cleaning → frozen train/validation/test
+→ optional train augmentation**. Validation and test assignments stay fixed.
 
 ## Contents
 
 1. [FEN encoding and C++ dataset contract](#1-fen-encoding-and-c-dataset-contract)
 2. [Dataset cleaning](#2-dataset-cleaning)
 3. [Dataset splitting](#3-dataset-splitting)
-4. [Frozen reference datasets](#4-frozen-reference-datasets)
+4. [Frozen reference datasets](#4-frozen-reference-datasets) and [color mirrors](#color-mirror-augmentation)
 5. [Analyze balance and diversity](#5-analyze-balance-and-diversity)
 6. [Generated game data](#6-generated-game-data)
 7. [Left-right mirror augmentation](#7-left-right-mirror-augmentation)
+8. [Data rights and predictive limitations](#8-data-rights-and-predictive-limitations)
 
 ---
 
@@ -28,6 +30,24 @@ Follow the preparation workflow: **raw data → cleaning → train/validation/te
 
 Castling rights and move counters are validated but not encoded. All indices
 are zero-based.
+
+This one-hot layout avoids assigning an artificial numeric order to piece types.
+Side to move identifies the king whose status is classified; en passant can
+affect the legal replies to a check. For legal positions, castling cannot escape
+check, so castling rights do not change these three labels. Move counters are
+irrelevant to this classification, which has no draw class. This compact
+contract preserves the relevant board information, but a dense network must
+still learn interactions such as blocked attack lines and escape squares.
+The [label/error audit](report/2026-11-08-label-and-error-audit/README.md) investigates
+these limits; full chess legality is not enforced by the encoder.
+
+This is a justified baseline, not a demonstrated optimal encoding. Adding an
+explicit empty-square channel would raise placement inputs from 768 to 832
+without adding information. Integer piece IDs would be smaller but introduce
+an artificial numeric ordering. Attack maps or spatial architectures might
+help model interactions, but have no controlled quality benchmark here. Changing
+the contract would require consistent preprocessing/deduplication changes and
+fresh training; no improvement should be claimed without that comparison.
 
 ### Piece placement
 
@@ -97,6 +117,10 @@ For example, `Check White` maps to `[0, 1, 0]`; see
 `target`: a missing label is represented by `std::nullopt`, never by `Nothing`.
 Prediction accepts both six-field FEN lines and labeled lines.
 Use `DatasetMode::Training` to require a label for every position.
+
+Training uses `readDataset` to consume samples incrementally and stores active
+binary feature indices, avoiding a second full dense dataset in memory. This is
+an exact storage optimization; the feature order and model format are unchanged.
 
 The loader skips blank lines and accepts whitespace-separated fields, including
 Windows line endings. It rejects unknown labels, extra fields, and malformed
@@ -211,6 +235,29 @@ train/validation/test splits.
 ---
 
 ## 3. Dataset splitting
+
+### Why there are several preparation directories
+
+Preparation keeps intermediate outputs so that a transformation can be audited
+and rebuilt without editing raw sources. They are not all independent datasets
+that should be concatenated into training.
+
+| Location / output | Purpose | Retention rule |
+| --- | --- | --- |
+| `dataset/raw/` | Original labeled source files | Preserve unchanged |
+| `dataset/processed/cleaned.txt`, `report.json`, `provenance.jsonl` | Cleaned rows, rejected/duplicate counts and source mapping | Rebuildable preparation outputs; retain while needed to audit a run |
+| `dataset/processed/chess-v1-color-mirror/` | Symmetry-derived training data | Keep while referenced by protocols/runs; validation/test remain separate |
+| `dataset/processed/chess-v1-generated-*` | Different generation budgets, pools and mirrored variants | Inspect each manifest/report before using it; prepared data alone does not demonstrate a learning gain |
+| Hidden `.generated-*` staging folders, when present | Generation workspace or interrupted preparation | Inspect status and references before cleanup; a name alone does not prove it is safe to delete |
+| `dataset/splits/` | Notebook's current train/validation/test output | Rebuildable; use a frozen reference for comparable experiments |
+| `dataset/references/` and tracked `dataset/manifests/` | Named frozen bytes and their identities/reconstruction settings | Preserve references used by recorded experiments and the final model |
+
+New runs should reference shared datasets from `dataset/` and keep metrics,
+histories, checkpoints and logs under `results/`. Historical one-off campaigns
+also retain frozen data inside local results (including the large Adam
+protocol's source campaign). Keep those archives intact until a verified
+migration updates dependencies without rewriting historical evidence. Neither
+this guide nor a normal Git clone moves or restores those local files.
 
 The splitting stage of [the preparation notebook](../notebooks/prepare_dataset.ipynb)
 runs after [cleaning the data](#2-dataset-cleaning). It reads
@@ -330,11 +377,14 @@ balancing**. All cleaned positions occur exactly once across the three splits,
 with **zero shared model-visible inputs**. Counts include rounding per class.
 These files reproduce the existing notebook outputs; no split algorithm changed.
 
-The external source, generator, license, and usage grant are **unknown**. The
-repository filenames and Git history do not establish them. Local retention for
-project experiments and the defense does not establish redistribution rights.
-FEN syntax and label format are checked; chess legality and label correctness
-have not been audited. These limitations are also recorded in the manifest.
+The original dataset was **provided by Epitech for this project**. It is used
+for training, evaluation and the defense in that educational context.
+Preparation checks FEN syntax and label format. A subsequent
+[rules-based audit](report/2026-11-08-label-and-error-audit/README.md) found all original
+train and validation labels consistent with python-chess 1.11.2, while flagging
+9 train and 2 validation positions as invalid. It did not audit the test split.
+The frozen manifest records the limitations known at preparation time; see the
+[current summary](#8-data-rights-and-predictive-limitations) below.
 
 ### Commands and reproduction
 
@@ -405,8 +455,43 @@ make experiment OUTPUT=results/experiments/YYYY-MM-DD-compare-network-sizes-01
 ```
 
 The runner captures the resolved dataset paths and hashes in its experiment
-manifest and detects changes during a campaign. This issue adds no training,
-model selection, or final test evaluation.
+manifest and detects changes during a campaign. Dataset verification does not
+train, select a model or evaluate it on test.
+
+### Color-mirror augmentation
+
+[`scripts/augment_dataset.py`](../scripts/augment_dataset.py) reflects ranks
+(`a1` ↔ `a8`, files unchanged), exchanges piece colors and the side to move,
+maps castling colors and the en passant rank, and preserves move counters.
+The three-class label is preserved; optional White/Black suffixes are exchanged.
+This differs from a left-right reflection, which is not implemented here.
+
+The transformation creates another view of a training example without adding a
+rules-derived answer to the network inputs. Applying it twice recovers the
+canonical original row. Original rows are retained first; mirrors follow in
+source order. Original duplicate inputs are collapsed, contradictory original
+labels are rejected, and conflicting or duplicate added inputs are excluded.
+Any mirror matching validation or test inputs is excluded; held-out labels
+are not parsed for augmentation. Those splits are never augmented or reshuffled.
+
+```sh
+python3 -m scripts.augment_dataset \
+  --splits dataset/references/chess-v1/splits \
+  --output dataset/processed/chess-v1-color-mirror
+```
+
+The destination must be new. It contains `train.fen`, `additions.fen`,
+`additions-source-lines.csv` and `manifest.json` with source/output hashes,
+class counts and exclusions. Generation uses only the Python standard library.
+The original train produces **1,141,143 unique rows** after exclusions. The
+same transform can be applied to the generated-data reference described below;
+use that reference's `splits/` as the input.
+
+[`scripts/verify_augmentation.py`](../scripts/verify_augmentation.py) provides
+additional checks against the optional Python chess oracle and the production
+C++ encoder. The [augmentation report](report/2026-11-08-color-mirror-augmentation/README.md#augmentation-and-integrity)
+records the independent checks and measured outcomes. More rows also mean more
+updates per epoch; compare quality and total training cost, not epoch count alone.
 
 ## 5. Analyze balance and diversity
 
@@ -609,6 +694,8 @@ without Python in the build command, and `make test` both with the generation
 library and in a fresh environment containing only root `requirements.txt`.
 The latter skips the eight optional generation tests.
 
+---
+
 ## 7. Left-right mirror augmentation
 
 [`scripts/mirror_files.py`](../scripts/mirror_files.py) reflects every position
@@ -674,3 +761,43 @@ validation and test independent of the train.
 on validation but only 81% on the left-right mirrors of the same positions: it
 had learned file-specific patterns. On the ×4 train, the 256/128 ReLU + Adam
 network rises from 89.25% to 92.89% validation accuracy.
+
+---
+
+## 8. Data rights and predictive limitations
+
+> **Key takeaway:** Epitech provided the original dataset for this project.
+> Validation scores do not guarantee correct predictions on arbitrary boards.
+
+### Data rights — what is established?
+
+| Topic | Current status | Consequence |
+| --- | --- | --- |
+| Original dataset | **Provided by Epitech for the project** | Used for training, evaluation and the defense. |
+| Scope of use | Educational project | This documentation does not assert an open license or unrestricted redistribution rights. |
+| Locally generated positions | Generation provenance recorded | Kept distinct from the Epitech-provided reference data. |
+
+Details: [frozen reference dataset](#4-frozen-reference-datasets).
+
+### Predictive limitations — what can go wrong?
+
+| Risk | Evidence or limitation | How we assess it |
+| --- | --- | --- |
+| Wrong predictions | The audited ReLU checkpoint confuses Check and Checkmate; blocked attack lines and rare mating patterns are difficult. | Inspect the confusion matrix, per-class recall and macro F1, rather than a global score alone. |
+| Overstated generalization | Related positions can remain across splits; repeated validation tuning can make scores optimistic. | Exclude shared model-visible inputs; compare seeds on validation and reserve test for final assessment. |
+| Different input distribution | New positions may differ from the training examples. | Scope claims to the evaluated data; do not promise reliability on arbitrary boards. |
+| Confusing label quality with model reliability | Original train/validation labels match the rules in the audit; the test split was not audited. | Keep label checks separate from prediction measurements. A correct target does not guarantee a correct prediction. |
+
+**Scope:** the network classifies positions; it does not play chess or guarantee
+an exact chess-rules verdict. The error findings above concern the audited
+checkpoint, not every model in the project.
+
+**Evaluation rule:** compare configurations and seeds on validation → freeze the
+model-selection rule → assess the selected model on the reserved test set.
+Validation scores alone do not establish final test performance.
+
+| Find the evidence | Document |
+| --- | --- |
+| Label checks and detailed error patterns | [Label and error audit](report/2026-11-08-label-and-error-audit/README.md) |
+| Experiments, including unsuccessful approaches | [Training and evaluation reports](report/README.md) |
+| Split, seed and final-test rules | [Evaluation protocol](evaluation.md#comparison-protocol-v1) |

@@ -6,7 +6,7 @@
 | --- | --- |
 | `configs/networks/` | Network architecture and parameters |
 | `configs/protocols/` | YAML training and comparison protocols: data, initial model, budget, hypothesis |
-| `dataset/` | Shared datasets and frozen versions; never copied into results |
+| `dataset/` | Shared datasets and frozen versions; new runs reference these files rather than copying them |
 | `results/training/` | Standalone training or checkpoint continuation |
 | `results/evaluation/` | Standalone validation or final test evaluation |
 | `results/experiments/` | Controlled comparisons of configurations and seeds |
@@ -24,6 +24,12 @@ Open **README.md first** in any result directory. No HTML reports, source-code
 snapshots, exported PNGs, or dataset-analysis directory are generated. Dataset
 analysis remains in its notebook and [dataset documentation](datasets.md).
 
+Historical one-off campaigns may keep frozen input snapshots under ignored
+`results/`. In particular, `train-large-relu-adam.yml` references retained local
+Adam-campaign data. Preserve those bytes and hashes until dependencies are
+verified; these are historical archives, not the directory pattern for new runs.
+See the [preparation inventory](datasets.md#why-there-are-several-preparation-directories).
+
 ## Network configuration
 
 `configs/networks/basic-network.yml` defines the architecture and defaults:
@@ -32,6 +38,7 @@ analysis remains in its notebook and [dataset documentation](datasets.md).
 layers: [777, 128, 64, 3]
 hidden_activation: sigmoid
 output_activation: softmax
+optimizer: sgd
 learning_rate: 0.01
 initialization: xavier
 seed: 42
@@ -43,14 +50,13 @@ the network seed. Continuations read settings from the saved `.nn` model instead
 
 ## Local model collection
 
-`models/` holds locally generated networks and descriptive copies of selected
-checkpoints; its local `README.md` lists their roles and validation scores.
-The shared ReLU + Adam candidate is `models/large-relu-adam-seed46-lr0.001.nn`
-([comparison report](report/2026-11-08-adam-optimizer/README.md)); it requires the
-Adam-capable implementation. Historical models use the `legacy-` prefix.
-Other models in this directory are ignored by Git; the shared large candidate
-and its README are versioned. The delivered model is
-`my_torch_network.nn` at the repository root ([delivered model report](report/2026-11-08-mirror-view-ensemble.md)).
+`models/` holds locally generated networks and selected checkpoints. The tracked
+[model inventory](../models/README.md) identifies the shared candidate
+`models/large-relu-adam-seed46-lr0.001.nn` and its provenance. Historical local
+models use the `legacy-` prefix; most generated models are ignored by Git.
+The delivered checkpoint is `my_torch_network.nn` at the repository root
+([delivered model report](report/2026-11-08-mirror-view-ensemble.md)).
+Treat candidate validation results separately from delivered-model results.
 
 ## Train one model
 
@@ -95,20 +101,21 @@ containing `before` and `validation` scores and two corresponding
 `confusion-matrix-*.svg` charts. Counts stay in `metrics.json`; no confusion-matrix
 CSV is exported.
 
-Continuation restores weights; shuffle randomness and early-stopping state
-restart. `previous_history` and `previous_checkpoint_epoch` describe the earlier
+Continuation restores weights and biases, plus moments and update counter for
+Adam checkpoints; shuffle randomness and early-stopping state restart.
+`previous_history` and `previous_checkpoint_epoch` describe the earlier
 trace, but the model format does not authenticate that relationship.
 
 ## Evaluate an existing model
 
-Use validation while tuning, then evaluate the selected model on the reserved
-test split. This command does not train:
+Use validation while tuning. This command scores the delivered model without
+training or modifying it:
 
 ```sh
 python3 scripts/evaluate.py \
-  results/training/2026-11-07-continue-reference-01/model.nn \
-  dataset/references/chess-v1/splits/test.txt \
-  --output results/evaluation/2026-11-07-reference-test-02
+  my_torch_network.nn \
+  dataset/references/chess-v1/splits/validation.txt \
+  --output results/evaluation/YYYY-MM-DD-delivered-validation-01
 ```
 
 The directory contains only:
@@ -124,6 +131,10 @@ analysis. It exports `predictions.csv` with original line numbers and labels.
 Undefined scores are zero; macro F1 includes Nothing, Check and Checkmate.
 Color suffixes in analyzer output are removed before scoring and CSV export;
 these metrics measure the three states, not color accuracy.
+
+Only after final choices are frozen, use the test split for the final evaluation.
+A historical reference was already evaluated on this test set; it is not a newly
+unseen sample for later work. Keep its results out of tuning decisions.
 
 ## Compare configurations
 
@@ -187,7 +198,7 @@ Regenerate missing charts from existing histories and metrics, without training,
 prediction, or changes to model/configuration/numerical source files:
 
 ```sh
-.venv/bin/python scripts/charts.py results --recursive
+python3 scripts/charts.py results --recursive
 ```
 
 This preserves written conclusions and refreshes the chart section of existing
@@ -239,8 +250,9 @@ and checks dataset/build compatibility and model integrity.
 The built-in command applies every declared training setting and rejects unknown
 keys. Checkpoint selection uses minimum validation loss, including the starting
 model if no epoch improves it. Macro-F1 is measured afterwards, not used to
-select an epoch. Final training comparisons, test results and interpretation
-remain open parts of issue #8.
+select an epoch. Completed comparisons are recorded in the [reports](report/README.md).
+Those reports, the final selected model and its final evaluation must remain
+distinct artifacts; a campaign summary does not promote a checkpoint.
 
 ## Test artifacts
 
