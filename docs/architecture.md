@@ -53,9 +53,10 @@ optimizer: sgd
 | `learning_rate` | Finite positive value; default `0.01` |
 | `seed` | Unsigned 32-bit integer; default `42`; successive generated models use successive seeds |
 | `optimizer` | `sgd` (default) or `adam`; loaded with the model, not selected by a training CLI flag |
+| `dropout` | Probability in [0, 1) of zeroing each hidden activation during training; default `0` (disabled); saved in the model only when enabled |
 
 Unknown/duplicate keys, unsupported values and missing required fields are
-rejected. Only learning rate, seed and optimizer have defaults. Protocols can
+rejected. Only learning rate, seed, optimizer and dropout have defaults. Protocols can
 override network settings and specify a seed list; see [evaluation](evaluation.md).
 
 Sigmoid is retained as a baseline. Tanh and ReLU test different gradient and
