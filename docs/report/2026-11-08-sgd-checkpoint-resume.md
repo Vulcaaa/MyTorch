@@ -44,20 +44,15 @@ Epoch compute includes updates and train/validation loss passes. Process wall al
 
 This is validation tuning of one already validation-selected checkpoint and seed. Small differences are not proof of a robust improvement or an independent final evaluation. The 40-epoch horizon cannot establish eventual convergence of the smaller rates. No longer run is started.
 
-The first training process completed normally; the initial Python driver then failed to read completion diagnostics from stderr. The corrected driver recovered the already completed result, without repeating training or changing weights, and ran the two remaining arms. The orchestration test covers this recovery and checks all arms start from identical weights with only the LR changed.
+The first training process completed normally; the initial Python driver then failed to read completion diagnostics from stderr. The corrected driver recovered the already completed result, without repeating training or changing weights, and ran the two remaining arms. An orchestration test covered this recovery and checked that all arms started from identical weights with only the LR changed. The experiment-specific driver and its test are retained in the local raw-evidence archive.
 
-Validation: the recovery/isolation test passes; every source/frozen input and shared-library hash is unchanged after the campaign. The saved control equals the original model after JSON parsing. Saved model configurations, selected/completed epoch counts, confusion-matrix sample totals, accuracy and macro F1 were independently checked against the raw artifacts. The SVG loss figure was visually inspected. No C++ implementation was changed.
+Validation: the recovery/isolation test passed when the experiment was performed; every source/frozen input and shared-library hash was unchanged after the campaign. The saved control equals the original model after JSON parsing. Saved model configurations, selected/completed epoch counts, confusion-matrix sample totals, accuracy and macro F1 were independently checked against the raw artifacts. The SVG loss figure was visually inspected. No C++ implementation was changed.
 
 ## Evidence and reproduction
 
 - [Portable protocol, histories, scores, hashes and environment](data/2026-11-08-sgd-checkpoint-resume.json)
 - Raw evidence: `results/experiments/2026-11-08-sgd-resume-01/` in this checkout; frozen inputs, logs, CSV/SVG histories and each saved model.
 - Highest-scoring model in the raw evidence: `lr-0008/model.nn`. This comparison does not replace a deployed/reference model.
-- Source runner: `scripts/sgd_resume.py`; recovery test: `tests/test_sgd_resume.py`.
+- Local reproduction archive: `results/experiments/2026-11-08-sgd-resume-01/reproduction/` contains `sgd_resume.py`, `test_sgd_resume.py` and the report builder. These one-off scripts are not part of the versioned source tree.
 
-```sh
-OPENBLAS_NUM_THREADS=1 OPENBLAS_DEFAULT_NUM_THREADS=1 OMP_NUM_THREADS=1 \
-python -m scripts.sgd_resume \
-  --source /path/to/2026-11-08-color-mirror-augmentation-01 \
-  --output results/experiments/NEW-SGD-RESUME
-```
+The protocol above and the portable measurements retain the learning rates, stopping rules, original checkpoint identity, input fingerprints and exact analyzer commands. Replaying the experiment also requires the local frozen model, analyzer and datasets; those large artifacts are not stored in Git.
