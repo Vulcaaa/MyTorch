@@ -49,6 +49,22 @@ Test confusion matrix (rows actual, columns predicted):
 | Check | 231 | 23,086 | 1,496 |
 | Checkmate | 12 | 1,047 | 15,927 |
 
+### Size against accuracy
+
+Fewer members or views give lighter networks. Validation accuracy; operations
+count every multiply-add of a prediction, including the zero blocks.
+
+| Variant | Network | Operations per position | Validation accuracy |
+| --- | --- | ---: | ---: |
+| Previous delivered sigmoid | 777 → 128 → 64 → 3 | 108k | 88.06% |
+| One member, one view | 777 → 256 → 128 → 3 | 232k | 92.89% |
+| One member, two views (original + color) | 777 → 512 → 256 → 3 | 530k | 94.24% |
+| One member, four views | 777 → 1024 → 512 → 3 | 1.32M | 94.91% |
+| **Two members, four views (delivered)** | 777 → 2048 → 1024 → 3 | 3.69M | **95.20%** |
+
+The delivered variant keeps the best accuracy; one member with four views is a
+lighter alternative at −0.29 points.
+
 ## Interpretation
 
 - **The left-right mirror teaches rules rather than positions.** A network trained

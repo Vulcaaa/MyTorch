@@ -11,6 +11,7 @@ Follow the preparation workflow: **raw data → cleaning → train/validation/te
 4. [Frozen reference datasets](#4-frozen-reference-datasets)
 5. [Analyze balance and diversity](#5-analyze-balance-and-diversity)
 6. [Generated game data](#6-generated-game-data)
+7. [Left-right mirror augmentation](#7-left-right-mirror-augmentation)
 
 ---
 
@@ -599,3 +600,61 @@ Compatibility checks also passed: a fresh portable C++ build and prediction
 without Python in the build command, and `make test` both with the generation
 library and in a fresh environment containing only root `requirements.txt`.
 The latter skips the eight optional generation tests.
+
+## 7. Left-right mirror augmentation
+
+[`scripts/mirror_files.py`](../scripts/mirror_files.py) reflects every position
+across the board's vertical axis: the a-file becomes the h-file, b becomes g,
+and so on. The delivered model is trained on this ×4 train
+([report](report/2026-11-08-mirror-view-ensemble.md)).
+
+**Why labels stay correct.** Pieces move the same way toward either side of the
+board, so a king in check stays in check, and a mate stays a mate. Castling is
+the only rule that treats the two sides differently, and castling is never a
+legal way out of check. The script therefore drops castling rights (`-`) from
+mirrored rows; the 777 inputs do not encode them anyway. The en passant square
+moves to the mirrored file. Side to move and both counters are unchanged.
+
+| Example | FEN |
+| --- | --- |
+| Original | `8/6p1/6kp/6P1/6K1/5q2/8/7q w - - 3 57` (Checkmate) |
+| Mirror | `8/1p6/pk6/1P6/1K6/2q5/8/q7 w - - 3 57` (Checkmate) |
+
+**Input.** The color-mirror train
+(`dataset/processed/chess-v1-color-mirror/train.fen`, 1,141,143 rows), which
+already contains the original train and its color mirrors.
+
+```sh
+python3 scripts/mirror_files.py dataset/processed/chess-v1-color-mirror/train.fen \
+  dataset/processed/chess-v1-mirror-x4/train.fen \
+  --heldout dataset/references/chess-v1/splits/validation.txt \
+            dataset/references/chess-v1/splits/test.txt
+```
+
+| Rows | Count |
+| --- | ---: |
+| Input rows (original + color mirrors) | 1,141,143 |
+| Left-right mirrors added | 1,134,631 |
+| Skipped: mirror already present in the train | 5,630 |
+| Skipped: mirror inputs occur in validation or test | 882 |
+| **Output train** | **2,275,774** |
+
+| Class | Output train | Added mirrors |
+| --- | ---: | ---: |
+| Nothing | 945,299 | 471,024 |
+| Check | 790,925 | 394,740 |
+| Checkmate | 539,550 | 268,867 |
+
+Original rows come first and are unchanged; mirrors follow in source order.
+Side to move stays balanced (1,137,882 White, 1,137,892 Black). The output
+SHA-256 is `b03123716029236ed8f2…`; the full hash is in the
+[report data](report/data/2026-11-08-mirror-view-ensemble.json).
+
+**Checks.** python-chess 1.11.2 recomputes Check / Checkmate / Nothing for all
+1,134,631 added rows and agrees with every label. Skipping held-out inputs keeps
+validation and test independent of the train.
+
+**Why it helps.** A network trained on the color-mirror train alone scores 89%
+on validation but only 81% on the left-right mirrors of the same positions: it
+had learned file-specific patterns. On the ×4 train, the 256/128 ReLU + Adam
+network rises from 89.25% to 92.89% validation accuracy.
