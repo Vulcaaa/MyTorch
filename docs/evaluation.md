@@ -45,7 +45,7 @@ the network seed. Continuations read settings from the saved `.nn` model instead
 
 `models/` holds locally generated networks and descriptive copies of selected
 checkpoints; its local `README.md` lists their roles and validation scores.
-The current ReLU + Adam candidate is `models/relu-adam-seed46-lr0.001.nn`
+The shared ReLU + Adam candidate is `models/large-relu-adam-seed46-lr0.001.nn`
 ([comparison report](report/2026-11-08-adam-optimizer/README.md)); it requires the
 Adam-capable implementation. Historical models use the `legacy-` prefix.
 Other models in this directory are ignored by Git; the shared large candidate

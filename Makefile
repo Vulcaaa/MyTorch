@@ -4,7 +4,7 @@ CXX = g++
 PYTHON = python3
 CONFIG ?= configs/protocols/compare-network-sizes.yml
 CPPFLAGS = -Isrc -Isrc/chess/ -Isrc/neural/ -Iinclude -Ivendor/yaml-cpp/include -DYAML_CPP_STATIC_DEFINE -MMD -MP
-CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -O8
+CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -O3
 
 # BLAS=auto uses Accelerate on macOS, OpenBLAS via pkg-config on Linux,
 # and keeps the portable scalar backend when neither is available.

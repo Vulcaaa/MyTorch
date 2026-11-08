@@ -67,9 +67,13 @@ int main(int ac, char** av)
                   << "\t--threads N        BLAS thread limit (positive integer; default: library/environment)\n"
                   << "\t--patience N       Early-stopping patience (positive integer; default: 10)\n"
                   << "\t--min-delta X      Minimum loss improvement (finite, >= 0; default: 0.0001)\n"
+                  << "\t--lr-decay F       On a plateau, restart from the best epoch with the learning\n"
+                  << "\t                   rate multiplied by F (0 < F < 1; default: no decay)\n"
+                  << "\t--decay-patience N Epochs without improvement before a decay (default: 5)\n"
+                  << "\t--max-decays N     Decays before stopping at the next plateau (default: 3)\n"
                   << "\t--history FILE     Override automatic per-run history CSV path\n"
                   << "\t--save FILE        Save trained model here (default: LOADFILE)\n\n"
-                  << "Learning rate, optimizer and seed come from the loaded model.\n"
+                  << "Learning rate, optimizer, dropout and seed come from the loaded model.\n"
                   << "Each training run is logged in logs/train_<UTC time>.log.\n";
         return 0;
     }

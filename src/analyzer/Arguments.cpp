@@ -54,6 +54,14 @@ void setTrainingOption(AnalyzerArguments& arguments, const std::string& option,
         arguments.training.patience = positiveInteger(option, value);
     else if (option == "--min-delta")
         arguments.training.minDelta = nonnegativeNumber(option, value);
+    else if (option == "--lr-decay") {
+        arguments.training.lrDecay = nonnegativeNumber(option, value);
+        if (arguments.training.lrDecay <= 0.0 || arguments.training.lrDecay >= 1.0)
+            throw std::invalid_argument("--lr-decay requires a factor in (0, 1)");
+    } else if (option == "--decay-patience")
+        arguments.training.decayPatience = positiveInteger(option, value);
+    else if (option == "--max-decays")
+        arguments.training.maxDecays = positiveInteger(option, value);
 }
 
 } // namespace
@@ -74,7 +82,7 @@ AnalyzerArguments parseAnalyzerArguments(int ac, const char* const av[])
 
     const std::set<std::string> trainingOptions = {
         "--save", "--validation", "--history", "--epochs", "--batch-size",
-        "--patience", "--min-delta", "--threads"
+        "--patience", "--min-delta", "--threads", "--lr-decay", "--decay-patience", "--max-decays"
     };
     std::set<std::string> seen;
     int next = 2;
@@ -92,6 +100,8 @@ AnalyzerArguments parseAnalyzerArguments(int ac, const char* const av[])
         next += 2;
     }
 
+    if ((seen.count("--decay-patience") || seen.count("--max-decays")) && !seen.count("--lr-decay"))
+        throw std::invalid_argument("--decay-patience and --max-decays require --lr-decay");
     if (ac != next + 2)
         throw std::invalid_argument("expected exactly LOADFILE and CHESSFILE after options");
     arguments.loadFile = av[next];

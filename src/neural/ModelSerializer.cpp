@@ -43,6 +43,8 @@ void validateConfig(const NetworkConfig &config)
     require(config.initialization == "he" || config.initialization == "xavier",
         "invalid initialization");
     require(config.optimizer == "sgd" || config.optimizer == "adam", "invalid optimizer");
+    require(std::isfinite(config.dropout) && config.dropout >= 0.0 && config.dropout < 1.0,
+        "dropout must be in [0, 1)");
 }
 
 NetworkConfig readConfig(const Json &data)
@@ -59,6 +61,10 @@ NetworkConfig readConfig(const Json &data)
     config.initialization = data.at("initialization").get<std::string>();
     config.seed = readUnsigned<std::uint32_t>(data.at("seed"), "seed");
     config.optimizer = data.value("optimizer", std::string("sgd"));
+    if (data.contains("dropout")) {
+        require(data.at("dropout").is_number(), "dropout must be a number");
+        config.dropout = data.at("dropout").get<double>();
+    }
     validateConfig(config);
     return config;
 }
@@ -111,7 +117,7 @@ std::vector<Layer> readLayers(const Json &data, const NetworkConfig &config)
 
 Json writeConfig(const NetworkConfig &config)
 {
-    return {
+    Json json = {
         {"layers", config.layers},
         {"hidden_activation", config.hidden_activation},
         {"output_activation", config.output_activation},
@@ -120,6 +126,10 @@ Json writeConfig(const NetworkConfig &config)
         {"seed", config.seed},
         {"optimizer", config.optimizer}
     };
+    // Omitted when disabled, so models without dropout keep their previous format.
+    if (config.dropout > 0.0)
+        json["dropout"] = config.dropout;
+    return json;
 }
 
 } // namespace

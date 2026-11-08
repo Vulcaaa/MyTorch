@@ -356,12 +356,26 @@ class ExperimentTests(unittest.TestCase):
         for settings in [{"epochs": 3},
                          {"epochs": True, "batch_size": 2, "patience": 2, "min_delta": 0.1},
                          {"epochs": 3, "batch_size": 2, "patience": 2, "min_delta": -1},
-                         {"epochs": 3, "batch_size": 2, "patience": 2, "min_delta": 0.1, "typo": 1}]:
+                         {"epochs": 3, "batch_size": 2, "patience": 2, "min_delta": 0.1, "typo": 1},
+                         {"epochs": 3, "batch_size": 2, "patience": 2, "min_delta": 0.1, "lr_decay": 1},
+                         {"epochs": 3, "batch_size": 2, "patience": 2, "min_delta": 0.1, "max_decays": 2}]:
             self.spec["training"]["settings"] = settings
             self.write_spec()
             with self.subTest(settings=settings), self.assertRaises(ValueError):
                 load_spec(self.config)
         self.assertFalse(self.output.exists())
+
+    def test_builtin_accepts_learning_rate_decay_and_dropout(self):
+        self.enable_builtin()
+        self.spec["training"]["settings"] = {"epochs": 3, "batch_size": 2, "patience": 2, "min_delta": 0.1,
+                                             "lr_decay": 0.3, "decay_patience": 5, "max_decays": 3}
+        self.spec["configurations"][0].setdefault("overrides", {})["dropout"] = 0.1
+        self.write_spec()
+        load_spec(self.config)
+        self.spec["configurations"][0]["overrides"]["dropout"] = 1
+        self.write_spec()
+        with self.assertRaises(ValueError):
+            load_spec(self.config)
 
 
 if __name__ == "__main__":

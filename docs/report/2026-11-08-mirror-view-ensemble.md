@@ -60,8 +60,11 @@ Most remaining errors confuse Check and Checkmate: 2,985 of 4,537 test errors.
 
 ## Limits
 
-- Dropout and the learning-rate decay ran from a local experimental build; they
-  are not yet training options on `main`.
+- Dropout and the learning-rate decay ran from a local experimental build. They
+  are now training options (`dropout` in the network YAML, `--lr-decay`), and
+  [`train-delivered-model.yml`](../../configs/protocols/train-delivered-model.yml)
+  retrains the recipe. Its dropout masks differ from the experimental build, so a
+  rerun repeats the method, not the exact weights.
 - Dropout was measured on one seed (+0.9 points, against a spread of 0.1 points
   between seeds without dropout).
 - Validation chose these settings, so its scores are slightly optimistic. Before

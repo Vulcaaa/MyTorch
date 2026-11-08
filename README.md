@@ -84,6 +84,14 @@ training, evaluate a saved model, or compare configurations. Results are grouped
 under `results/training/`, `results/evaluation/`, `results/experiments/` only. Each result starts with a readable `README.md`; notebooks
 show curves and confusion matrices.
 
+## Results
+
+The delivered `my_torch_network.nn` reaches **93.66% accuracy and 93.15% macro F1**
+on the reserved test split (71,555 positions), against 88.06% validation accuracy
+for the previously delivered model. It is a 777 → 256 → 128 → 3 ReLU network trained with
+Adam, dropout and left-right mirrored data; [`train-delivered-model.yml`](configs/protocols/train-delivered-model.yml)
+retrains it. Benchmarks and figures: [report index](docs/report/README.md).
+
 ## Development
 
 See the [project roadmap](docs/project-roadmap.md) for the implementation,

@@ -188,7 +188,7 @@ double NeuralNetwork::backpropagate(const TrainingSample& sample, std::vector<La
 {
     const auto expanded = sample.binaryInputSize ? sample.expandInputs() : std::vector<double>{};
     const auto& sampleInputs = sample.binaryInputSize ? expanded : sample.inputs;
-    forward(sampleInputs, pass);
+    forward(sampleInputs, pass, true);
     const auto& activations = pass.activations;
 
     // Output delta (loss derivative with respect to the output logits): p - y, both for
@@ -231,7 +231,12 @@ double NeuralNetwork::backpropagate(const TrainingSample& sample, std::vector<La
             for (std::size_t k = 0; k < inputs.size(); ++k)
                 previous[k] += layer.weights[j][k] * delta[j];
         }
-        applyActivationDerivative(previous, inputs, _config.hidden_activation);
+        if (_config.dropout > 0.0) {
+            for (std::size_t k = 0; k < previous.size(); ++k)
+                previous[k] *= pass.dropoutScale[i - 2][k];
+        } else {
+            applyActivationDerivative(previous, inputs, _config.hidden_activation);
+        }
     }
     return sampleLoss(pass.outputLogits, sample.target, _config.output_activation);
 }

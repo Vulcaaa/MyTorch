@@ -67,7 +67,9 @@ void validateRequest(const NeuralNetwork& network, const AnalyzerArguments& argu
     if (arguments.loadFile.empty() || arguments.chessFile.empty())
         throw std::invalid_argument("training requires model and dataset paths");
     if (settings.epochs == 0 || settings.batchSize == 0 || settings.patience == 0
-        || !std::isfinite(settings.minDelta) || settings.minDelta < 0)
+        || !std::isfinite(settings.minDelta) || settings.minDelta < 0
+        || !std::isfinite(settings.lrDecay) || settings.lrDecay < 0 || settings.lrDecay >= 1
+        || settings.decayPatience == 0 || settings.maxDecays == 0)
         throw std::invalid_argument("invalid training settings");
     if (network.inputSize() != 777 || network.outputSize() != 3)
         throw std::invalid_argument("chess training requires 777 inputs and 3 outputs");
@@ -274,6 +276,9 @@ std::string describeSettings(const TrainingArguments& settings)
     text.imbue(std::locale::classic());
     text << "epochs=" << settings.epochs << " batch_size=" << settings.batchSize
         << " patience=" << settings.patience << " min_delta=" << settings.minDelta;
+    if (settings.lrDecay > 0.0)
+        text << " lr_decay=" << settings.lrDecay << " decay_patience=" << settings.decayPatience
+            << " max_decays=" << settings.maxDecays;
     return text.str();
 }
 
@@ -362,6 +367,8 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
     std::vector<std::array<double, 3>> chartRows;
     double patienceReference = result.bestValidationLoss;
     std::size_t staleEpochs = 0;
+    std::size_t decays = 0;
+    const auto& settings = arguments.training;
     std::mt19937 random(network.config().seed);
     std::vector<std::size_t> order(training.size());
 
@@ -403,6 +410,28 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
         } else {
             ++staleEpochs;
         }
+        // Learning-rate decay: on a plateau, restart from the best checkpoint with a smaller
+        // step. After the last decay, the next plateau ends training.
+        if (settings.lrDecay > 0.0 && staleEpochs >= settings.decayPatience) {
+            if (decays < settings.maxDecays) {
+                const double rate = working.config().learning_rate * settings.lrDecay;
+                working = best;
+                working.setLearningRate(rate);
+                ++decays;
+                staleEpochs = 0;
+                patienceReference = result.bestValidationLoss;
+                progress << "Learning rate decay " << decays << "/" << settings.maxDecays
+                    << ": restart from epoch " << result.bestEpoch << " with learning_rate="
+                    << rate << std::endl;
+                log.info("Learning rate decay " + std::to_string(decays) + ": restart from epoch "
+                    + std::to_string(result.bestEpoch) + " with learning_rate=" + formatLoss(rate));
+                continue;
+            }
+            result.earlyStopped = true;
+            log.info("Stopping after epoch " + std::to_string(epoch) + ": plateau after "
+                + std::to_string(decays) + " learning-rate decays");
+            break;
+        }
         if (staleEpochs >= arguments.training.patience) {
             result.earlyStopped = true;
             log.info("Early stopping after epoch " + std::to_string(epoch) + " (patience="
@@ -411,6 +440,8 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
         }
     }
     history.close();
+    // The decayed rate belongs to this run's schedule: the saved model keeps its configuration.
+    best.setLearningRate(network.config().learning_rate);
     saveTrainingResult(best, arguments);
     log.info("Saved model from epoch " + std::to_string(result.bestEpoch) + " (validation_loss="
         + formatLoss(result.bestValidationLoss) + ") to " + modelDestination(arguments));
