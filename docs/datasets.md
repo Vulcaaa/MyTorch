@@ -12,6 +12,7 @@ enrichment. The workflow is **raw data → cleaning → frozen train/validation/
 4. [Frozen reference datasets](#4-frozen-reference-datasets) and [color mirrors](#color-mirror-augmentation)
 5. [Analyze balance and diversity](#5-analyze-balance-and-diversity)
 6. [Generated game data](#6-generated-game-data)
+7. [Data rights and predictive limitations](#7-data-rights-and-predictive-limitations)
 
 ---
 
@@ -375,15 +376,14 @@ balancing**. All cleaned positions occur exactly once across the three splits,
 with **zero shared model-visible inputs**. Counts include rounding per class.
 These files reproduce the existing notebook outputs; no split algorithm changed.
 
-The external source, generator, license, and usage grant are **unknown**. The
-repository filenames and Git history do not establish them. Local retention for
-project experiments and the defense does not establish redistribution rights.
-The original preparation checks FEN syntax and label format, not full chess
-legality or rule-derived labels. A [later independent audit](report/2026-11-08-label-and-error-audit.md)
-found all 644,000 train/validation labels consistent with the chess rules, while
-flagging 11 positions as invalid per the oracle. It does not establish the external
-data's origin, license or test-label correctness. The original manifest retains
-the preparation-time limitations rather than rewriting its history.
+The original dataset was **provided by Epitech for this project**. It is used
+for training, evaluation and the defense in that educational context.
+Preparation checks FEN syntax and label format. A subsequent
+[rules-based audit](report/2026-11-08-label-and-error-audit.md) found all original
+train and validation labels consistent with python-chess 1.11.2, while flagging
+9 train and 2 validation positions as invalid. It did not audit the test split.
+The frozen manifest records the limitations known at preparation time; see the
+[current summary](#7-data-rights-and-predictive-limitations) below.
 
 ### Commands and reproduction
 
@@ -684,3 +684,43 @@ Compatibility checks also passed: a fresh portable C++ build and prediction
 without Python in the build command, and `make test` both with the generation
 library and in a fresh environment containing only root `requirements.txt`.
 The latter skips the eight optional generation tests.
+
+---
+
+## 7. Data rights and predictive limitations
+
+> **Key takeaway:** Epitech provided the original dataset for this project.
+> Validation scores do not guarantee correct predictions on arbitrary boards.
+
+### Data rights — what is established?
+
+| Topic | Current status | Consequence |
+| --- | --- | --- |
+| Original dataset | **Provided by Epitech for the project** | Used for training, evaluation and the defense. |
+| Scope of use | Educational project | This documentation does not assert an open license or unrestricted redistribution rights. |
+| Locally generated positions | Generation provenance recorded | Kept distinct from the Epitech-provided reference data. |
+
+Details: [frozen reference dataset](#4-frozen-reference-datasets).
+
+### Predictive limitations — what can go wrong?
+
+| Risk | Evidence or limitation | How we assess it |
+| --- | --- | --- |
+| Wrong predictions | The audited ReLU checkpoint confuses Check and Checkmate; blocked attack lines and rare mating patterns are difficult. | Inspect the confusion matrix, per-class recall and macro F1, rather than a global score alone. |
+| Overstated generalization | Related positions can remain across splits; repeated validation tuning can make scores optimistic. | Exclude shared model-visible inputs; compare seeds on validation and reserve test for final assessment. |
+| Different input distribution | New positions may differ from the training examples. | Scope claims to the evaluated data; do not promise reliability on arbitrary boards. |
+| Confusing label quality with model reliability | Original train/validation labels match the rules in the audit; the test split was not audited. | Keep label checks separate from prediction measurements. A correct target does not guarantee a correct prediction. |
+
+**Scope:** the network classifies positions; it does not play chess or guarantee
+an exact chess-rules verdict. The error findings above concern the audited
+checkpoint, not every model in the project.
+
+**Evaluation rule:** compare configurations and seeds on validation → freeze the
+model-selection rule → assess the selected model on the reserved test set.
+Validation scores alone do not establish final test performance.
+
+| Find the evidence | Document |
+| --- | --- |
+| Label checks and detailed error patterns | [Label and error audit](report/2026-11-08-label-and-error-audit.md) |
+| Experiments, including unsuccessful approaches | [Training and evaluation reports](report/README.md) |
+| Split, seed and final-test rules | [Evaluation protocol](evaluation.md#comparison-protocol-v1) |

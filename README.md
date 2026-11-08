@@ -78,6 +78,7 @@ the Epitech repository.
 
 - [Architecture and configuration](docs/architecture.md): module boundaries, model format and design choices.
 - [Datasets](docs/datasets.md): 777-input encoding, frozen splits, color mirrors and generated positions.
+- [Data rights and predictive limitations](docs/datasets.md#7-data-rights-and-predictive-limitations): Epitech-provided data, scope of use and model reliability.
 - [Training](docs/training.md), [evaluation](docs/evaluation.md) and [logs](docs/logging.md): commands and reproducibility.
 - [Hyperparameter choices](docs/hyperparameters.md): model versus training settings, measured alternatives and remaining decisions.
 - [Trial and failure log](docs/experiment-decisions.md): negative results, corrections and what the evidence supports.
