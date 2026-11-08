@@ -54,8 +54,16 @@ model performance must be measured separately. Prediction requires no target.
 ## Model contract
 
 The final layer must have exactly three neurons. Training targets, saved models,
-and predictions must use the same class order. Display `Nothing`, `Check`, or
-`Checkmate` without a color suffix.
+and predictions must use the same class order. The analyzer displays `Nothing`,
+or appends `White` / `Black` to `Check` and `Checkmate` by default.
+The suffix identifies the attacking side: `White` when the FEN says Black moves
+next (`b`), and `Black` when White moves next (`w`). For legal positions in check,
+the attacker is the opponent of the player who must move. The network still
+predicts only the three states; color is derived from FEN input 768, independently
+of any expected label. Existing three-output models need no retraining.
+
+The evaluation tools accept both colored and legacy predictions and measure the
+three states, removing the suffix before computing metrics and exporting CSV.
 
 Class mapping belongs to the chess module; the neural network operates on
 numeric vectors. See [data encoding](datasets.md#dataset-and-model-contract)

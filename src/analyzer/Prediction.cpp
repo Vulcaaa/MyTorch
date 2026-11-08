@@ -13,7 +13,13 @@ int runPrediction(const NeuralNetwork& network, const Dataset& dataset)
     for (const auto& sample : dataset) {
         const auto scores = network.predict(sample.inputs);
         const auto best = std::max_element(scores.begin(), scores.end());
-        std::cout << classes[best - scores.begin()] << '\n';
+        const auto index = best - scores.begin();
+        std::cout << classes[index];
+        if (index != 0) {
+            // FEN input 768 is 1 for Black to move. The opponent gives check.
+            std::cout << (sample.inputs[768] == 1.0 ? " White" : " Black");
+        }
+        std::cout << '\n';
     }
     return 0;
 }

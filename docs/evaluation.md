@@ -111,6 +111,8 @@ confusion-matrix.svg    Counts and row percentages: actual rows, predicted colum
 Add `--predictions` only when individual predictions are needed for error
 analysis. It exports `predictions.csv` with original line numbers and labels.
 Undefined scores are zero; macro F1 includes Nothing, Check and Checkmate.
+Color suffixes in analyzer output are removed before scoring and CSV export;
+these metrics measure the three states, not color accuracy.
 
 ## Compare configurations
 

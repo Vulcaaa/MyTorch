@@ -127,7 +127,9 @@ whether a position is legal chess.
 ./my_torch_analyzer --predict models/basic-network_1.nn positions.txt
 ```
 
-The command prints one class per nonblank line in the same order on stdout.
+The command prints one prediction per nonblank line in the same order on stdout:
+`Nothing`, `Check White`, `Check Black`, `Checkmate White`, or `Checkmate Black`.
+The color identifies the attacking side, opposite to the FEN side to move.
 On success, stderr is empty and the command returns 0. Invalid arguments, models,
 or datasets return 84 with a diagnostic on stderr. A newly generated model is untrained; its class outputs have no
 established predictive quality. See [output encoding](output-encoding.md) for

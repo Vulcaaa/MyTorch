@@ -17,6 +17,16 @@ if str(ROOT) not in sys.path:
 CLASSES = ("Nothing", "Check", "Checkmate")
 
 
+def prediction_class(label):
+    """Accept legacy and colored output; evaluation measures the three states."""
+    if label in CLASSES:
+        return label
+    for state in CLASSES[1:]:
+        if label in (f"{state} White", f"{state} Black"):
+            return state
+    raise ValueError("unknown class in analyzer output: " + repr(label))
+
+
 def read_labels(path):
     samples = []
     with path.open(encoding="utf-8") as source:
@@ -80,7 +90,7 @@ def predict_metrics(model, dataset, analyzer):
     elapsed = time.perf_counter() - started
     if result.returncode:
         raise ValueError(f"analyzer exited with {result.returncode}: {result.stderr.strip()}")
-    predicted = result.stdout.splitlines()
+    predicted = [prediction_class(line) for line in result.stdout.splitlines()]
     metrics = compute_metrics([label for _, label in samples], predicted)
     metrics.update({"artifacts": artifacts, "command": command,
                     "prediction_seconds": elapsed, "analyzer_stderr": result.stderr})

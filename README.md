@@ -51,8 +51,10 @@ Classify positions from a FEN dataset using a saved model:
 ./my_torch_analyzer --predict models/basic-network_1.nn positions.txt
 ```
 
-The analyzer prints one class (`Nothing`, `Check`, or `Checkmate`) per position,
-in order. A generated model is untrained, so its predictions are only
+The analyzer prints one prediction per position, in order: `Nothing`,
+`Check White`, `Check Black`, `Checkmate White`, or `Checkmate Black`.
+The color identifies the attacking side, opposite to the FEN side to move.
+A generated model is untrained, so its predictions are only
 illustrative. See the [chess data guide](docs/datasets.md#prediction-command)
 for input and model requirements.
 

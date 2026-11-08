@@ -17,6 +17,15 @@ SPEC.loader.exec_module(evaluation)
 
 
 class EvaluationTests(unittest.TestCase):
+    def test_prediction_color_normalization(self):
+        for state in ("Check", "Checkmate"):
+            for suffix in ("", " White", " Black"):
+                self.assertEqual(evaluation.prediction_class(state + suffix), state)
+        self.assertEqual(evaluation.prediction_class("Nothing"), "Nothing")
+        for invalid in ("", "Nothing White", "Check Blue", "Check White extra"):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                evaluation.prediction_class(invalid)
+
     def test_known_asymmetric_confusion_matrix(self):
         metrics = evaluation.compute_metrics(
             ["Nothing", "Nothing", "Check", "Check", "Check", "Checkmate"],
@@ -81,6 +90,12 @@ class EvaluationTests(unittest.TestCase):
             result = subprocess.run(command, capture_output=True, text=True)
             self.assertNotEqual(result.returncode, 0)
             self.assertIn("output already exists", result.stderr)
+            contents["layers"][0]["biases"] = [0.0, 1.0, 0.0]
+            model.write_text(json.dumps(contents))
+            colored_metrics, _, predictions = evaluation.predict_metrics(
+                model, dataset, ROOT / "my_torch_analyzer")
+            self.assertEqual(predictions, ["Check", "Check"])
+            self.assertEqual(colored_metrics["accuracy"], 0.5)
             for invalid in ("", "8/8/8/8/8/8/8/8 w - - 0 1",  # Missing label.
                             "8/8/8/8/8/8/8/8 w - - 0 1 Nothing White",
                             "bad-fen w - - 0 1 Nothing"):

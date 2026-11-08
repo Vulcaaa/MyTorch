@@ -223,9 +223,24 @@ class CommandLineTests(unittest.TestCase):
         result = self.run_command("my_torch_analyzer", "--predict",
                                   str(model_path), positions.name)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout, "Check\nNothing\nCheck\nCheckmate\n")
+        self.assertEqual(result.stdout, "Check White\nNothing\nCheck White\nCheckmate Black\n")
         self.assertEqual(result.stderr, "")
         self.assertEqual(model_path.read_bytes(), original)
+
+        # Color comes from the FEN, never from an optional expected label.
+        for state, biases in (("Check", [0.0, 2.0, 0.0]),
+                              ("Checkmate", [0.0, 0.0, 2.0])):
+            model["layers"] = [{"weights": [[0.0] * 777 for _ in range(3)],
+                                "biases": biases}]
+            model_path.write_text(json.dumps(model))
+            positions.write_text(
+                "8/8/8/8/8/8/8/8 w - - 0 1 Check White\n"
+                "8/8/8/8/8/8/8/8 b - - 0 1\n")
+            result = self.run_command("my_torch_analyzer", "--predict",
+                                      str(model_path), positions.name)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(result.stdout, f"{state} Black\n{state} White\n")
+        model_path.write_bytes(original)
 
         positions.write_text(
             "8/8/8/8/8/8/8/8 b - - 0 1 Check\n"
