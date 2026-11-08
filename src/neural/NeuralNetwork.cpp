@@ -137,9 +137,24 @@ void NeuralNetwork::validateSamples(SampleView samples) const
     };
     for (std::size_t i = 0; i < samples.count; ++i) {
         const auto &sample = samples[i];
-        if (sample.inputs.size() != inputSize())
+        const auto width = sample.binaryInputSize ? sample.binaryInputSize : sample.inputs.size();
+        if (width != inputSize())
             fail(i, "expected " + std::to_string(inputSize()) + " inputs, got "
-                + std::to_string(sample.inputs.size()));
+                + std::to_string(width));
+        if (sample.binaryInputSize) {
+            if (!sample.inputs.empty())
+                fail(i, "binary samples must not also contain dense inputs");
+            std::size_t previous = 0;
+            bool first = true;
+            for (auto index : sample.activeInputs) {
+                if (index >= width || (!first && index <= previous))
+                    fail(i, "binary input indices must be in range and strictly increasing");
+                first = false;
+                previous = index;
+            }
+        } else if (!sample.activeInputs.empty()) {
+            fail(i, "binary indices require an input size");
+        }
         if (sample.target.size() != outputSize())
             fail(i, "expected " + std::to_string(outputSize()) + " target values, got "
                 + std::to_string(sample.target.size()));

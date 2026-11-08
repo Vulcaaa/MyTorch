@@ -297,6 +297,9 @@ class ExperimentTests(unittest.TestCase):
         subprocess.run([str(ROOT / "my_torch_generator"), str(self.network), "1"],
                        cwd=self.work, check=True)
         original = self.work / "models/base_1.nn"
+        legacy = json.loads(original.read_text())
+        legacy["config"].pop("optimizer", None)
+        original.write_text(json.dumps(legacy))
         initial_bytes = original.read_bytes()
         self.spec["seeds"] = [999]
         self.spec["configurations"] = [{"name": "continued", "initial_model": str(original)}]
@@ -307,7 +310,7 @@ class ExperimentTests(unittest.TestCase):
         self.assertEqual(original.read_bytes(), initial_bytes)
         self.assertEqual(Path(run["initial_model"]["path"]).read_bytes(), initial_bytes)
         self.assertEqual(json.loads(Path(run["trained_model"]["path"]).read_text())["config"],
-                         json.loads(initial_bytes)["config"])
+                         {"optimizer": "sgd", **json.loads(initial_bytes)["config"]})
         self.assertEqual(run["initial_model"]["path"], str(original))
         self.assertFalse((self.output / "initial-model.nn").exists())
         self.spec["seeds"] = [42]

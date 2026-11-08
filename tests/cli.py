@@ -157,10 +157,10 @@ class CommandLineTests(unittest.TestCase):
         settings = "hidden_activation=relu output_activation=sigmoid initialization=he learning_rate=0.01"
         self.assertEqual(messages[:-1], [
             "[INFO] Generation started",
-            f"[INFO] Configuration network.yml: layers=3,2,1 {settings} seed=42",
+            f"[INFO] Configuration network.yml: layers=3,2,1 {settings} seed=42 optimizer=sgd",
             "[INFO] Generated models/network_1.nn (seed 42)",
             "[INFO] Generated models/network_2.nn (seed 43)",
-            f"[INFO] Configuration other.yml: layers=2,1 {settings} seed=42",
+            f"[INFO] Configuration other.yml: layers=2,1 {settings} seed=42 optimizer=sgd",
             "[INFO] Generated models/other_1.nn (seed 42)",
         ])
         self.assertRegex(messages[-1], r"^\[INFO\] Generation complete: 3 models in \d+\.\d{3} s$")
@@ -378,6 +378,26 @@ class CommandLineTests(unittest.TestCase):
                     self.assertEqual((self.work / model).read_bytes(), original)
                 self.assertEqual(self.training_histories(), [])
 
+    def test_adam_training_and_resume(self):
+        model = self.analyzer_model()
+        path = self.work / model
+        contents = json.loads(path.read_text())
+        contents["config"]["optimizer"] = "adam"
+        path.write_text(json.dumps(contents))
+        (self.work / "train.txt").write_text("8/8/8/8/8/8/8/8 w - - 0 1 Nothing\n")
+        (self.work / "val.txt").write_text("8/8/8/8/8/8/8/8 b - - 0 1 Nothing\n")
+        result = self.run_command("my_torch_analyzer", "--train", "--validation", "val.txt",
+                                  "--epochs", "1", "--history", "adam.csv", model, "train.txt")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(len((self.work / "adam.csv").read_text().splitlines()), 2)
+        saved = json.loads(path.read_text())
+        self.assertEqual(saved["config"]["optimizer"], "adam")
+        self.assertEqual(saved["optimizer_state"]["step"], 1)
+        result = self.run_command("my_torch_analyzer", "--train", "--validation", "val.txt",
+                                  "--epochs", "1", model, "train.txt")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(path.read_text())["optimizer_state"]["step"], 2)
+
     def test_training_minimal_syntax_uses_automatic_validation(self):
         model = self.analyzer_model()
         original = (self.work / model).read_bytes()
@@ -445,7 +465,7 @@ class CommandLineTests(unittest.TestCase):
         self.assertEqual(messages[:2], [
             "[INFO] Training started",
             "[INFO] Model models/chess_1.nn: layers=777,3 hidden_activation=relu "
-            "output_activation=softmax initialization=he learning_rate=0.01 seed=42",
+            "output_activation=softmax initialization=he learning_rate=0.01 seed=42 optimizer=sgd",
         ])
         self.assertEqual(len(messages), 3)
         self.assertRegex(messages[2], r"^\[ERROR\] Training failed after \d+\.\d{3} s: "
@@ -493,7 +513,7 @@ class CommandLineTests(unittest.TestCase):
         self.check_training_log([
             "[INFO] Training started",
             "[INFO] Model models/chess_1.nn: layers=777,3 hidden_activation=relu "
-            "output_activation=softmax initialization=he learning_rate=0.01 seed=42",
+            "output_activation=softmax initialization=he learning_rate=0.01 seed=42 optimizer=sgd",
             "[INFO] Train set train.txt: 1 position",
             "[INFO] Validation set val.txt: 1 position",
             "[INFO] Settings: epochs=2 batch_size=1 patience=10 min_delta=0.0001",
@@ -508,7 +528,7 @@ class CommandLineTests(unittest.TestCase):
         self.check_training_log([
             "[INFO] Training started",
             "[INFO] Model models/chess_1.nn: layers=777,3 hidden_activation=relu "
-            "output_activation=softmax initialization=he learning_rate=0.01 seed=42",
+            "output_activation=softmax initialization=he learning_rate=0.01 seed=42 optimizer=sgd",
             "[INFO] Train set positions.txt: 1 position",
             "[INFO] Validation set: 1 position held out from positions.txt (90/10 per class, seed 42)",
             "[INFO] Settings: epochs=1 batch_size=32 patience=10 min_delta=0.0001",

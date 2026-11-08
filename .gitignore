@@ -75,8 +75,10 @@ __pycache__/
 /my_torch_analyzer
 /my_torch_generator
 
-# Generated models
-/models/
+# Generated models; retain the explicitly shared candidate and its documentation.
+/models/*
+!/models/README.md
+!/models/large-relu-adam-seed46-lr0.001.nn
 
 # Generated evaluation reports
 /results/

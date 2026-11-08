@@ -1,0 +1,26 @@
+# One fresh capacity comparison against the small ReLU + Adam seed-46 run.
+# Reuse exactly its frozen augmented train and validation bytes.
+# Run with one OpenBLAS/OMP thread. Paths are relative to this file.
+version: 1
+hypothesis: Doubling both hidden layer widths improves validation accuracy over the small ReLU plus Adam model at unchanged training settings.
+seeds: [46]
+datasets:
+  train: ../../results/experiments/2026-11-08-adam-screen-02/data/train.fen
+  validation: ../../results/experiments/2026-11-08-adam-screen-02/data/validation.fen
+configurations:
+  - name: large-relu-adam
+    network: ../networks/basic-network.yml
+    overrides:
+      layers: [777, 256, 128, 3]
+      hidden_activation: relu
+      output_activation: softmax
+      initialization: xavier
+      optimizer: adam
+      learning_rate: 0.001
+training:
+  command: builtin
+  settings:
+    epochs: 500
+    batch_size: 128
+    patience: 20
+    min_delta: 0.0001

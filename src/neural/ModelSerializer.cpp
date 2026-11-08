@@ -42,6 +42,7 @@ void validateConfig(const NetworkConfig &config)
         "learning_rate must be finite and positive");
     require(config.initialization == "he" || config.initialization == "xavier",
         "invalid initialization");
+    require(config.optimizer == "sgd" || config.optimizer == "adam", "invalid optimizer");
 }
 
 NetworkConfig readConfig(const Json &data)
@@ -57,6 +58,7 @@ NetworkConfig readConfig(const Json &data)
     config.learning_rate = data.at("learning_rate").get<double>();
     config.initialization = data.at("initialization").get<std::string>();
     config.seed = readUnsigned<std::uint32_t>(data.at("seed"), "seed");
+    config.optimizer = data.value("optimizer", std::string("sgd"));
     validateConfig(config);
     return config;
 }
@@ -115,7 +117,8 @@ Json writeConfig(const NetworkConfig &config)
         {"output_activation", config.output_activation},
         {"learning_rate", config.learning_rate},
         {"initialization", config.initialization},
-        {"seed", config.seed}
+        {"seed", config.seed},
+        {"optimizer", config.optimizer}
     };
 }
 
@@ -133,12 +136,22 @@ void ModelSerializer::save(const NeuralNetwork &network, const std::string &file
             validateLayer(layer, network._config.layers[i], network._config.layers[i + 1]);
             layers.push_back({{"weights", layer.weights}, {"biases", layer.biases}});
         }
-        const Json model = {
+        Json model = {
             {"format", "mytorch"},
             {"version", formatVersion},
             {"config", writeConfig(network._config)},
             {"layers", std::move(layers)}
         };
+        if (network._adamStep != 0) {
+            const auto encode = [](const std::vector<Layer>& moments) {
+                Json data = Json::array();
+                for (const auto& layer : moments)
+                    data.push_back({{"weights", layer.weights}, {"biases", layer.biases}});
+                return data;
+            };
+            model["optimizer_state"] = {{"step", network._adamStep},
+                {"first", encode(network._adamFirst)}, {"second", encode(network._adamSecond)}};
+        }
         // Serialize before opening the file, so invalid data cannot truncate it.
         const auto content = model.dump(2);
         std::ofstream file(filepath);
@@ -165,7 +178,23 @@ NeuralNetwork ModelSerializer::load(const std::string &filepath)
             "unsupported model version");
         auto config = readConfig(model.at("config"));
         auto layers = readLayers(model.at("layers"), config);
-        return NeuralNetwork(std::move(config), std::move(layers));
+        NeuralNetwork network(std::move(config), std::move(layers));
+        if (model.contains("optimizer_state")) {
+            require(network.config().optimizer == "adam", "optimizer_state requires Adam");
+            const auto& state = model.at("optimizer_state");
+            network._adamStep = readUnsigned<std::uint64_t>(state.at("step"), "Adam step");
+            require(network._adamStep > 0, "Adam step must be positive");
+            network._adamFirst = readLayers(state.at("first"), network.config());
+            network._adamSecond = readLayers(state.at("second"), network.config());
+            for (const auto& layer : network._adamSecond) {
+                for (const auto& row : layer.weights)
+                    for (double v : row)
+                        require(v >= 0.0, "Adam second moments must be nonnegative");
+                for (double v : layer.biases)
+                    require(v >= 0.0, "Adam second moments must be nonnegative");
+            }
+        }
+        return network;
     } catch (const Json::exception &error) {
         throw std::runtime_error(filepath + ": invalid model JSON: " + error.what());
     } catch (const std::runtime_error &error) {

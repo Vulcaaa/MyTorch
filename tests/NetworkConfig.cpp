@@ -29,6 +29,9 @@ int main()
     auto config = loadNetworkConfig(path.string());
     test::check(config.layers == std::vector<std::size_t>({3, 2, 1}), "incorrect layer sizes");
     test::check(config.learning_rate == 0.01 && config.seed == 42, "incorrect defaults");
+    test::check(config.optimizer == "sgd", "legacy config must default to SGD");
+    write(path, valid + "optimizer: adam\n");
+    test::check(loadNetworkConfig(path.string()).optimizer == "adam", "Adam option rejected");
     test::check(config.hidden_activation == "relu" && config.output_activation == "softmax"
         && config.initialization == "he", "incorrect options");
 
@@ -57,7 +60,7 @@ int main()
             "missing option not identified");
     }
     const std::vector<std::string> invalidLines = {
-        "unknown: 1", "broken line", ": value", "seed:", "seed: 1=2",
+        "optimizer: unknown", "optimizer: [adam]", "unknown: 1", "broken line", ": value", "seed:", "seed: 1=2",
         "seed: -1", "seed: 1.5", "seed: 3abc", "seed: 4294967296",
         "seed: 9999999999999999999999999", "learning_rate: 0", "learning_rate: -1",
         "learning_rate: .nan", "learning_rate: .inf", "learning_rate: 1e999",
@@ -97,13 +100,13 @@ int main()
     config.output_activation = "softmax";
     config.initialization = "xavier";
     test::check(describeNetworkConfig(config) == "layers=777,128,64,3 hidden_activation=sigmoid "
-        "output_activation=softmax initialization=xavier learning_rate=0.01 seed=42",
+        "output_activation=softmax initialization=xavier learning_rate=0.01 seed=42 optimizer=sgd",
         "incorrect configuration summary: " + describeNetworkConfig(config));
     config.layers = {2};
     config.learning_rate = 0.00025;
     config.seed = 4294967295;
     test::check(describeNetworkConfig(config) == "layers=2 hidden_activation=sigmoid "
-        "output_activation=softmax initialization=xavier learning_rate=0.00025 seed=4294967295",
+        "output_activation=softmax initialization=xavier learning_rate=0.00025 seed=4294967295 optimizer=sgd",
         "incorrect configuration summary: " + describeNetworkConfig(config));
     std::cout << "NetworkConfig tests passed\n";
 }

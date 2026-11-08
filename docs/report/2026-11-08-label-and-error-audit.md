@@ -9,7 +9,7 @@ data or from the model, and which positions the model gets wrong.
 - **Labels:** every train and validation position is checked against the chess
   rules with python-chess 1.11.2, used as an oracle. A position is Checkmate if the
   side to move is checkmated, Check if it is in check, and Nothing otherwise.
-- **Model:** the best checkpoint so far, ReLU + Xavier, LR 0.16, seed 46, trained on
+- **Model:** the checkpoint selected for this audit, ReLU + Xavier, LR 0.16, seed 46, trained on
   the color-mirror train ([ReLU report](2026-11-08-relu-color-mirror.md)). It is
   evaluated on its own training data and on validation. Validation errors are then
   grouped by chess features computed with the oracle. The test split is not used.
