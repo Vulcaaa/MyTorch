@@ -18,7 +18,7 @@ competencies also ask for justified choices, alternatives and measured impact.
 | Choice justification | Explain the 777 inputs, class mapping and parameter choices using evidence | [Datasets](datasets.md), [outputs](output-encoding.md), experiment reports |
 | Alternative proposal | Compare a concrete alternative, such as augmentation, ReLU/Adam or BLAS, against a stated baseline | [Data transformations](datasets.md#color-mirror-augmentation), [reports](report/README.md), [CPU benchmark](../benchmarks/cpu_blas/README.md) |
 | Choice impact assessment | Assess quality by class, runtime, memory/model size, portability and data limitations | [Evaluation](evaluation.md), [data provenance](datasets.md#preparation-report-chess-v1), recorded benchmark conditions |
-| Data rights and predictive risks | Identify Epitech as the dataset provider; explain scope of use, prediction errors and generalization limits | [Data rights and predictive limitations](datasets.md#7-data-rights-and-predictive-limitations) |
+| Data rights and predictive risks | Identify Epitech as the dataset provider; explain scope of use, prediction errors and generalization limits | [Data rights and predictive limitations](datasets.md#8-data-rights-and-predictive-limitations) |
 | Documentation | Provide repeatable commands, visual benchmarks, retained failures and conclusions | [Trial/failure log](experiment-decisions.md), [reports](report/README.md), [run records](evaluation.md#where-files-belong) |
 | Parallelization / other bonuses | Show the actual backend, thread counts and measured impact; distinguish optional features from required behavior | [CPU backend](training.md#cpu-blas-backend), [measurements](../benchmarks/cpu_blas/results/linux-2026-11-07/README.md), CI workflow |
 

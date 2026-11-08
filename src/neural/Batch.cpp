@@ -56,6 +56,9 @@ NeuralNetwork::LossGradients NeuralNetwork::batchedLossGradients(
             weightGradients.emplace_back(i == 0 ? 0 : inputs * outputs, 0.0);
         }
     }
+    // Dropout scales per layer output (f'(activation) times mask), only while training.
+    const bool dropout = gradients && _config.dropout > 0.0;
+    std::vector<std::vector<double>> dropoutScale(_layers.size() + 1);
     LossGradients result{0.0, {}};
     if (gradients)
         for (const auto& layer : _layers)
@@ -119,6 +122,10 @@ NeuralNetwork::LossGradients NeuralNetwork::batchedLossGradients(
                 if (!output || gradients)
                     applyActivation(row, outputs,
                         output ? _config.output_activation : _config.hidden_activation);
+                if (dropout && !output) {
+                    dropoutScale[i + 1].resize(capacity * outputs);
+                    applyDropout(row, dropoutScale[i + 1].data() + s * outputs, outputs);
+                }
             }
         }
 
@@ -160,8 +167,13 @@ NeuralNetwork::LossGradients NeuralNetwork::batchedLossGradients(
                     rows, blasSize(inputs), blasSize(outputs), 1.0,
                     deltas[i].data(), blasSize(outputs), weights[i].data(), blasSize(inputs),
                     0.0, deltas[i - 1].data(), blasSize(inputs));
-                applyActivationDerivative(deltas[i - 1].data(), activations[i].data(),
-                    count * inputs, _config.hidden_activation);
+                if (dropout) {
+                    for (std::size_t k = 0; k < count * inputs; ++k)
+                        deltas[i - 1][k] *= dropoutScale[i][k];
+                } else {
+                    applyActivationDerivative(deltas[i - 1].data(), activations[i].data(),
+                        count * inputs, _config.hidden_activation);
+                }
             }
         }
         begin += count;

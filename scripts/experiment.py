@@ -28,8 +28,18 @@ from scripts.comparison import load_experiment, load_history
 def training_settings(settings):
     """The built-in trainer applies every declared setting; reject silent typos."""
     expected = {"epochs", "batch_size", "patience", "min_delta"}
-    if not isinstance(settings, dict) or set(settings) != expected:
-        raise ValueError("builtin training.settings requires epochs, batch_size, patience, min_delta")
+    optional = {"lr_decay", "decay_patience", "max_decays"}
+    if not isinstance(settings, dict) or not expected <= set(settings) <= expected | optional:
+        raise ValueError("builtin training.settings requires epochs, batch_size, patience, min_delta "
+                         "and accepts lr_decay, decay_patience, max_decays")
+    if ({"decay_patience", "max_decays"} & set(settings)) and "lr_decay" not in settings:
+        raise ValueError("decay_patience and max_decays require lr_decay")
+    for name in ("decay_patience", "max_decays"):
+        if name in settings and (type(settings[name]) is not int or not 0 < settings[name] <= 2**32 - 1):
+            raise ValueError(f"{name} must be a positive 32-bit integer")
+    decay = settings.get("lr_decay", 0.5)
+    if isinstance(decay, bool) or not isinstance(decay, (int, float)) or not 0 < decay < 1:
+        raise ValueError("lr_decay must be a factor in (0, 1)")
     for name in ("epochs", "batch_size", "patience"):
         if type(settings[name]) is not int or not 0 < settings[name] <= 2**32 - 1:
             raise ValueError(f"{name} must be a positive 32-bit integer")
@@ -47,7 +57,8 @@ def builtin_command(values, settings):
     return command + [values["initial_model"], values["train"]]
 
 
-NETWORK_KEYS = {"layers", "hidden_activation", "output_activation", "learning_rate", "initialization", "seed", "optimizer"}
+NETWORK_KEYS = {"layers", "hidden_activation", "output_activation", "learning_rate", "initialization", "seed",
+                "optimizer", "dropout"}
 PLACEHOLDERS = {"root", "analyzer", "initial_model", "trained_model", "train", "validation",
                 "seed", "training_config", "history"}
 
@@ -93,6 +104,9 @@ def network_options(path, overrides):
         raise ValueError("optimizer must be sgd or adam")
     if isinstance(rate, bool) or not isinstance(rate, (int, float)) or not math.isfinite(rate) or rate <= 0:
         raise ValueError("learning_rate must be a finite positive number")
+    dropout = options.get("dropout", 0)
+    if isinstance(dropout, bool) or not isinstance(dropout, (int, float)) or not 0 <= dropout < 1:
+        raise ValueError("dropout must be a number in [0, 1)")
     return options
 
 

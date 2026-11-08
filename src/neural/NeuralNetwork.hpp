@@ -2,6 +2,7 @@
 
 #include "NetworkConfig.hpp"
 #include <cstddef>
+#include <random>
 #include <vector>
 
 // Generic numeric example shared by the training loop and the neural backend.
@@ -58,6 +59,9 @@ class NeuralNetwork {
         std::size_t inputSize() const { return _config.layers.front(); }
         std::size_t outputSize() const { return _config.layers.back(); }
         const NetworkConfig& config() const { return _config; }
+        // Changes the optimizer step size, for example for learning-rate decay between epochs.
+        // Throws std::invalid_argument unless rate is finite and positive.
+        void setLearningRate(double rate);
         // Parameter layers: layers()[i] connects config().layers[i] to config().layers[i + 1].
         const std::vector<Layer> &layers() const { return _layers; }
 
@@ -79,9 +83,15 @@ class NeuralNetwork {
             std::vector<std::vector<std::size_t>> nonzero;
             // Output layer values before its activation, used for a numerically stable loss.
             std::vector<double> outputLogits;
+            // Training with dropout: per hidden neuron, f'(activation) times its dropout mask.
+            std::vector<std::vector<double>> dropoutScale;
         };
 
-        void forward(const std::vector<double>& inputs, ForwardPass& pass) const;
+        // training applies dropout to hidden layers and records dropoutScale.
+        void forward(const std::vector<double>& inputs, ForwardPass& pass, bool training = false) const;
+        // Zeroes each activation with probability config().dropout and scales the others by
+        // 1 / (1 - dropout); scale receives f'(activation) times that mask for backpropagation.
+        void applyDropout(double* activated, double* scale, std::size_t count) const;
 
         struct SampleView {
             const std::vector<TrainingSample>& samples;
@@ -114,4 +124,6 @@ class NeuralNetwork {
         std::vector<Layer> _adamFirst;
         std::vector<Layer> _adamSecond;
         std::uint64_t _adamStep = 0;
+        // Dropout masks only; seeded from config().seed so training stays reproducible.
+        mutable std::mt19937 _dropoutRandom;
 };

@@ -64,19 +64,24 @@ mode are rejected.
 | `--threads N` | Library/environment | CPU BLAS thread limit; scalar builds accept only `1` |
 | `--patience N` | `10` | Epochs without sufficient improvement before stopping |
 | `--min-delta X` | `0.0001` | Validation-loss improvement required to reset patience |
+| `--lr-decay F` | off | On a plateau, restart from the best epoch with the learning rate multiplied by `F` (0 < `F` < 1) |
+| `--decay-patience N` | `5` | Epochs without sufficient improvement before each decay; requires `--lr-decay` |
+| `--max-decays N` | `3` | Decays allowed; the next plateau then ends training; requires `--lr-decay` |
 | `--history FILE` | Automatic path | CSV destination; an existing file is rejected |
 | `--save FILE` | `LOADFILE` | Output model; use a distinct path to preserve the input model |
 
 Epochs, batch size, and patience must be positive integers. Minimum improvement
-must be finite and nonnegative. Learning rate and seed come from the loaded
-model, as does the optimizer (`sgd` or `adam`). The seed controls training order;
-reproducibility requires the same inputs, settings, build, and runtime environment.
+must be finite and nonnegative. Learning rate, dropout and seed come from the loaded
+model, as does the optimizer (`sgd` or `adam`). Learning-rate decay changes the rate
+only during the run: the saved model keeps its configured learning rate. The seed
+controls training order; reproducibility requires the same inputs, settings, build,
+and runtime environment.
 
-Architecture, activations, initialization, optimizer, learning rate and seed are
-defined in the [network YAML](architecture.md#network-configuration), then stored
-in the generated model. Training options control the run budget and validation,
-not those model settings. The basic YAML uses sigmoid/SGD; ReLU/Adam experiments
-declare their changes in [protocols](evaluation.md#network-configuration).
+Architecture, activations, initialization, optimizer, learning rate, dropout and seed
+are defined in the [network YAML](architecture.md#network-configuration), then stored
+in the generated model. Training options control the run budget, validation and
+learning-rate decay, not those model settings. The basic YAML uses sigmoid/SGD;
+ReLU/Adam experiments declare their changes in [protocols](evaluation.md#network-configuration).
 
 ## 2. Training flow
 
@@ -308,6 +313,14 @@ Softmax has no element-wise derivative and is rejected as a hidden activation.
 
 The gradients of a batch are the **mean** of the sample gradients, divided by the
 actual batch size: a final partial batch uses its own size.
+
+### Dropout
+
+Set `dropout: 0.1` in the network YAML to zero each hidden activation with
+probability 0.1 during training and scale the others by 1 / (1 − 0.1).
+Backpropagation uses the same masks. Prediction and loss evaluation use every
+neuron. Masks come from a generator seeded with the model seed. The rate is saved
+in the model; models without it use 0.
 
 ### Update
 

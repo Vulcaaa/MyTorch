@@ -41,6 +41,19 @@ int main()
         "bare training must select automatic validation and save in LOADFILE");
     arguments = parse({"--train", "--threads", "4", "model.nn", "positions.txt"});
     test::check(arguments.training.threads == 4, "thread count override was not applied");
+    test::check(arguments.training.lrDecay == 0.0 && arguments.training.decayPatience == 5
+        && arguments.training.maxDecays == 3, "learning-rate decay must default to off");
+    arguments = parse({"--train", "--lr-decay", "0.3", "--decay-patience", "4", "--max-decays", "2",
+        "model.nn", "positions.txt"});
+    test::check(arguments.training.lrDecay == 0.3 && arguments.training.decayPatience == 4
+        && arguments.training.maxDecays == 2, "learning-rate decay options were not applied");
+    for (const auto *factor : {"0", "1", "1.5", "-0.2", "x"})
+        test::expectThrow<std::invalid_argument>([&] {
+            parse({"--train", "--lr-decay", factor, "model.nn", "positions.txt"}); });
+    test::expectThrow<std::invalid_argument>([] {
+        parse({"--train", "--decay-patience", "3", "model.nn", "positions.txt"}); });
+    test::expectThrow<std::invalid_argument>([] {
+        parse({"--train", "--lr-decay", "0.5", "--max-decays", "0", "model.nn", "positions.txt"}); });
     arguments = parse({"--train", "--save", "trained.nn", "model.nn", "positions.txt"});
     test::check(arguments.training.validationFile.empty() && arguments.saveFile == "trained.nn",
         "minimal subject syntax with --save must be accepted");

@@ -17,11 +17,11 @@ make
 ```
 
 [Training protocol](../configs/protocols/train-large-relu-adam.yml) ·
-[Comparison report](../docs/report/2026-11-08-adam-optimizer.md) ·
-[Portable metrics and provenance](../docs/report/data/2026-11-08-adam-optimizer.json).
+[Comparison report](../docs/report/2026-11-08-adam-optimizer/README.md) ·
+[Portable metrics and provenance](../docs/report/2026-11-08-adam-optimizer/data.json).
 The original local run is `results/training/2026-11-08-large-relu-adam-01/`.
 
 This candidate is shared for comparison; the delivered `../my_torch_network.nn`
-remains unchanged. Other generated and historical models remain ignored locally:
+is now the [dropout network trained on the ×4 train](../docs/report/2026-11-08-mirror-view-ensemble.md). Other generated and historical models remain ignored locally:
 `relu-adam-seed46-lr0.001.nn` (small baseline),
 `legacy-sigmoid-seed43-epoch100.nn`, and `legacy-sigmoid-seed42-untrained.nn`.

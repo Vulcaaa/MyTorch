@@ -26,12 +26,12 @@ Large: **777 → 256 → 128 → 3** (232,451 parameters).
 ¹ Historical checkpoints have unequal training histories. Compact: 777 → 64 → 3,
 49,987 parameters. Three-seed rows report means; the others report one checkpoint.
 
-Sources: [architecture](report/2026-11-07-three-models.md),
-[seeds](report/2026-11-08-reference-seed-robustness.md),
-[augmentation](report/2026-11-08-color-mirror-augmentation.md),
-[ReLU](report/2026-11-08-relu-color-mirror.md),
-[continuation](report/2026-11-08-sgd-checkpoint-resume.md),
-[Adam](report/2026-11-08-adam-optimizer.md).
+Sources: [architecture](report/2026-11-07-three-models/README.md),
+[seeds](report/2026-11-08-reference-seed-robustness/README.md),
+[augmentation](report/2026-11-08-color-mirror-augmentation/README.md),
+[ReLU](report/2026-11-08-relu-color-mirror/README.md),
+[continuation](report/2026-11-08-sgd-checkpoint-resume/README.md),
+[Adam](report/2026-11-08-adam-optimizer/README.md).
 
 ## What each experiment changed
 
@@ -45,8 +45,8 @@ Sources: [architecture](report/2026-11-07-three-models.md),
 | SGD continuation at LR 0.008 | F1 **87.40% → 87.57%** | One seed; selects first additional epoch, modest gain |
 | Reference → large ReLU + Adam | **+0.44 pp F1**, **365 fewer errors** | One seed; roughly **57% longer training** |
 
-Sources: model reports above, [activations / initialization](report/2026-11-08-hidden-activations.md),
-[matched batch/LR comparison](report/2026-11-07-batch-learning-rate-100epochs.md).
+Sources: model reports above, [activations / initialization](report/2026-11-08-hidden-activations/README.md),
+[matched batch/LR comparison](report/2026-11-07-batch-learning-rate-100epochs/README.md).
 
 ## Cost and remaining errors
 
@@ -60,7 +60,7 @@ Sources: model reports above, [activations / initialization](report/2026-11-08-h
 | Validation Checkmate F1 | 85.90% | 85.86% |
 
 Large improves the aggregate score, while Checkmate F1 stays essentially unchanged.
-It still makes **7,694 / 71,555 validation errors**. Source: [Adam report](report/2026-11-08-adam-optimizer.md).
+It still makes **7,694 / 71,555 validation errors**. Source: [Adam report](report/2026-11-08-adam-optimizer/README.md).
 
 | CPU backend | Threads | Median s/epoch | Speedup |
 | --- | ---: | ---: | ---: |
@@ -84,4 +84,5 @@ Source: [BLAS benchmark](../benchmarks/cpu_blas/results/linux-2026-11-07/README.
   no reported test score; the project test set has already been consulted.
 - **Not benchmarked:** inference latency and peak RAM. File sizes do not measure RAM.
 
-[Detailed reports](report/README.md) · [Measurements](report/data/) · [Figures](report/figures/)
+[Detailed reports, measurements and figures](report/README.md) — each experiment
+has its own folder.

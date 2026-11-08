@@ -32,6 +32,15 @@ int main()
     test::check(config.optimizer == "sgd", "legacy config must default to SGD");
     write(path, valid + "optimizer: adam\n");
     test::check(loadNetworkConfig(path.string()).optimizer == "adam", "Adam option rejected");
+    test::check(config.dropout == 0.0, "dropout must default to 0");
+    write(path, valid + "dropout: 0.1\n");
+    test::check(loadNetworkConfig(path.string()).dropout == 0.1, "dropout option rejected");
+    test::check(describeNetworkConfig(loadNetworkConfig(path.string())).find(" dropout=0.1")
+        != std::string::npos, "dropout missing from the description");
+    for (const auto *dropout : {"-0.1", "1", "1.5", "nan", "abc"}) {
+        write(path, valid + "dropout: " + dropout + "\n");
+        test::expectThrow<std::runtime_error>([&] { loadNetworkConfig(path.string()); });
+    }
     test::check(config.hidden_activation == "relu" && config.output_activation == "softmax"
         && config.initialization == "he", "incorrect options");
 

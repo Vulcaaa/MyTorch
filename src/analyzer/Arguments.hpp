@@ -16,6 +16,9 @@ struct TrainingArguments {
     std::size_t patience = 10;
     double minDelta = 0.0001;
     std::size_t threads = 0; // Zero means preserve BLAS library/environment defaults.
+    double lrDecay = 0.0; // Zero disables learning-rate decay; otherwise a factor in (0, 1).
+    std::size_t decayPatience = 5; // Epochs without improvement before each decay.
+    std::size_t maxDecays = 3;
 };
 
 struct AnalyzerArguments {

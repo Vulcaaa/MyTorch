@@ -8,6 +8,12 @@ activations/optimizer → remaining errors and delivery. Each stage explains the
 question, the measurements, their interpretation and the resulting decision,
 with selected figures. The archive below supplies the detailed evidence.
 
+Each dated folder contains its report as `README.md`, portable measurements as
+`data.json` when available, and its SVG figures alongside them.
+
+**Final project choice: Gustave's model.** The reports preserve the completed
+local experiments; no further training is planned for the generated-60k trial.
+
 ## Main findings
 
 - Continuing the first reference improves validation macro F1 from 72.28 to
@@ -21,7 +27,7 @@ with selected figures. The archive below supplies the detailed evidence.
 
 These are validation development results with different experimental scopes,
 not a single controlled leaderboard. The delivered root model remains distinct
-from the shared Adam candidate. Check [current model provenance](2026-11-08-color-mirror-augmentation.md#delivered-model)
+from the shared Adam candidate. Check [current model provenance](2026-11-08-mirror-view-ensemble.md)
 and [candidate identity](../../models/README.md) before presenting a score.
 
 ## Detailed reports by investigation
@@ -57,6 +63,7 @@ between parallel investigations.
 | [Color-mirror augmentation](2026-11-08-color-mirror-augmentation.md) | Paired gains, data integrity, class scores and increased training cost |
 | [Augmented train versus validation](2026-11-08-augmented-train-validation.md) | Residual training errors and a 3.72-point mean F1 gap |
 | [SGD continuation](2026-11-08-sgd-checkpoint-resume.md) | No gain at unchanged LR; small reduced-rate gains followed by overfitting |
+| [Generated positions: 60k trial](2026-11-08-generated-60k/README.md) | +60k with mirrors: 88.15% macro F1 / 88.83% accuracy in 68m 54s; below the local large Adam candidate; intermediate mirrored dataset archived |
 
 ### 4. Change learning dynamics and revisit capacity — 8 November
 
@@ -67,6 +74,12 @@ between parallel investigations.
 | [Label and error audit](2026-11-08-label-and-error-audit.md) | Rules-based label agreement and difficult position patterns |
 | [Adam and larger ReLU network](2026-11-08-adam-optimizer.md) | Single-seed optimizer candidates, controlled width follow-up and overfitting |
 
+### 5. Deliver the final model — 8 November
+
+| Report | Role in the investigation |
+| --- | --- |
+| [Improving the delivered model: four changes](2026-11-08-mirror-view-ensemble.md) | ReLU + Adam at 256/128, doubled training data and dropout: 93.66% test accuracy / 93.15% macro F1 at 2.4 MB; four views reach 95.05% validation at 5.7× the computation |
+
 ## Settings, decisions and retained evidence
 
 - [Hyperparameter guide](../hyperparameters.md): role, tested alternatives and
@@ -76,7 +89,7 @@ between parallel investigations.
 - [CPU benchmarks](../../benchmarks/cpu_blas/README.md): execution efficiency
   and numerical equivalence, separate from trained-model quality.
 
-Portable measurements in `data/` and figures in `figures/` are versioned.
+Portable measurements and figures are versioned in each report folder.
 Full histories, raw logs, frozen executables/data and most checkpoints remain in
 local ignored `results/` and `models/`; a clone does not restore them. The
 comparison notebook needs those local runs. The explicitly shared Adam candidate

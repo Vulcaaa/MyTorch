@@ -35,8 +35,9 @@ Predictions appear on stdout in input order: `Nothing`, `Check White`,
 side, derived from the FEN side to move. Optional input labels do not influence
 predictions. Errors go to stderr with exit code `84`; success returns `0`.
 
-The [delivered-model provenance](docs/report/2026-11-08-color-mirror-augmentation.md#delivered-model)
-describes the checkpoint currently at the repository root.
+The [delivered-model provenance](docs/report/2026-11-08-mirror-view-ensemble.md)
+describes the checkpoint currently at the repository root; its scores are in
+[Results](#results).
 Other [shared candidates](models/README.md) are separate from the delivered model.
 
 ## Generate and train
@@ -74,11 +75,20 @@ generation/training/evaluation integration check on temporary data.
 CI builds and tests pull requests. Successful builds on `main` are mirrored to
 the Epitech repository.
 
+## Results
+
+The delivered `my_torch_network.nn` reaches **93.66% accuracy and 93.15% macro F1**
+on the reserved test split (71,555 positions), against 88.06% validation accuracy
+for the previously delivered model. It is a 777 → 256 → 128 → 3 ReLU network trained with
+Adam, dropout and left-right mirrored data; [`train-delivered-model.yml`](configs/protocols/train-delivered-model.yml)
+retrains it. Benchmarks and figures: [benchmark summary](docs/benchmarks.md) and
+[report index](docs/report/README.md).
+
 ## Documentation
 
 - [Architecture and configuration](docs/architecture.md): module boundaries, model format and design choices.
 - [Datasets](docs/datasets.md): 777-input encoding, frozen splits, color mirrors and generated positions.
-- [Data rights and predictive limitations](docs/datasets.md#7-data-rights-and-predictive-limitations): Epitech-provided data, scope of use and model reliability.
+- [Data rights and predictive limitations](docs/datasets.md#8-data-rights-and-predictive-limitations): Epitech-provided data, scope of use and model reliability.
 - [Training](docs/training.md), [evaluation](docs/evaluation.md) and [logs](docs/logging.md): commands and reproducibility.
 - [Hyperparameter choices](docs/hyperparameters.md): model versus training settings, measured alternatives and remaining decisions.
 - [Trial and failure log](docs/experiment-decisions.md): negative results, corrections and what the evidence supports.

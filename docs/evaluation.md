@@ -54,7 +54,8 @@ the network seed. Continuations read settings from the saved `.nn` model instead
 [model inventory](../models/README.md) identifies the shared candidate
 `models/large-relu-adam-seed46-lr0.001.nn` and its provenance. Historical local
 models use the `legacy-` prefix; most generated models are ignored by Git.
-The delivered checkpoint is `my_torch_network.nn` at the repository root.
+The delivered checkpoint is `my_torch_network.nn` at the repository root
+([delivered model report](report/2026-11-08-mirror-view-ensemble.md)).
 Treat candidate validation results separately from delivered-model results.
 
 ## Train one model

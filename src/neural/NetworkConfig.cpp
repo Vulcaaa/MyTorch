@@ -53,6 +53,20 @@ double parseLearningRate(std::string_view value)
     return rate;
 }
 
+double parseDropout(std::string_view value)
+{
+    std::size_t consumed = 0;
+    double rate;
+    try {
+        rate = std::stod(std::string(value), &consumed);
+    } catch (const std::exception &) {
+        throw std::runtime_error("dropout must be a number in [0, 1)");
+    }
+    if (consumed != value.size() || !std::isfinite(rate) || rate < 0.0 || rate >= 1.0)
+        throw std::runtime_error("dropout must be a number in [0, 1)");
+    return rate;
+}
+
 void setOption(NetworkConfig &options, const std::string &key, const YAML::Node &node)
 {
     if (key == "layers") {
@@ -82,6 +96,8 @@ void setOption(NetworkConfig &options, const std::string &key, const YAML::Node 
         options.initialization = value;
     } else if (key == "seed") {
         options.seed = parseUnsigned<std::uint32_t>(value);
+    } else if (key == "dropout") {
+        options.dropout = parseDropout(value);
     } else {
         throw std::runtime_error("unknown key '" + key + "'");
     }
@@ -139,5 +155,7 @@ std::string describeNetworkConfig(const NetworkConfig &config)
         << " learning_rate=" << config.learning_rate
         << " seed=" << config.seed
         << " optimizer=" << config.optimizer;
+    if (config.dropout > 0.0)
+        description << " dropout=" << config.dropout;
     return description.str();
 }
