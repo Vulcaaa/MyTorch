@@ -1,5 +1,7 @@
 # Training performance history and experiment archive
 
+For a compact numeric comparison, see the [benchmark summary](../benchmarks.md).
+
 **Start with the [training performance history](training-history.md).** It is the
 main defense reading path: starting point → controlled tuning → augmentation →
 activations/optimizer → remaining errors and delivery. Each stage explains the
