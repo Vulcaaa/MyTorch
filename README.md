@@ -58,7 +58,7 @@ A generated model is untrained, so its predictions are only
 illustrative. See the [chess data guide](docs/datasets.md#prediction-command)
 for input and model requirements.
 
-Use the delivered model directly (95.06% test accuracy):
+Use the delivered model directly (93.66% test accuracy):
 
 ```sh
 ./my_torch_analyzer --predict my_torch_network.nn positions.txt

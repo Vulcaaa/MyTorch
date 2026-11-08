@@ -50,7 +50,7 @@ The current ReLU + Adam candidate is `models/relu-adam-seed46-lr0.001.nn`
 Adam-capable implementation. Historical models use the `legacy-` prefix.
 Other models in this directory are ignored by Git; the shared large candidate
 and its README are versioned. The delivered model is
-`my_torch_network.nn` at the repository root ([mirror-view ensemble](report/2026-11-08-mirror-view-ensemble.md)).
+`my_torch_network.nn` at the repository root ([delivered model report](report/2026-11-08-mirror-view-ensemble.md)).
 
 ## Train one model
 

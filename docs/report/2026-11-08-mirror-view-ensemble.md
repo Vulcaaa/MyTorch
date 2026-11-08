@@ -1,9 +1,13 @@
-# Mirror-view ensemble: the delivered model
+# Left-right mirrors, dropout and mirror views: the delivered model
 
-**The delivered `my_torch_network.nn` reaches 95.06% accuracy and 94.58% macro F1
-on the reserved test split**, evaluated once. It replaces the augmented sigmoid
-model (88.06% validation accuracy). It is an ordinary MyTorch network that the
-current analyzer loads without code changes.
+**The delivered `my_torch_network.nn` reaches 93.66% accuracy and 93.15% macro F1
+on the reserved test split.** It replaces the augmented sigmoid model (88.06%
+validation accuracy). It is one 777 → 256 → 128 → 3 network: 232,451 parameters,
+2.4 MB, 1.2 seconds for 71,555 predictions. The current analyzer loads it
+without code changes.
+
+Combining mirror views and networks reaches up to 95.06% test accuracy, at 12 to
+34 times the computation. These variants are documented below as alternatives.
 
 ## Method
 
@@ -11,83 +15,78 @@ current analyzer loads without code changes.
    axis (a-file ↔ h-file) keeps Check and Checkmate unchanged: movement rules are
    symmetric between files, and castling is never a legal reply to check.
    [`mirror_files.py`](../../scripts/mirror_files.py) adds these mirrors to the
-   color-mirror train. The result has 2,275,774 positions: 1,134,631 mirrors
-   added, 5,630 duplicates skipped, 882 skipped because their inputs occur in
-   validation or test. python-chess 1.11.2 agrees with every added label.
-2. **Training.** Two networks, 777 → 256 → 128 → 3, ReLU/softmax, Xavier, Adam
-   learning rate 0.001, batch 128, seeds 46 and 48. After three epochs without
-   validation improvement, training restarts from the best checkpoint with the
-   learning rate multiplied by 0.3, at most three times. Both selected epoch 22
-   of 28.
-3. **Mirror views.** Each network also reads the left-right mirror, the color
-   mirror and both mirrors of the position. A view only permutes first-layer input
-   columns, so it is exact and costs no training.
-4. **Merge.** [`merge_networks.py`](../../scripts/merge_networks.py) places the
-   eight views side by side, with block-diagonal hidden weights, and averages their
-   logits: 777 → 2048 → 1024 → 3, weights rounded to seven significant digits
-   (27 MB).
+   color-mirror train: 2,275,774 positions
+   ([dataset guide](../datasets.md#7-left-right-mirror-augmentation)).
+2. **Training.** 777 → 256 → 128 → 3, ReLU/softmax, Xavier, Adam learning rate
+   0.001, batch 128, seed 49. During training, dropout sets each hidden activation
+   to zero with probability 0.1 (and scales the others by 1/0.9); prediction uses
+   every neuron. After five epochs without validation improvement, training
+   restarts from the best checkpoint with the learning rate multiplied by 0.3, at
+   most three times. Epoch 47 of 57 was selected (validation loss 0.1620). The run
+   took 86 minutes on one thread of a loaded M5. Weights are rounded to seven
+   significant digits; validation accuracy is unchanged.
+3. **Mirror views (alternatives).** A network can also read the left-right
+   mirror, the color mirror and both mirrors of a position. A view only permutes
+   first-layer input columns, so it costs no training.
+   [`merge_networks.py`](../../scripts/merge_networks.py) places views and networks
+   side by side, with block-diagonal hidden weights, and averages their logits.
 
 ## Results
 
-| Step (validation accuracy) | Accuracy |
-| --- | ---: |
-| Previous shared candidate: 256/128 ReLU + Adam, color-mirror train | 89.25% |
-| Same network on the ×4 train with learning-rate decay, seed 46 | 92.89% |
-| Same network, four views | 94.91% |
-| **Two networks, four views each (delivered)** | **95.20%** |
+| Variant (validation accuracy) | Network | Operations per position | Accuracy |
+| --- | --- | ---: | ---: |
+| Previous delivered sigmoid | 777 → 128 → 64 → 3 | 108k | 88.06% |
+| Previous shared candidate: ReLU + Adam, color-mirror train | 777 → 256 → 128 → 3 | 232k | 89.25% |
+| ×4 train, learning-rate decay, seed 46 | 777 → 256 → 128 → 3 | 232k | 92.89% |
+| **×4 train, decay, dropout 0.1, seed 49 (delivered)** | 777 → 256 → 128 → 3 | **232k** | **93.78%** |
+| Same network, two views (original + color) | 777 → 512 → 256 → 3 | 530k | 94.64% |
+| Same network, four views | 777 → 1024 → 512 → 3 | 1.32M | 95.05% |
+| Seeds 46 and 48 without dropout, four views each | 777 → 2048 → 1024 → 3 | 3.69M | 95.20% |
 
-| Split | Accuracy | Macro F1 | Nothing F1 | Check F1 | Checkmate F1 |
+Operations count every multiply-add of a prediction, including zero blocks.
+
+| Delivered model | Accuracy | Macro F1 | Nothing F1 | Check F1 | Checkmate F1 |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Validation (71,555) | 95.20% | 94.73% | 98.40% | 93.26% | 92.52% |
-| **Test (71,555), once** | **95.06%** | **94.58%** | 98.32% | 93.08% | 92.33% |
+| Validation (71,555) | 93.78% | 93.27% | 97.47% | 91.34% | 91.00% |
+| **Test (71,555)** | **93.66%** | **93.15%** | 97.37% | 91.17% | 90.90% |
 
 Test confusion matrix (rows actual, columns predicted):
 
 | | Nothing | Check | Checkmate |
 | --- | ---: | ---: | ---: |
-| Nothing | 29,007 | 659 | 90 |
-| Check | 231 | 23,086 | 1,496 |
-| Checkmate | 12 | 1,047 | 15,927 |
+| Nothing | 28,710 | 898 | 148 |
+| Check | 460 | 22,423 | 1,930 |
+| Checkmate | 46 | 1,055 | 15,885 |
 
-### Size against accuracy
-
-Fewer members or views give lighter networks. Validation accuracy; operations
-count every multiply-add of a prediction, including the zero blocks.
-
-| Variant | Network | Operations per position | Validation accuracy |
-| --- | --- | ---: | ---: |
-| Previous delivered sigmoid | 777 → 128 → 64 → 3 | 108k | 88.06% |
-| One member, one view | 777 → 256 → 128 → 3 | 232k | 92.89% |
-| One member, two views (original + color) | 777 → 512 → 256 → 3 | 530k | 94.24% |
-| One member, four views | 777 → 1024 → 512 → 3 | 1.32M | 94.91% |
-| **Two members, four views (delivered)** | 777 → 2048 → 1024 → 3 | 3.69M | **95.20%** |
-
-The delivered variant keeps the best accuracy; one member with four views is a
-lighter alternative at −0.29 points.
+The two heavier alternatives were also evaluated on test: 94.95% (one network,
+four views) and 95.06% (two networks, four views). The delivered variant was
+chosen for its size, not for its test score.
 
 ## Interpretation
 
 - **The left-right mirror teaches rules rather than positions.** A network trained
   on the color-mirror train alone scores 81% on left-right mirrored validation
-  positions, against 89% on the originals. It had learned file-specific
-  patterns.
-- **Views disagree, so their average corrects errors.** Even after training on all
-  four symmetries, each view of the same network makes partly different mistakes;
-  averaging four views adds about two points.
-- **Remaining errors are Check ↔ Checkmate** (2,543 of 3,535 test errors), as in
-  the [label and error audit](2026-11-08-label-and-error-audit.md).
+  positions, against 89% on the originals. It had learned file-specific patterns.
+  With the ×4 train, the same 256/128 network gains 3.6 points.
+- **Dropout reduces overfitting.** At the same size (another seed), validation loss falls from
+  0.197 to 0.162 and accuracy rises by 0.9 points.
+- **Views disagree, so their average corrects errors.** Each view of the same
+  network makes partly different mistakes; four views add 1.3 points at 5.7 times
+  the computation.
+- **Remaining errors are mostly Check ↔ Checkmate** (2,985 of 4,537 test errors),
+  as in the [label and error audit](2026-11-08-label-and-error-audit.md).
 
 ## Limitations
 
-- Validation chose the learning rate, the checkpoints and the members, so its
-  scores are optimistic; the test split, used once, confirms them (−0.14 points).
-- The learning-rate decay was run from a local experimental build; it is not yet
-  a training option on `main`.
-- The merged network is about 20× larger than one member: on a loaded M5, 71,555
-  predictions took about 90 seconds.
+- Validation chose the learning rate, the checkpoint and the variant, so its
+  scores are optimistic; the single test evaluation of the delivered model
+  confirms them (−0.12 points).
+- Dropout and the learning-rate decay ran from a local experimental build; they
+  are not yet training options on `main`.
 
 ## Evidence
 
-- [Portable metrics, confusion matrices, hashes and member histories](data/2026-11-08-mirror-view-ensemble.json)
-- Rebuild: `python3 scripts/mirror_files.py TRAIN OUTPUT --heldout VALIDATION TEST`,
-  then `python3 scripts/merge_networks.py my_torch_network.nn MEMBER_46 MEMBER_48 --mirror-views`.
+- [Portable metrics, confusion matrices, hashes and training histories](data/2026-11-08-mirror-view-ensemble.json)
+- Rebuild the ×4 train: `python3 scripts/mirror_files.py TRAIN OUTPUT --heldout VALIDATION TEST`.
+- Rebuild an alternative: `python3 scripts/merge_networks.py OUTPUT MODEL... --mirror-views`
+  (or `--views original,color`).
