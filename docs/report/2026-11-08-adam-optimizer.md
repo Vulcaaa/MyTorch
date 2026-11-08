@@ -1,39 +1,72 @@
-# Adam: similar quality with less training work
+# Adam and ReLU: promising validation quality with short training
 
-**Conclusion: retain Adam as the preferred training setup for the next experiments.**
-Its validation quality is almost unchanged, while it needs far fewer updates.
-The 0.08-point accuracy difference is not enough evidence to reject Adam.
-This is an observed tradeoff on one seed, not proof of statistical equivalence.
+**Keep ReLU + Adam as a candidate for the final model.** This fresh run reaches
+88.74% accuracy and 88.13% macro F1: +0.50 and +0.56 percentage points versus the
+best measured SGD checkpoint. The gain is modest and comes from one seed on a
+validation set already used for tuning; it does not establish a robust improvement
+or predict the hidden evaluator's score.
 
-Same network, sigmoid/softmax, Xavier, seed 46, augmented training data,
-batch 128 and 71,555 validation positions. SGD uses LR 0.08; Adam uses LR 0.003,
-selected from three ten-minute trials. Both full runs use a 500-epoch maximum,
-patience 20 and min_delta 0.0001.
+## Protocol
 
-| Measure | SGD | Adam |
+One fresh run, no additional LR search: ReLU/softmax, Adam LR 0.001, Xavier,
+seed 46, network 777 → 128 → 64 → 3, batch 128. Same 1,141,143 augmented training
+positions and 71,555 validation positions as the earlier runs. Maximum 500 epochs,
+patience 20, min_delta 0.0001, one CPU core. Training stopped after 42 epochs;
+the checkpoint selected by validation loss is epoch 22 (loss 0.285603).
+
+No network or data changes were made for this follow-up. Earlier Adam used sigmoid
+and LR 0.003; SGD used sigmoid and LR 0.08. These are comparisons of complete
+settings, so the gain cannot be attributed to ReLU alone.
+
+## Validation comparison
+
+All four checkpoints were evaluated with the same current analyzer and validation
+file. Baseline scores and confusion matrices reproduce the recorded results exactly.
+
+| Setting | Accuracy | Macro F1 | Selected epoch | Completed epochs |
+| --- | ---: | ---: | ---: | ---: |
+| SGD + sigmoid, LR 0.08 (delivered) | 88.06% | 87.40% | 281 | 301 |
+| SGD + sigmoid, then LR 0.008 continuation | 88.23% | 87.57% | 281 + 1 | 301 + 21¹ |
+| Adam + sigmoid, LR 0.003 | 87.98% | 87.46% | 20 | 40 |
+| **Adam + ReLU, LR 0.001** | **88.74%** | **88.13%** | **22** | **42** |
+
+¹ Continuation starts from the selected epoch-281 checkpoint, after the original
+301-epoch run; it adds 21 epochs, selecting the first additional epoch.
+
+| Class F1 | Best SGD | Adam + ReLU |
 | --- | ---: | ---: |
-| Validation accuracy | **88.06%** | 87.98% |
-| Validation macro F1 | 87.40% | **87.46%** |
-| Selected epoch | 281 | **20** |
-| Completed epochs | 301 | **40** |
-| Full-run wall time | 72.90 min | **11.25 min** |
+| Nothing | 93.62% | **93.84%** |
+| Check | 83.83% | **84.66%** |
+| Checkmate | 85.26% | **85.90%** |
 
-Adam makes 56 additional errors overall, improves Checkmate F1 from 85.03% to
-85.78%, and reduces Nothing F1 from 93.50% to 92.89%.
+ReLU + Adam makes 360 fewer validation errors than the improved SGD checkpoint.
+All three class F1 scores improve on this run.
 
-**The benefit is learning efficiency, not higher accuracy.** The full run uses
-356,640 updates versus 2,683,716 for SGD: about 7.5 times fewer. Adam updates are
-more expensive individually, so this ratio is not a compute-speedup measurement.
-SGD timing is historical and used dense storage; Adam used compact binary storage.
-The Adam LR search adds 30.88 minutes, bringing screening plus full training to
-42.13 minutes, excluding evaluation.
+## Training effort
 
-Next: compare against Gustave's ReLU run on augmented data before choosing the
-final delivered model. The delivered SGD checkpoint remains unchanged; the test
-set has not been evaluated.
+The new full run took **612.57 seconds (10 min 13 s)**, versus 674.83 seconds
+(11 min 15 s) for Adam + sigmoid and 4,374.21 seconds (72.90 min) for the original
+SGD run. SGD continuation added 330.13 seconds. These are descriptive timings:
+SGD used the older dense storage, while both Adam runs used compact storage;
+this is not a repeated controlled speed benchmark.
 
-Local evidence: [campaign](../../results/experiments/2026-11-08-adam-screen-02/README.md),
-[Adam curve](../../results/experiments/2026-11-08-adam-screen-02/full/history.svg),
-[SGD curve](../../results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-46/history.svg).
-The full Adam checkpoint is byte-identical to the selected LR-0.003 screening
-checkpoint; both have SHA-256 `038ab7b47c861dd6c2f46f10b42f10e3ddc886a706f799c7d1653cb5360ec052`.
+The previous Adam LR search (0.0003 / 0.001 / 0.003) took another 30.88 minutes.
+This ReLU follow-up used just one full run, without another search.
+
+![Training and validation loss](figures/2026-11-08-adam-optimizer/loss.svg)
+
+Validation loss bottoms out early, then rises while training loss continues to
+fall. More epochs alone are not supported by this curve. Compare Gustave's
+lower-LR ReLU results before choosing the delivered model. The delivered model
+is unchanged and the test set has not been evaluated.
+
+## Evidence
+
+- [Portable measurements, hashes and histories](data/2026-11-08-adam-optimizer.json).
+- [Local ReLU + Adam run](../../results/training/2026-11-08-relu-adam-01/README.md),
+  [protocol](../../results/training/2026-11-08-relu-adam-01/protocol.yml),
+  [evaluation](../../results/training/2026-11-08-relu-adam-01/evaluation/README.md).
+- [Earlier Adam campaign](../../results/experiments/2026-11-08-adam-screen-02/README.md).
+
+Raw artifacts stay in the existing ignored results directories. No notebook,
+permanent script or additional training option was added for this follow-up.
