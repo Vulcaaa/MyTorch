@@ -1,0 +1,151 @@
+{
+ "kind": "label-and-error-audit",
+ "oracle": "python-chess 1.11.2",
+ "model": {
+  "description": "ReLU + Xavier, LR 0.16, seed 46, color-mirror train",
+  "sha256": "35851fceca511039244d4f718616b773f4a62348dc4267ad166982e89158fbcb"
+ },
+ "labels": {
+  "train": {
+   "sha256": "76b038dda01a24c50e0980d407038d068538394d760c9637e717902b9540e167",
+   "positions": 572445,
+   "label_vs_rule": {
+    "Check|Check": 198507,
+    "Checkmate|Checkmate": 135887,
+    "Nothing|Nothing": 238051
+   },
+   "matching": 572445,
+   "not_valid_per_python_chess": 9,
+   "stalemates_labeled_nothing": 0
+  },
+  "validation": {
+   "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df",
+   "positions": 71555,
+   "label_vs_rule": {
+    "Check|Check": 24813,
+    "Checkmate|Checkmate": 16986,
+    "Nothing|Nothing": 29756
+   },
+   "matching": 71555,
+   "not_valid_per_python_chess": 2,
+   "stalemates_labeled_nothing": 0
+  }
+ },
+ "fit": {
+  "eval-train": {
+   "dataset_sha256": "78481ab5110970c19d9283ff1549075a5b3d9788a9597b50afff134eeb520279",
+   "accuracy": 0.9265858880087772,
+   "macro_f1": 0.9210645166915571,
+   "recall": {
+    "Nothing": 0.9634347161456961,
+    "Check": 0.8832691798023651,
+    "Checkmate": 0.9254219880819999
+   }
+  },
+  "eval-val": {
+   "dataset_sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df",
+   "accuracy": 0.8911187198658375,
+   "macro_f1": 0.8847348460162748,
+   "recall": {
+    "Nothing": 0.9391719317112515,
+    "Check": 0.836859710635554,
+    "Checkmate": 0.8862004003296833
+   }
+  }
+ },
+ "validation_errors_by_pair": {
+  "Check->Checkmate": 2603,
+  "Checkmate->Check": 1764,
+  "Nothing->Check": 1539,
+  "Check->Nothing": 1445,
+  "Nothing->Checkmate": 271,
+  "Checkmate->Nothing": 169
+ },
+ "validation_error_rate_by_pattern": {
+  "Checkmate|checker bishop": {
+   "errors": 247,
+   "positions": 868,
+   "error_rate": 0.28456221198156684
+  },
+  "Checkmate|checker knight": {
+   "errors": 200,
+   "positions": 799,
+   "error_rate": 0.2503128911138924
+  },
+  "Checkmate|checker pawn": {
+   "errors": 131,
+   "positions": 493,
+   "error_rate": 0.2657200811359026
+  },
+  "Checkmate|checker queen": {
+   "errors": 786,
+   "positions": 9964,
+   "error_rate": 0.07888398233641108
+  },
+  "Checkmate|checker rook": {
+   "errors": 545,
+   "positions": 4772,
+   "error_rate": 0.11420787929589271
+  },
+  "Checkmate|double check": {
+   "errors": 24,
+   "positions": 90,
+   "error_rate": 0.26666666666666666
+  },
+  "Check|checker bishop": {
+   "errors": 493,
+   "positions": 2397,
+   "error_rate": 0.20567375886524822
+  },
+  "Check|checker knight": {
+   "errors": 399,
+   "positions": 3751,
+   "error_rate": 0.10637163423087177
+  },
+  "Check|checker pawn": {
+   "errors": 246,
+   "positions": 1275,
+   "error_rate": 0.19294117647058823
+  },
+  "Check|checker queen": {
+   "errors": 1608,
+   "positions": 10167,
+   "error_rate": 0.1581587488934789
+  },
+  "Check|checker rook": {
+   "errors": 1288,
+   "positions": 7094,
+   "error_rate": 0.18156188328164646
+  },
+  "Check|double check": {
+   "errors": 14,
+   "positions": 129,
+   "error_rate": 0.10852713178294573
+  },
+  "Check|legal replies 1-2": {
+   "errors": 2696,
+   "positions": 11012,
+   "error_rate": 0.244823828550672
+  },
+  "Check|legal replies 3-5": {
+   "errors": 1103,
+   "positions": 11532,
+   "error_rate": 0.09564689559486646
+  },
+  "Check|legal replies 6+": {
+   "errors": 249,
+   "positions": 2269,
+   "error_rate": 0.10973997355663288
+  },
+  "Nothing|enemy slider on a line to the king, one piece between: no": {
+   "errors": 818,
+   "positions": 26000,
+   "error_rate": 0.031461538461538464
+  },
+  "Nothing|enemy slider on a line to the king, one piece between: yes": {
+   "errors": 992,
+   "positions": 3756,
+   "error_rate": 0.2641107561235357
+  }
+ }
+}

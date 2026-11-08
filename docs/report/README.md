@@ -23,6 +23,7 @@ The comparison notebook also requires those local result directories.
 | 2026-11-08 | [SGD checkpoint continuation](2026-11-08-sgd-checkpoint-resume.md) | LR 0.008: 87.57% validation macro F1, +0.165 pp; both reduced-rate checkpoints selected at additional epoch 1 |
 | 2026-11-08 | [Hidden activations: sigmoid, tanh and ReLU over three seeds](2026-11-08-hidden-activations.md) | At 100 epochs, tanh and ReLU lead sigmoid by 3.8–4.3 macro-F1 points on every seed and are not separated from each other; ReLU + Xavier (82.28%) matches the sigmoid 500-epoch seed mean with about 8× fewer epochs |
 | 2026-11-08 | [ReLU on the color-mirror train: learning rate and seeds](2026-11-08-relu-color-mirror.md) | ReLU + Xavier at LR 0.16: 88.29% mean validation macro F1 on seeds 44–46 versus 87.20% for the augmented sigmoid, ahead on every seed, with 6.6× fewer updates to the checkpoint |
+| 2026-11-08 | [Label and error audit](2026-11-08-label-and-error-audit.md) | All 644,000 train and validation labels match the chess rules; the best model reaches 92.66% on its own train, and 94% of validation errors are Check↔Checkmate or Nothing↔Check, concentrated on blocked lines and checks with few replies |
 
 ## Training protocols
 
