@@ -28,11 +28,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--source", type=Path, required=True, help="frozen color-mirror campaign")
     parser.add_argument("--output", type=Path, required=True, help="new results directory")
+    parser.add_argument("--resume", action="store_true", help="recover a failed driver after completed training")
     args = parser.parse_args()
     source, output = args.source.resolve(), args.output.resolve()
-    output.mkdir(parents=True, exist_ok=False)
+    previous = None
+    if args.resume:
+        previous = json.loads((output / "manifest.json").read_text())
+        if previous["status"] != "failed":
+            raise ValueError("recovery requires a failed driver, never an active or completed run")
+    output.mkdir(parents=True, exist_ok=args.resume)
     frozen = output / "snapshot"
-    frozen.mkdir()
+    frozen.mkdir(exist_ok=args.resume)
     # Select only among the three original augmented checkpoints, before training.
     candidates = []
     for seed in (44, 45, 46):
@@ -52,8 +58,11 @@ def main():
     }.items():
         before = fingerprint(path)
         destination = frozen / name
-        shutil.copy2(path, destination)
+        if not args.resume:
+            shutil.copy2(path, destination)
         assert fingerprint(destination)["sha256"] == before["sha256"], name
+        if previous:
+            assert before == previous["inputs"][name]["source"], name
         destination.chmod(0o555 if name == "analyzer" else 0o444)
         inputs[name] = {"source": before, "frozen": fingerprint(destination)}
     original_config = json.loads((frozen / "previous-config.json").read_text())
@@ -86,6 +95,8 @@ def main():
         "runs": [],
     }
     manifest = output / "manifest.json"
+    if previous:
+        protocol["recovered_driver"] = {"started_utc": previous["started_utc"], "error": previous["error"]}
     write_json(manifest, protocol)
     try:
         baseline, _, _ = predict_metrics(frozen / "model.nn", frozen / "validation.fen", frozen / "analyzer")
@@ -95,10 +106,12 @@ def main():
         print(f"Verified seed {seed}: baseline macro F1 {baseline['macro_f1']:.8f}", flush=True)
         for rate in protocol["rates"]:
             run = output / f"lr-{str(rate).replace('.', '')}"
-            run.mkdir()
+            recover = args.resume and run.exists()
+            run.mkdir(exist_ok=recover)
             initial = json.loads((frozen / "model.nn").read_text())
             initial["config"]["learning_rate"] = rate
-            write_json(run / "initial.nn", initial)
+            if not recover:
+                write_json(run / "initial.nn", initial)
             loaded = json.loads((run / "initial.nn").read_text())
             expected = json.loads((frozen / "model.nn").read_text())
             expected["config"]["learning_rate"] = rate
@@ -113,18 +126,24 @@ def main():
             protocol["runs"].append(entry)
             write_json(manifest, protocol)
             print(f"Starting LR {rate}: at most 40 epochs, patience 20", flush=True)
-            started = time.perf_counter()
-            with (run / "stdout.log").open("w") as stdout, (run / "stderr.log").open("w") as stderr:
-                process = subprocess.run(command, cwd=run, stdout=stdout, stderr=stderr, check=False)
-            entry["wall_seconds"] = time.perf_counter() - started
-            entry["returncode"] = process.returncode
-            if process.returncode:
+            if recover:
+                old = next(item for item in previous["runs"] if item["learning_rate"] == rate)
+                assert old["command"] == command and old["returncode"] == 0
+                entry["wall_seconds"] = old["wall_seconds"]
+                entry["returncode"] = old["returncode"]
+            else:
+                started = time.perf_counter()
+                with (run / "stdout.log").open("w") as stdout, (run / "stderr.log").open("w") as stderr:
+                    process = subprocess.run(command, cwd=run, stdout=stdout, stderr=stderr, check=False)
+                entry["wall_seconds"] = time.perf_counter() - started
+                entry["returncode"] = process.returncode
+            if entry["returncode"]:
                 raise RuntimeError(f"LR {rate} failed; inspect {run / 'stderr.log'}")
             with (run / "history.csv").open() as history:
                 rows = list(csv.DictReader(history))
             assert rows and len(rows) <= 40
-            stdout = (run / "stdout.log").read_text()
-            selected = re.search(r"Training complete: best_epoch=(\d+)", stdout)
+            diagnostics = (run / "stdout.log").read_text() + (run / "stderr.log").read_text()
+            selected = re.search(r"Training complete: best_epoch=(\d+)", diagnostics)
             assert selected, "missing completion summary"
             entry["selected_epoch"] = int(selected[1])
             entry["epochs_completed"] = len(rows)
