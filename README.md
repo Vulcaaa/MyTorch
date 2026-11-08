@@ -12,6 +12,8 @@ No neural network framework is used.
 
 See the [training guide](docs/training.md) for commands, the training flow,
 backpropagation, checkpoints, and experiment integration.
+See [data rights and predictive limitations](docs/datasets.md#7-data-rights-and-predictive-limitations)
+for the dataset provenance, scope of use and limits of model reliability.
 
 ## Build
 
