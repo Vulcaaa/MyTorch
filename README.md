@@ -55,6 +55,14 @@ in order. A generated model is untrained, so its predictions are only
 illustrative. See the [chess data guide](docs/datasets.md#prediction-command)
 for input and model requirements.
 
+Use the pre-trained augmented seed 46 model directly:
+
+```sh
+./my_torch_analyzer --predict my_torch_network.nn positions.txt
+```
+
+See the [model provenance](docs/report/2026-11-08-color-mirror-augmentation.md#delivered-model).
+
 Train the reference network with the frozen train/validation datasets:
 
 ```sh

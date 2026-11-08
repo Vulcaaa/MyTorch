@@ -156,3 +156,18 @@ Activate the same single-thread environment for either entry point. Reproducing 
 - [Motivating reference error analysis](2026-11-08-reference-error-analysis.md)
 - Local raw campaign: `results/experiments/2026-11-08-color-mirror-augmentation-01/` (protocol/status, generated data, addition-to-source mapping, oracle/C++ verification, frozen executables and baselines, initial/final models, commands, logs/resource measurements and validation predictions). Raw artifacts remain separate from this report.
 - `docs/training.md`, original splits and activation sources are unchanged; work remains on the current branch, uncommitted.
+
+## Delivered model
+
+`my_torch_network.nn` is an unchanged copy of the augmented seed 46 checkpoint
+at epoch 281 (`runs/seed-46/model.nn` in the frozen campaign). It has the highest
+validation macro F1 of the three augmented checkpoints: 87.40%, with 88.06%
+accuracy. Selection uses validation only.
+
+- Architecture: `[777, 128, 64, 3]`, sigmoid/softmax.
+- Size: 3379663 bytes.
+- SHA-256: `3ce70f8052f213573905e7fe8cd8a278309759083212b68768f424352aa392bf`.
+- Output: `Nothing`, `Check`, or `Checkmate`, without a color suffix.
+- Delivery smoke check: the current analyzer loads the copied model and returns
+  three valid predictions for three unlabeled training positions, with exit 0.
+- No test evaluation was performed.
