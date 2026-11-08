@@ -21,6 +21,7 @@ The comparison notebook also requires those local result directories.
 | 2026-11-08 | [Color-mirror augmentation](2026-11-08-color-mirror-augmentation.md) | Paired seeds 44–46: +4.91 pp macro F1; 2.69× historical epoch compute |
 | 2026-11-08 | [Augmented train versus validation](2026-11-08-augmented-train-validation.md) | Mean macro F1 90.92% train vs 87.20% validation; residual training errors and generalization gap |
 | 2026-11-08 | [SGD checkpoint continuation](2026-11-08-sgd-checkpoint-resume.md) | LR 0.008: 87.57% validation macro F1, +0.165 pp; both reduced-rate checkpoints selected at additional epoch 1 |
+| 2026-11-08 | [Adam optimizer](2026-11-08-adam-optimizer.md) | Nearly unchanged validation quality with 7.5 times fewer full-run updates; retain Adam for further experiments |
 
 ## Training protocols
 
