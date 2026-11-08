@@ -39,7 +39,7 @@ Per-class F1 on the selected checkpoints:
 
 At 20 epochs the candidate uses **25.7% less epoch compute time**. Its saved-checkpoint macro F1 differs by **+4.71 percentage points**, and accuracy by **+4.40 points**.
 
-![Validation loss by epoch and compute time](figures/2026-11-07-batch-learning-rate-followup/validation-loss.png)
+![Validation loss by epoch and compute time](figures/2026-11-07-batch-learning-rate-followup/validation-loss.svg)
 
 ## Quality versus time
 

@@ -18,7 +18,7 @@ Epoch compute includes shuffling, updates and full train/validation loss. Parsin
 | 128 / 0.08 | 161.255 | 165.044 | 19 | 0.763731 | 62.73% | 63.74% |
 | 32 / 0.02 | 215.496 | 219.412 | 20 | 0.754505 | 63.96% | 64.50% |
 
-![Loss by epoch and compute time](figures/2026-11-07-batch-learning-rate-control/loss-comparison.png)
+![Loss by epoch and compute time](figures/2026-11-07-batch-learning-rate-control/loss-comparison.svg)
 
 | Class | Batch 32 / LR 0.01 F1 | Batch 128 / LR 0.08 F1 | Batch 32 / LR 0.02 F1 |
 | --- | ---: | ---: | ---: |

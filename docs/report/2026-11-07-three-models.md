@@ -48,7 +48,7 @@ reference timing omits its first 100 epochs, and backend conditions differ.
 | Check F1 | 73.58% | **76.41%** | 76.16% |
 | Checkmate F1 | 78.90% | 80.76% | **80.98%** |
 
-![Validation quality and parameter counts](figures/2026-11-07-three-models/quality-and-capacity.png)
+![Validation quality and parameter counts](figures/2026-11-07-three-models/quality-and-capacity.svg)
 
 The compact removes **53.73% of the reference's parameters**, but loses **2.19
 macro-F1 points**. The loss affects all three classes; Check suffers most.
@@ -78,7 +78,7 @@ without a hypothesis about the mistakes it should fix.
 
 ## What the training curves explain
 
-![Training histories and selected checkpoints](figures/2026-11-07-three-models/training-curves.png)
+![Training histories and selected checkpoints](figures/2026-11-07-three-models/training-curves.svg)
 
 | Loss at the selected checkpoint | Compact | Reference | Large |
 | --- | ---: | ---: | ---: |

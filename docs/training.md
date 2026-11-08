@@ -591,7 +591,7 @@ loss evaluation; parsing, initialization, warm-up and serialization are excluded
 Maximum absolute final parameter difference: `7.77e-16`; validation-loss difference:
 `0`. All comparisons have identical validation accuracy.
 
-![Full-dataset CPU timings](../benchmarks/cpu_blas/results/linux-2026-11-07/timings.png)
+![Full-dataset CPU timings](../benchmarks/cpu_blas/results/linux-2026-11-07/timings.svg)
 
 **Thread sweep on a subset:** 8,192 train / 2,048 validation positions, five epochs,
 five runs per configuration. Median time for all five epochs:

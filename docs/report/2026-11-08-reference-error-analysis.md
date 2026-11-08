@@ -21,7 +21,7 @@ Inference-only analysis of the selected seed-43 checkpoint (epoch 210, batch 128
 
 Training macro F1 is 88.61%, versus 82.78% on validation. Both fitting the training examples and generalizing remain issues at this checkpoint; these measurements alone do not separate optimization, capacity, representation, and the effect of validation-based early stopping.
 
-![Confusion matrix and train/validation recall](figures/2026-11-08-reference-error-analysis/confusion-and-recall.png)
+![Confusion matrix and train/validation recall](figures/2026-11-08-reference-error-analysis/confusion-and-recall.svg)
 
 ### Direction of errors
 
@@ -80,7 +80,7 @@ The small aggregate F1 difference hides many individual changes in both directio
 
 Thirty examples were sampled deterministically (seed 43), five from each directed confusion, preferring positions for which all four models make the same incorrect prediction. They illustrate shared failures and are not a representative sample of the complete dataset. No claim is made about the tactical reason for a given mistake without a chess-rule analysis.
 
-![One shared error per directed confusion](figures/2026-11-08-reference-error-analysis/shared-error-examples.png)
+![One shared error per directed confusion](figures/2026-11-08-reference-error-analysis/shared-error-examples.svg)
 
 | Validation line | Actual → predicted by all four | FEN |
 | --- | --- | --- |

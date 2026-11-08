@@ -29,7 +29,7 @@ training process was detected before each trial. CPU clocks were not pinned.
 | 128 | 4,473 | 40.579 | 40.428–40.620 | 1.37× | 1.041382 |
 | 256 | 2,237 | 38.774 | 38.544–39.015 | 1.44× | 1.063914 |
 
-![Throughput and learning against time](figures/2026-11-07-batch-size-screen/throughput-and-loss.png)
+![Throughput and learning against time](figures/2026-11-07-batch-size-screen/throughput-and-loss.svg)
 
 The repeated trials produce byte-identical selected models for each batch.
 The speed measurements are repeatable; final convergence is not measured here.

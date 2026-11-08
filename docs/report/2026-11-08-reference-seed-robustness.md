@@ -17,7 +17,7 @@ Seed 43 was used for tuning and is shown separately. The primary mean, sample st
 
 Additional seeds 44–46: mean macro F1 **82.28%**, sample standard deviation **0.39 percentage points**, range **81.84–82.54%**. Mean epoch compute: **1429.583 s**.
 
-![Validation curves and checkpoint scores](figures/2026-11-08-reference-seed-robustness/seed-comparison.png)
+![Validation curves and checkpoint scores](figures/2026-11-08-reference-seed-robustness/seed-comparison.svg)
 
 ## Per-class results
 

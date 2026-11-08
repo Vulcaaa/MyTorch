@@ -17,7 +17,7 @@ Native epoch compute includes shuffling, updates and full train/validation loss.
 
 Batch 128 uses **25.1% less epoch compute time** and its selected-checkpoint macro F1 differs by **-0.01 percentage points** from batch 32.
 
-![Loss against epoch and compute time](figures/2026-11-07-batch-learning-rate-100epochs/loss-versus-time.png)
+![Loss against epoch and compute time](figures/2026-11-07-batch-learning-rate-100epochs/loss-versus-time.svg)
 
 | Class | Batch 32 / LR 0.02 F1 | Batch 128 / LR 0.08 F1 |
 | --- | ---: | ---: |

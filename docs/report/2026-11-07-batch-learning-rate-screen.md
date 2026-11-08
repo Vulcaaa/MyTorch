@@ -34,7 +34,7 @@ accuracy by **-0.38 points**, and validation loss by **+0.006899**.
 Classification metrics use each saved loss-selected checkpoint; epoch-five loss
 is shown separately. These are initial learning results, not the delivered model scores.
 
-![Timing and early loss](figures/2026-11-07-batch-learning-rate-screen/timing-and-loss.png)
+![Timing and early loss](figures/2026-11-07-batch-learning-rate-screen/timing-and-loss.svg)
 
 The earlier unscaled batch-128 setting ended at loss 1.041382 and macro F1
 31.84%. Scaling learning rate recovers most of that early learning deficit.
