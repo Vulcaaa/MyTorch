@@ -63,8 +63,9 @@ flowchart LR
 - [x] Figer `chess-v1` : manifeste, empreintes, effectifs, environnement et commandes
       de vérification/recréation ; reproduction des sept fichiers vérifiée. **PR #24.**
 - [x] Fusionner la PR #24 pour intégrer la référence aux expériences sur `main`.
-- [x] Documenter la provenance : données fournies par Epitech pour le projet,
-      utilisées dans le cadre pédagogique.
+- [x] Documenter les informations connues et signaler explicitement les origines,
+      licences et droits d’utilisation externes inconnus.
+- [ ] Retrouver ces informations externes si possible ; ne pas présenter les droits comme établis.
 - [x] Décrire les effectifs, distributions et limites des labels dans le guide des données.
 - [x] Fournir le notebook d’analyse des distributions, de la couverture et des raccourcis
       statistiques (classe majoritaire et règles simples ajustées sur train).
@@ -199,7 +200,7 @@ les exemples traités. Un résultat négatif mesuré permet également de justif
 
 | Document | Déjà disponible | À compléter |
 | --- | --- | --- |
-| Guide des données | Guide consolidé ; référence, effectifs et limites documentés en PR #24 | Limites observées |
+| Guide des données | Guide consolidé ; référence, effectifs et limites documentés en PR #24 | Origines/droits inconnus à clarifier si possible ; limites observées |
 | Guide d’entraînement | [Guide unifié](training.md) : commande, boucle, rétropropagation et intégration | Réglages retenus et résultats |
 | Guide d’évaluation | Runner connecté, notebooks et métriques réelles locales | Synthétiser les comparaisons contrôlées |
 | Rapport d’expériences | Rapport de référence local ; benchmark BLAS versionné | Publier essais, courbes, coûts, problèmes et choix final |
