@@ -41,6 +41,16 @@ Protocol `network` paths reference this file. Architecture overrides also use
 YAML lists, for example `layers: [777, 64, 3]`. The protocol's seed list overrides
 the network seed. Continuations read settings from the saved `.nn` model instead.
 
+## Local model collection
+
+`models/` holds locally generated networks and descriptive copies of selected
+checkpoints; its local `README.md` lists their roles and validation scores.
+The current ReLU + Adam candidate is `models/relu-adam-seed46-lr0.001.nn`
+([comparison report](report/2026-11-08-adam-optimizer.md)); it requires the
+Adam-capable implementation. Historical models use the `legacy-` prefix.
+This directory is ignored by Git. The delivered checkpoint remains
+`my_torch_network.nn` at the repository root.
+
 ## Train one model
 
 Build with `make`. Protocol paths are relative to the configuration file.
@@ -51,7 +61,7 @@ python3 scripts/experiment.py configs/protocols/train-reference.yml \
   --train-only --output results/training/YYYY-MM-DD-reference-01
 ```
 
-The supplied continuation starts from `models/reference-epoch-100.nn` (seed 43).
+The supplied continuation starts from `models/legacy-sigmoid-seed43-epoch100.nn` (seed 43).
 It allows **400 additional epochs**, batch size 32, patience 20 and min_delta
 0.0001. To reuse it, retain that checkpoint and its referenced history, or edit
 the protocol to select your own initial model.

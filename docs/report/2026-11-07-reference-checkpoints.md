@@ -110,6 +110,6 @@ fresh blind holdout for subsequent experimentation.
 
 ## Checkpoints
 
-- [Epoch 100 model](../../models/reference-epoch-100.nn)
+- [Epoch 100 model](../../models/legacy-sigmoid-seed43-epoch100.nn)
 - [Epoch 338 model](../../results/training/2026-11-07-continue-reference-01/model.nn)
 - [Result index](../../results/README.md)

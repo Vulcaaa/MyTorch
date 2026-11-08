@@ -12,7 +12,7 @@ datasets:
   split_metadata: ../../dataset/references/chess-v1/splits/split_info.json
 configurations:
   - name: continued-reference
-    initial_model: ../../models/reference-epoch-100.nn
+    initial_model: ../../models/legacy-sigmoid-seed43-epoch100.nn
     previous_history: ../../results/training/2026-11-05-reference-training-01/history.csv
     previous_checkpoint_epoch: 100
 training:
