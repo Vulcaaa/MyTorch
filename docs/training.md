@@ -342,8 +342,8 @@ Both moments start at zero. They and the batch counter are copied with the
 network and persisted in Adam checkpoints, so loading a trained checkpoint
 continues its optimizer state. Freshly generated models have no accumulated
 moments. Adam allocates two additional parameter-sized tensors; rejected updates
-preserve parameters and optimizer state. No weight decay or learning-rate schedule
-is applied. See the [Adam paper](https://arxiv.org/abs/1412.6980).
+preserve parameters and optimizer state. Adam applies no weight decay; the optional
+`--lr-decay` lowers its learning rate between epochs. See the [Adam paper](https://arxiv.org/abs/1412.6980).
 
 Adam adapts each parameter's update using gradient moments, at the cost of two
 extra parameter-sized state tensors and larger checkpoints. SGD is a simpler
@@ -505,7 +505,7 @@ backpropagation and CLI tests verify actual learning and integration.
 | Chess quality | Completed comparisons and audits are in the [reports](report/README.md); quality claims must identify the evaluated checkpoint, data and metric |
 | CLI compatibility | Minimal subject invocation supported through automatic validation; explicit validation preserves reference splits |
 | Automated campaigns | Built-in adapter and reports available; the runner does not select or export a final delivered model |
-| Optimizer | Mini-batch SGD (default) or Adam; standalone momentum, dropout and weight decay are not implemented |
+| Optimizer | Mini-batch SGD (default) or Adam, optional dropout and learning-rate decay; standalone momentum and weight decay are not implemented |
 | Activations | Training supports softmax/sigmoid outputs; hidden derivatives support sigmoid/tanh/ReLU/linear, while file configurations accept sigmoid/tanh/ReLU |
 | Memory | Chess train/validation inputs store only active binary feature indices; mini-batches reconstruct the exact double inputs. Generic numeric training still accepts dense vectors. |
 | Speed | Whole-block CPU BLAS training/loss evaluation when available; scalar sparse fallback and scalar prediction retained; no GPU dependency |

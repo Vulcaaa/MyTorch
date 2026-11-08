@@ -464,7 +464,7 @@ train, select a model or evaluate it on test.
 (`a1` ↔ `a8`, files unchanged), exchanges piece colors and the side to move,
 maps castling colors and the en passant rank, and preserves move counters.
 The three-class label is preserved; optional White/Black suffixes are exchanged.
-This differs from a left-right reflection, which is not implemented here.
+A left-right reflection is a separate step ([section 7](#7-left-right-mirror-augmentation)).
 
 The transformation creates another view of a training example without adding a
 rules-derived answer to the network inputs. Applying it twice recovers the
