@@ -18,6 +18,7 @@ The comparison notebook also requires those local result directories.
 | 2026-11-08 | [Selected batch-128 training](2026-11-08-reference-b128-lr008.md) | Validation macro F1 82.78%, +0.81 points versus the previous reference |
 | 2026-11-08 | [Seed robustness](2026-11-08-reference-seed-robustness.md) | Additional seeds 44–46: mean macro F1 82.28%, sample standard deviation 0.39 points |
 | 2026-11-08 | [Error analysis](2026-11-08-reference-error-analysis.md) | Check recall 77.36% on validation; shared errors and crowded Checkmate positions remain weaknesses |
+| 2026-11-08 | [Color-mirror augmentation](2026-11-08-color-mirror-augmentation.md) | Paired seeds 44–46: +4.91 pp macro F1; 2.69× historical epoch compute |
 
 ## Training protocols
 
