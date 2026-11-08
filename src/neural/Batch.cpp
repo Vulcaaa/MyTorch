@@ -66,12 +66,20 @@ NeuralNetwork::LossGradients NeuralNetwork::batchedLossGradients(
         const int rows = blasSize(count);
         std::size_t nonzeroCount = 0;
         for (std::size_t s = 0; s < count; ++s) {
-            std::copy(samples[begin + s].inputs.begin(), samples[begin + s].inputs.end(),
-                activations.front().data() + s * inputSize());
+            const auto& sample = samples[begin + s];
+            auto* inputs = activations.front().data() + s * inputSize();
             nonzero[s].clear();
-            for (std::size_t k = 0; k < inputSize(); ++k)
-                if (samples[begin + s].inputs[k] != 0.0)
-                    nonzero[s].push_back(k);
+            if (sample.binaryInputSize) {
+                std::fill(inputs, inputs + inputSize(), 0.0);
+                nonzero[s] = sample.activeInputs;
+                for (auto k : nonzero[s])
+                    inputs[k] = 1.0;
+            } else {
+                std::copy(sample.inputs.begin(), sample.inputs.end(), inputs);
+                for (std::size_t k = 0; k < inputSize(); ++k)
+                    if (inputs[k] != 0.0)
+                        nonzero[s].push_back(k);
+            }
             nonzeroCount += nonzero[s].size();
         }
         const bool sparseInput = nonzeroCount < count * inputSize() / 2;

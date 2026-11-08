@@ -84,21 +84,33 @@ void validateRequest(const NeuralNetwork& network, const AnalyzerArguments& argu
     }
 }
 
-std::vector<TrainingSample> numericSamples(Dataset dataset)
+std::vector<TrainingSample> numericSamples(const std::string& path)
 {
     std::vector<TrainingSample> samples;
-    samples.reserve(dataset.size());
-    for (auto& sample : dataset) {
+    readDataset(path, DatasetMode::Training, [&](DatasetSample sample) {
         if (!sample.target)
             throw std::invalid_argument("training and validation require labeled positions");
-        samples.push_back({std::move(sample.inputs), std::move(*sample.target)});
-    }
+        TrainingSample numeric{{}, std::move(*sample.target)};
+        numeric.binaryInputSize = sample.inputs.size();
+        for (std::size_t i = 0; i < sample.inputs.size(); ++i) {
+            if (sample.inputs[i] != 0.0 && sample.inputs[i] != 1.0)
+                throw std::invalid_argument("chess training inputs must be binary");
+            if (sample.inputs[i] == 1.0)
+                numeric.activeInputs.push_back(i);
+        }
+        samples.push_back(std::move(numeric));
+    });
     return samples;
 }
 
 std::bitset<777> inputKey(const TrainingSample& sample)
 {
     std::bitset<777> key;
+    if (sample.binaryInputSize != 0) {
+        for (auto index : sample.activeInputs)
+            key[index] = true;
+        return key;
+    }
     for (std::size_t i = 0; i < sample.inputs.size(); ++i)
         key[i] = sample.inputs[i] != 0;
     return key;
@@ -315,7 +327,7 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
 {
     validateRequest(network, arguments);
     configureCpuThreads(arguments.training.threads);
-    auto training = numericSamples(loadDataset(arguments.chessFile, DatasetMode::Training));
+    auto training = numericSamples(arguments.chessFile);
     std::vector<TrainingSample> validation;
     const bool automatic = arguments.training.validationFile.empty();
     if (automatic) {
@@ -323,7 +335,7 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
         training = std::move(split.first);
         validation = std::move(split.second);
     } else {
-        validation = numericSamples(loadDataset(arguments.training.validationFile, DatasetMode::Training));
+        validation = numericSamples(arguments.training.validationFile);
     }
     rejectOverlap(training, validation);
     progress << (automatic ? "Automatic validation split (90/10 groups per class)" : "Explicit validation dataset")

@@ -88,7 +88,8 @@ double NeuralNetwork::loss(const std::vector<TrainingSample>& samples) const
     double total = 0.0;
     ForwardPass pass(_layers);
     for (const auto& sample : samples) {
-        forward(sample.inputs, pass);
+        const auto expanded = sample.binaryInputSize ? sample.expandInputs() : std::vector<double>{};
+        forward(sample.binaryInputSize ? expanded : sample.inputs, pass);
         total += sampleLoss(pass.outputLogits, sample.target, _config.output_activation);
     }
 
@@ -138,7 +139,9 @@ NeuralNetwork::LossGradients NeuralNetwork::lossAndGradients(
 double NeuralNetwork::backpropagate(const TrainingSample& sample, std::vector<Layer>& sums,
     ForwardPass& pass, std::vector<std::vector<double>>& deltas) const
 {
-    forward(sample.inputs, pass);
+    const auto expanded = sample.binaryInputSize ? sample.expandInputs() : std::vector<double>{};
+    const auto& sampleInputs = sample.binaryInputSize ? expanded : sample.inputs;
+    forward(sampleInputs, pass);
     const auto& activations = pass.activations;
 
     // Output delta (loss derivative with respect to the output logits): p - y, both for
@@ -150,7 +153,7 @@ double NeuralNetwork::backpropagate(const TrainingSample& sample, std::vector<La
     // Walk the layers backwards, using the original sample as the first layer input.
     for (std::size_t i = _layers.size(); i > 0; --i) {
         const auto& layer = _layers[i - 1];
-        const auto& inputs = i == 1 ? sample.inputs : activations[i - 2];
+        const auto& inputs = i == 1 ? sampleInputs : activations[i - 2];
         const auto& delta = deltas[i - 1];
         const auto& nonzero = pass.nonzero[i - 1];
         const bool sparse = nonzero.size() < inputs.size() / 2;

@@ -8,6 +8,16 @@
 struct TrainingSample {
     std::vector<double> inputs;
     std::vector<double> target;
+    // Optional exact sparse storage of binary inputs; generic dense samples remain valid.
+    std::vector<std::size_t> activeInputs{};
+    std::size_t binaryInputSize = 0;
+    std::vector<double> expandInputs() const
+    {
+        std::vector<double> values(binaryInputSize, 0.0);
+        for (auto index : activeInputs)
+            values.at(index) = 1.0;
+        return values;
+    }
 };
 
 struct Layer {
