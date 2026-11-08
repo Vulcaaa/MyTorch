@@ -1,0 +1,32 @@
+# ReLU + Xavier, LR 0.16, on the color-mirror train: seeds 44 and 45.
+# Follows train-relu-color-mirror.yml (LR 0.08), whose validation loss rose with
+# spikes after epoch 36. Only the learning rate changes.
+# Fixed before any result: with seed 46 (compare-relu-color-mirror-lr-high.yml),
+# ReLU LR 0.16 is ahead of the augmented sigmoid seeds 44-46 only if all three
+# ReLU seeds score above all three sigmoid seeds (86.92%, 87.27%, 87.40%).
+# Previous rule, kept for reference: a learning rate counts as better than 0.08 only if
+# its validation macro F1 is more than 0.7 points higher (the seed-to-seed spread
+# observed in sigmoid runs); otherwise the settings are not separated.
+# Run with one BLAS thread (VECLIB_MAXIMUM_THREADS=1 on macOS).
+version: 1
+hypothesis: ReLU + Xavier with learning rate 0.16 on the color-mirror train scores above the augmented sigmoid model on every seed.
+seeds: [44, 45]
+datasets:
+  train: ../../dataset/processed/chess-v1-color-mirror/train.fen
+  validation: ../../dataset/references/chess-v1/splits/validation.txt
+configurations:
+  - name: relu-lr016
+    network: ../networks/basic-network.yml
+    overrides:
+      layers: [777, 128, 64, 3]
+      hidden_activation: relu
+      output_activation: softmax
+      learning_rate: 0.16
+      initialization: xavier
+training:
+  command: builtin
+  settings:
+    epochs: 500
+    batch_size: 128
+    patience: 20
+    min_delta: 0.0001

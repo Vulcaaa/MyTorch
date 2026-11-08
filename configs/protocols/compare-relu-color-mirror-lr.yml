@@ -1,0 +1,37 @@
+# Lower learning rates for ReLU + Xavier on the color-mirror train, seed 46.
+# Follows train-relu-color-mirror.yml (LR 0.08), whose validation loss rose with
+# spikes after epoch 36. Only the learning rate changes.
+# Fixed before any result: a learning rate counts as better than 0.08 only if
+# its validation macro F1 is more than 0.7 points higher (the seed-to-seed spread
+# observed in sigmoid runs); otherwise the settings are not separated.
+# Run with one BLAS thread (VECLIB_MAXIMUM_THREADS=1 on macOS).
+version: 1
+hypothesis: For ReLU + Xavier on the color-mirror train, a learning rate below 0.08 may avoid late instability and reach a lower validation loss.
+seeds: [46]
+datasets:
+  train: ../../dataset/processed/chess-v1-color-mirror/train.fen
+  validation: ../../dataset/references/chess-v1/splits/validation.txt
+configurations:
+  - name: relu-lr004
+    network: ../networks/basic-network.yml
+    overrides:
+      layers: [777, 128, 64, 3]
+      hidden_activation: relu
+      output_activation: softmax
+      learning_rate: 0.04
+      initialization: xavier
+  - name: relu-lr002
+    network: ../networks/basic-network.yml
+    overrides:
+      layers: [777, 128, 64, 3]
+      hidden_activation: relu
+      output_activation: softmax
+      learning_rate: 0.02
+      initialization: xavier
+training:
+  command: builtin
+  settings:
+    epochs: 500
+    batch_size: 128
+    patience: 20
+    min_delta: 0.0001
