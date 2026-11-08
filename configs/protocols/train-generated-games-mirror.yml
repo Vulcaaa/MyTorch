@@ -1,0 +1,19 @@
+# Same settings as train-generated-games.yml; only training data differs.
+version: 1
+hypothesis: Color mirrors of the original and generated training positions improve validation generalization.
+seeds: [43]
+datasets:
+  train: ../../dataset/references/chess-v1-generated-60k-mirror/splits/train.txt
+  validation: ../../dataset/references/chess-v1-generated-60k-mirror/splits/validation.txt
+configurations:
+  - name: generated-games-mirror
+    network: ../networks/basic-network.yml
+    overrides:
+      learning_rate: 0.08
+training:
+  command: builtin
+  settings:
+    epochs: 500
+    batch_size: 128
+    patience: 20
+    min_delta: 0.0001

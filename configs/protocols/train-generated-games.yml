@@ -1,0 +1,20 @@
+# Frozen generated-60k reference; see docs/datasets.md.
+# Match train-reference-b128.yml to isolate the effect of the added positions.
+version: 1
+hypothesis: New legal game positions improve validation generalization at fixed training settings.
+seeds: [43]
+datasets:
+  train: ../../dataset/references/chess-v1-generated-60k/splits/train.txt
+  validation: ../../dataset/references/chess-v1-generated-60k/splits/validation.txt
+configurations:
+  - name: generated-games
+    network: ../networks/basic-network.yml
+    overrides:
+      learning_rate: 0.08
+training:
+  command: builtin
+  settings:
+    epochs: 500
+    batch_size: 128
+    patience: 20
+    min_delta: 0.0001
