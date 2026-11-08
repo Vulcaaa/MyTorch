@@ -37,25 +37,32 @@ overrides before generation. For the full schemas and defaults, see
 
 ## Delivered checkpoint and measured alternatives
 
-All three settings below use the same 1,141,143-position color-mirror train and
+The delivered model is a 777 → 256 → 128 → 3 ReLU/softmax network: Xavier, Adam
+(learning rate 0.001, ×0.3 decay when validation stalls, at most three times),
+batch 128, dropout 0.1, seed 49, trained on the 2,275,774-position left-right ×4
+train; epoch 47 of 57 is kept. It reaches 93.78% validation accuracy / 93.27% macro
+F1 and, evaluated once, **93.66% / 93.15% on test**
+([four changes behind it](report/2026-11-08-mirror-view-ensemble.md)).
+[`train-delivered-model.yml`](../configs/protocols/train-delivered-model.yml) retrains it.
+
+The three earlier settings below use the same 1,141,143-position color-mirror train and
 71,555-position validation. They use softmax, Xavier, batch 128, maximum 500
 epochs, patience 20 and min_delta 0.0001. Those protocol settings differ from the
 CLI defaults (100 epochs, batch 32, patience 10).
 
-| Item | Delivered sigmoid | Repeated ReLU/SGD setting | Shared large ReLU/Adam candidate |
+| Item | Previously delivered sigmoid | Repeated ReLU/SGD setting | Shared large ReLU/Adam candidate |
 | --- | --- | --- | --- |
 | Hidden layers | 128 / 64 | 128 / 64 | 256 / 128 |
 | Trainable parameters | 108,035 | 108,035 | 232,451 |
 | Activation / optimizer / LR | Sigmoid / SGD / 0.08 | ReLU / SGD / 0.16 | ReLU / Adam / 0.001 |
-| Evidence | Seed-46 delivered checkpoint; three-seed campaign available | Seeds 44–46 | Seed 46 only |
-| Validation macro F1 | 87.40% delivered; 87.20% campaign mean | 88.29% mean, sample SD 0.22 pp | 88.58% |
+| Evidence | Seed-46 checkpoint; three-seed campaign available | Seeds 44–46 | Seed 46 only |
+| Validation macro F1 | 87.40% checkpoint; 87.20% campaign mean | 88.29% mean, sample SD 0.22 pp | 88.58% |
 | Selected / completed epoch | 281 / 301 | Selected 35–42 across seeds | 9 / 29 |
-| Status | Root `my_torch_network.nn` | Measured alternative, not promoted | Shared in `models/`, not promoted |
+| Status | Replaced by the dropout model | Measured alternative, not promoted | Shared in `models/`, not promoted |
 
 Do not rank a three-seed mean and a best individual score as equally strong
-evidence. These results support specific improvements, not a completed final
-model decision or a fresh test estimate. The test split has historical scores
-for older models; it must not be described as never consulted.
+evidence. The test split has historical scores for older models and scored the
+delivered model and two larger variants; it must not be described as never consulted.
 
 ## How gains were validated
 
@@ -81,9 +88,8 @@ for older models; it must not be described as never consulted.
 
 ## What remains to decide
 
-After the remaining declared trials, explicitly retain or replace the delivered
-checkpoint, using validation and the quality/cost tradeoff. Freeze that decision
-before its final test evaluation and update model provenance together with the
-artifact. No additional broad search, encoding rewrite or new regularizer is
+The delivered checkpoint is chosen: validation fixed its settings, and the
+four-view variant (+1.3 validation points) was left out for its 5.7× computation
+cost. No additional broad search, encoding rewrite or new regularizer is
 required to explain the completed work. Inference latency and peak memory are
 still unmeasured; parameter count and serialized bytes are not substitutes.

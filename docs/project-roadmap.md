@@ -39,8 +39,9 @@ and explain what they ruled out. Bonus credit remains the jury's decision.
 
 ## Remaining closing work
 
-- Finish the declared trials, then explicitly retain or replace the delivered
-  checkpoint. Update its provenance and final evaluation together.
+- The delivered checkpoint is chosen and tested once (93.66% accuracy,
+  [provenance](report/2026-11-08-mirror-view-ensemble.md)); update the artifact and
+  its provenance together if it changes again.
 - Verify model loading, ordered predictions and documented reproduction steps
   from a fresh checkout; keep the required local data available for the defense.
 - Verify CI covers explicit OpenBLAS and scalar builds; backend auto-detection

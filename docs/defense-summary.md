@@ -9,8 +9,9 @@ as test. It does not promote a checkpoint or report a new experiment.
 > from **82.28% to 87.20%** over three seeds. ReLU with a tuned learning rate
 > reaches **88.29% mean macro F1** over three seeds. The larger ReLU + Adam
 > candidate reaches **89.25% accuracy / 88.58% macro F1**, measured on one seed.
-> The delivered model remains the augmented sigmoid checkpoint at
-> **88.06% accuracy / 87.40% macro F1**.
+> The delivered model is a 777 → 256 → 128 → 3 ReLU + Adam network with dropout,
+> trained on the left-right ×4 train: **93.66% accuracy / 93.15% macro F1 on the
+> test split**, evaluated once (93.78% validation accuracy).
 
 ## Presentation map
 
@@ -146,8 +147,10 @@ This does not establish independence of near-duplicate or related positions.
 
 **Important history:** the older epoch-338 reference already has a recorded test
 score. The project test set is therefore not a never-consulted blind holdout.
-The delivered augmented model and the current Adam candidate have no final test
-result in the evidence summarized here.
+The delivered model was tested once, after validation fixed its settings:
+**93.66% accuracy / 93.15% macro F1**. Two larger variants were also scored on
+test before its size was chosen; the shared Adam candidate has no test result
+([delivered model limits](report/2026-11-08-mirror-view-ensemble.md#limits)).
 
 ### Color-mirror augmentation
 
@@ -363,7 +366,7 @@ several rows.
 
 | Model / setting | Seed | Accuracy | Macro F1 | Selected / completed epochs |
 | --- | ---: | ---: | ---: | --- |
-| Small sigmoid + SGD, LR 0.08 — delivered | 46 | 88.06% | 87.40% | 281 / 301 |
+| Small sigmoid + SGD, LR 0.08 — previously delivered | 46 | 88.06% | 87.40% | 281 / 301 |
 | Same checkpoint, SGD continuation LR 0.008 | 46 | 88.23% | 87.57% | +1 / +21 |
 | Small sigmoid + Adam, LR 0.003 | 46 | 87.98% | 87.46% | 20 / 40 |
 | Small ReLU + Adam, LR 0.001 | 46 | 88.74% | 88.13% | 22 / 42 |
@@ -470,22 +473,23 @@ Sources: [candidate confusion counts](report/2026-11-08-adam-optimizer/data.json
 
 ## 12. Delivered artifact versus experimental candidates
 
-| Item | Delivered model | Shared large Adam candidate |
-| --- | --- | --- |
-| File | `my_torch_network.nn` | `models/large-relu-adam-seed46-lr0.001.nn` |
-| Layers | 777 → 128 → 64 → 3 | 777 → 256 → 128 → 3 |
-| Hidden activation / optimizer | Sigmoid / SGD | ReLU / Adam |
-| Learning rate / seed | 0.08 / 46 | 0.001 / 46 |
-| Training data | Color-mirror train | Same color-mirror train |
-| Selected epoch | 281 | 9 |
-| Validation accuracy / macro F1 | 88.06% / 87.40% | 89.25% / 88.58% |
-| File bytes | 3,379,663 | 23,544,584 |
-| Final test score in this evidence | Not recorded | Not recorded |
+| Item | Delivered model | Previously delivered model | Shared large Adam candidate |
+| --- | --- | --- | --- |
+| File | `my_torch_network.nn` | Replaced; kept in Git history | `models/large-relu-adam-seed46-lr0.001.nn` |
+| Layers | 777 → 256 → 128 → 3 | 777 → 128 → 64 → 3 | 777 → 256 → 128 → 3 |
+| Hidden activation / optimizer | ReLU / Adam, dropout 0.1 | Sigmoid / SGD | ReLU / Adam |
+| Learning rate / seed | 0.001 with decay / 49 | 0.08 / 46 | 0.001 / 46 |
+| Training data | Left-right ×4 train (2,275,774 positions) | Color-mirror train | Color-mirror train |
+| Selected epoch | 47 / 57 | 281 | 9 |
+| Validation accuracy / macro F1 | 93.78% / 93.27% | 88.06% / 87.40% | 89.25% / 88.58% |
+| File bytes | 2,426,610 | 3,379,663 | 23,544,584 |
+| Test accuracy / macro F1 | 93.66% / 93.15%, evaluated once | Not recorded | Not recorded |
 
 SHA-256 fingerprints:
 
 ```text
-Delivered: 3ce70f8052f213573905e7fe8cd8a278309759083212b68768f424352aa392bf
+Delivered: e01c8346fa23541144dd883e8298dbd652159b6856f6d2e398ada31dc13dc13b
+Previous:  3ce70f8052f213573905e7fe8cd8a278309759083212b68768f424352aa392bf
 Candidate: 55944eb130c71cbcee29fddd6dc1e2239848fd9ec4697f5fc8017f6f8f0d911b
 ```
 
@@ -496,16 +500,17 @@ An older delivery report records legacy three-state output; use the current
 [output contract](output-encoding.md) when demonstrating the executable.
 
 The older epoch-338 reference has **82.13% test accuracy / 81.49% test macro F1**.
-That is a different model. Do not attach that test score to either artifact in
+That is a different model. Do not attach that test score to any artifact in
 this table or compare its test score with a new validation score as a measured
 generalization gain.
 
-**Decision supported by the evidence:** augmentation and the ReLU/SGD setting
-have repeated validation support. Large Adam is the highest individual recorded
-candidate score, with less repetition. This summary preserves the existing
-delivery; deciding and verifying a replacement is a separate finalization step.
+**Decision supported by the evidence:** the delivered model keeps the changes with
+measured validation gains: ReLU + Adam at 256/128 (+1.2 points), left-right
+mirrors (+3.6) and dropout (+0.9, one seed). Reading each position in four views
+adds 1.3 points but costs 5.7× the computation, so it is documented, not delivered.
 
-Sources: [delivered model provenance](report/2026-11-08-color-mirror-augmentation/README.md#delivered-model),
+Sources: [delivered model provenance](report/2026-11-08-mirror-view-ensemble.md),
+[previous delivered model](report/2026-11-08-color-mirror-augmentation/README.md#delivered-model),
 [shared candidate](../models/README.md), [historical test report](report/2026-11-07-reference-checkpoints/README.md#separate-test-evaluation).
 
 ## 13. Reproduction and retained evidence
@@ -562,6 +567,7 @@ presentation. They require the exact datasets referenced inside each YAML.
 | Augmented ReLU, seed 46 at LR 0.16 | [`compare-relu-color-mirror-lr-high.yml`](../configs/protocols/compare-relu-color-mirror-lr-high.yml) |
 | Augmented ReLU, additional seeds 44/45 | [`train-relu-color-mirror-lr016-seeds.yml`](../configs/protocols/train-relu-color-mirror-lr016-seeds.yml) |
 | Large ReLU + Adam, seed 46 | [`train-large-relu-adam.yml`](../configs/protocols/train-large-relu-adam.yml); paths refer to retained local Adam-campaign data |
+| Delivered model: dropout, left-right ×4 train, seed 49 | [`train-delivered-model.yml`](../configs/protocols/train-delivered-model.yml); dropout masks differ from the experimental build, so a rerun repeats the method, not the exact weights |
 
 The runner accepts `python3 scripts/experiment.py CONFIG --output NEW_DIRECTORY`.
 Use one BLAS thread as in the reports: `OPENBLAS_NUM_THREADS=1`,
@@ -572,6 +578,8 @@ The original train SHA-256 is
 `76b038dda01a24c50e0980d407038d068538394d760c9637e717902b9540e167`;
 the augmented train is
 `78481ab5110970c19d9283ff1549075a5b3d9788a9597b50afff134eeb520279`;
+the left-right ×4 train of the delivered model is
+`b03123716029236ed8f285eb5959ffc40aad9b7ea377f0333d090869acabeb7e`;
 validation is
 `7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df`.
 
@@ -588,7 +596,7 @@ and tools; matching hashes and settings makes differences inspectable.
 | 1 minute | Input layout and dataset table | The model receives board features, not the answer |
 | 2 minutes | Batch/LR and architecture comparisons | Choices are justified by quality and cost, with limits |
 | 2 minutes | Augmentation and ReLU seed plots | The strongest repeated gains come from data and learning dynamics |
-| 1 minute | Adam capacity table and confusion matrix | Highest score, class tradeoffs and remaining errors |
+| 1 minute | Adam capacity table and confusion matrix | Capacity gain, class tradeoffs and remaining errors |
 | 1 minute | Train/validation curve | Early stopping retains the useful checkpoint |
 | 2 minutes | Load delivered model and predict; explain reproduction artifacts | The delivered artifact is usable and traceable |
 
@@ -616,12 +624,12 @@ keep their original experiment identities.
 | Why ReLU? | At the tested original-train budget it learns sooner; on augmented train, the tuned ReLU setting improves all three observed seeds. |
 | Why not claim Adam is definitely best? | Its best candidate is one seed, and the gap to the best measured ReLU/SGD seed is small; activation and LR also differ. |
 | How did you avoid overfitting? | Separate validation data, loss histories, early stopping and best-checkpoint restoration; residual gaps remain visible. |
-| Is 89.25% the final test score? | No. It is reused-validation accuracy for the large Adam candidate. The currently delivered model has a different validation score. |
+| Is 89.25% the final test score? | No. It is reused-validation accuracy for the large Adam candidate. The delivered model scores 93.78% on validation and 93.66% on test. |
 | Does the model know legal moves? | It learns three states from features. It does not enumerate moves during inference. Errors cluster on blocked attack lines and positions near mate. |
 | Are the seeds fully portable? | No. They document randomness within the environment; C++ library algorithms differ across platforms. |
 | Are inference speed and memory benchmarked? | Parameter/file sizes are known. This evidence does not contain a repeated model-inference latency or peak-memory benchmark. |
 | Do generated games improve accuracy? | The references are prepared and checked. This summary contains no model-quality result proving a gain from them. |
-| What remains before calling the delivery final? | Explicitly retain or replace the delivered checkpoint, verify the final artifact from a fresh checkout, report its test evaluation with the known holdout history, and retain the data/reproduction evidence. |
+| What remains before calling the delivery final? | The checkpoint is chosen and tested once (93.66%). Verify it from a fresh checkout and retain the data/reproduction evidence. |
 
 ### Additional performance evidence, if asked
 

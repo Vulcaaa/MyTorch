@@ -288,18 +288,19 @@ or the dataset as representative of unseen games.
 
 | Artifact in this snapshot | Validation accuracy / F1 | Status |
 | --- | --- | --- |
-| Root `my_torch_network.nn` | 88.06 / 87.40% | Delivered color-mirror sigmoid, seed 46, epoch 281 |
+| Root `my_torch_network.nn` | 93.78 / 93.27% | Delivered: ReLU + Adam 256/128, dropout 0.1, left-right ×4 train, seed 49, epoch 47; test 93.66 / 93.15% |
 | `models/large-relu-adam-seed46-lr0.001.nn` | 89.25 / 88.58% | Shared candidate; not promoted |
+| Previous root model | 88.06 / 87.40% | Color-mirror sigmoid, seed 46, epoch 281; replaced |
 
-The delivered file therefore does not yet represent the highest candidate
-score. Choosing a replacement is a final decision, followed by its own artifact
-verification and evaluation. No final test score for either of these models is
-reported here. The test split already has historical reference scores: it is
+The delivered model adds the left-right mirrors and dropout to the large ReLU +
+Adam setting ([four changes](2026-11-08-mirror-view-ensemble.md)). Its single test
+evaluation gives 93.66% accuracy / 93.15% macro F1; 2,985 of its 4,537 test errors
+confuse Check and Checkmate. The test split already has historical reference scores: it is
 not a newly untouched holdout. Prepared generated-game datasets do not yet have
 a quality gain documented in this history.
 
 Sources: [error audit](2026-11-08-label-and-error-audit/README.md),
-[delivered provenance](2026-11-08-color-mirror-augmentation/README.md#delivered-model),
+[delivered provenance](2026-11-08-mirror-view-ensemble.md),
 [candidate identity](../../models/README.md).
 
 ## 10. Presenting the evidence at the defense

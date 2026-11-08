@@ -24,6 +24,8 @@ local experiments; no further training is planned for the generated-60k trial.
   paired seeds; the larger training-work budget is part of the result.
 - Tuned augmented ReLU/SGD reaches 88.29% mean F1 over three seeds. Large
   ReLU/Adam reaches 88.58% on one seed, with no established robust superiority.
+- The delivered model adds left-right mirrors and dropout to large ReLU/Adam:
+  93.78% validation accuracy and 93.66% on test, evaluated once.
 
 These are validation development results with different experimental scopes,
 not a single controlled leaderboard. The delivered root model remains distinct
