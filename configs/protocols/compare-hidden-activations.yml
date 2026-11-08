@@ -1,0 +1,55 @@
+# Hidden-activation comparison on the selected reference settings.
+# Paths are relative to this file. Use validation to compare; test stays reserved.
+#
+# Fixed before any result was observed:
+# - Only the hidden activation changes between sigmoid-xavier, tanh-xavier and
+#   relu-xavier. relu-he changes only the initialization of relu-xavier, so ReLU
+#   is not judged solely with an initialization designed for sigmoid/tanh.
+# - Every configuration runs every seed. Seeds set both the initial weights and
+#   the shuffling order. No seed is discarded.
+# - Checkpoint: minimum validation loss (including the initial model). Macro F1
+#   is measured afterwards on that checkpoint.
+# - Ranking: mean validation macro F1, ties broken by mean worst-class recall.
+#   A configuration is reported as ahead of another only if all of its seeds
+#   score above all seeds of the other (non-overlapping ranges); otherwise both
+#   are reported as not separated at this budget.
+# - 100 epochs describe a bounded budget, not final convergence.
+# On macOS, run with VECLIB_MAXIMUM_THREADS=1 to keep timings comparable.
+version: 1
+hypothesis: With batch 128 and learning rate 0.08, a tanh or ReLU hidden activation may change validation macro F1 compared with sigmoid within 100 epochs; He initialization may change ReLU results compared with Xavier.
+seeds:
+  - 42
+  - 43
+  - 44
+datasets:
+  train: ../../dataset/references/chess-v1/splits/train.txt
+  validation: ../../dataset/references/chess-v1/splits/validation.txt
+  split_metadata: ../../dataset/references/chess-v1/splits/split_info.json
+configurations:
+  - name: sigmoid-xavier
+    network: ../networks/basic-network.yml
+    overrides:
+      learning_rate: 0.08
+  - name: tanh-xavier
+    network: ../networks/basic-network.yml
+    overrides:
+      learning_rate: 0.08
+      hidden_activation: tanh
+  - name: relu-xavier
+    network: ../networks/basic-network.yml
+    overrides:
+      learning_rate: 0.08
+      hidden_activation: relu
+  - name: relu-he
+    network: ../networks/basic-network.yml
+    overrides:
+      learning_rate: 0.08
+      hidden_activation: relu
+      initialization: he
+training:
+  command: builtin
+  settings:
+    epochs: 100
+    batch_size: 128
+    patience: 20
+    min_delta: 0.0001
