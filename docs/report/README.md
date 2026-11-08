@@ -2,8 +2,9 @@
 
 Reports interpret recorded results. Portable measurements in `data/` and figures
 in `figures/` are versioned with these reports. Checkpoints, full histories, raw
-logs and frozen executables/data remain local in the ignored `models/` and
-`results/` directories; links into those directories require the local artifacts.
+logs and frozen executables/data generally remain local in `models/` and
+`results/`; links into ignored artifacts require the local files. The selected
+large ReLU + Adam candidate is explicitly shared in `models/` with its README.
 The comparison notebook also requires those local result directories.
 
 | Date | Report | Main finding |

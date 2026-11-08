@@ -48,7 +48,8 @@ checkpoints; its local `README.md` lists their roles and validation scores.
 The current ReLU + Adam candidate is `models/relu-adam-seed46-lr0.001.nn`
 ([comparison report](report/2026-11-08-adam-optimizer.md)); it requires the
 Adam-capable implementation. Historical models use the `legacy-` prefix.
-This directory is ignored by Git. The delivered checkpoint remains
+Other models in this directory are ignored by Git; the shared large candidate
+and its README are versioned. The delivered checkpoint remains
 `my_torch_network.nn` at the repository root.
 
 ## Train one model

@@ -108,5 +108,5 @@ remain unevaluated.
 
 - [Local run and curves](../../results/training/2026-11-08-large-relu-adam-01/README.md).
 - [Train evaluation](../../results/training/2026-11-08-large-relu-adam-01/train-evaluation/README.md).
-- Local descriptive copy: `models/large-relu-adam-seed46-lr0.001.nn`.
+- [Shared exact checkpoint](../../models/large-relu-adam-seed46-lr0.001.nn), with [usage and provenance](../../models/README.md).
 - Full metrics, train evaluations, hashes and history are in the portable JSON above.
