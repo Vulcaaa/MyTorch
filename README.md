@@ -1,114 +1,88 @@
 # MyTorch
 
-MyTorch is a neural network project written from scratch in C++17 to classify
-chess positions as **check**, **checkmate**, or **neither**, using FEN notation.
-It combines a reusable neural network module with two command-line programs:
-
-- `my_torch_generator`: creates neural networks from configuration files.
-- `my_torch_analyzer`: trains networks and classifies chess positions.
-
-Network generation, saving, loading, training, and prediction are implemented.
-No neural network framework is used.
-
-See the [training guide](docs/training.md) for commands, the training flow,
-backpropagation, checkpoints, and experiment integration.
+A supervised neural network, implemented from scratch in **C++17**, that classifies
+chess positions in FEN notation as **Nothing**, **Check**, or **Checkmate**.
+The generic neural module is independent of chess; Python prepares datasets and
+organizes experiments. No neural network framework is used.
 
 ## Build
 
-Requires GNU Make and a C++17 compiler (GCC by default). The MIT-licensed
-[yaml-cpp sources](vendor/yaml-cpp/README.mytorch.md) are bundled and compiled
-with the project; no system yaml-cpp installation is needed. Python tools and tests
-require Python 3 and `python3 -m pip install -r requirements.txt`.
-Training uses Accelerate on macOS or OpenBLAS when detected on Linux, with a
-portable scalar fallback. See [CPU acceleration](docs/training.md#cpu-blas-backend)
-for dependencies, thread settings and benchmarks.
-
-- `make` — build both programs
-- `make smoke` — quickly check generation, real training and evaluation
-- `make test` — build and run all tests
-- `make clean` — remove build files
-- `make fclean` — remove build files and executables
-- `make re` — rebuild everything
-
-## Usage
-
-Generate three networks from the example configuration:
+Requires GNU Make and a C++17 compiler (`g++` by default).
+[yaml-cpp](vendor/yaml-cpp/README.mytorch.md) and the JSON headers are bundled.
+Building and using the two executables does not require Python.
 
 ```sh
-./my_torch_generator configs/networks/basic-network.yml 3
+make
 ```
 
-Models are saved in `models/` under the current directory as `basic-network_1.nn`,
-`basic-network_2.nn`, and `basic-network_3.nn`. The folder is created automatically
-and ignored by Git. Existing names are skipped.
-The configuration controls the network architecture and initialization seed.
-Each run is recorded in `logs/generation_<UTC time>.log`; see the
-[logging guide](docs/logging.md).
+The build uses Accelerate on macOS, OpenBLAS when detected on Linux, or a portable
+scalar backend. Use `make BLAS=none` when the target machine has no BLAS library.
+See [CPU acceleration](docs/training.md#cpu-blas-backend) for installation and
+thread controls. `make clean`, `make fclean` and `make re` are also available.
 
-Classify positions from a FEN dataset using a saved model:
+## Predict with the delivered model
+
+Run from the repository root. Create a file containing one six-field FEN per line,
+then load the pre-trained `my_torch_network.nn`:
 
 ```sh
-./my_torch_analyzer --predict models/basic-network_1.nn positions.txt
+printf '%s\n' 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1' > /tmp/mytorch-positions.fen
+./my_torch_analyzer --predict my_torch_network.nn /tmp/mytorch-positions.fen
 ```
 
-The analyzer prints one prediction per position, in order: `Nothing`,
-`Check White`, `Check Black`, `Checkmate White`, or `Checkmate Black`.
-The color identifies the attacking side, opposite to the FEN side to move.
-A generated model is untrained, so its predictions are only
-illustrative. See the [chess data guide](docs/datasets.md#prediction-command)
-for input and model requirements.
+Predictions appear on stdout in input order: `Nothing`, `Check White`,
+`Check Black`, `Checkmate White`, or `Checkmate Black`. The color is the attacking
+side, derived from the FEN side to move. Optional input labels do not influence
+predictions. Errors go to stderr with exit code `84`; success returns `0`.
 
-Use the pre-trained augmented seed 46 model directly:
+The [delivered-model provenance](docs/report/2026-11-08-color-mirror-augmentation.md#delivered-model)
+describes the checkpoint currently at the repository root.
+Other [shared candidates](models/README.md) are separate from the delivered model.
+
+## Generate and train
 
 ```sh
-./my_torch_analyzer --predict my_torch_network.nn positions.txt
+./my_torch_generator configs/networks/basic-network.yml 1
+./my_torch_analyzer --train --validation validation.txt --save models/trained.nn \
+  models/basic-network_1.nn train.txt
 ```
 
-See the [model provenance](docs/report/2026-11-08-color-mirror-augmentation.md#delivered-model).
+Replace `train.txt` and `validation.txt` with prepared labeled datasets. The
+generator creates `models/basic-network_1.nn`, skipping existing names; use the
+path it reports. Generated networks are **untrained**. Omitting `--validation`
+uses a seeded 90/10 split; omitting `--save` replaces the input model after
+successful training. Both executables provide `--help`.
 
-Train the reference network with the frozen train/validation datasets:
+The [training guide](docs/training.md) explains settings, early stopping and
+SGD/Adam. For reproducible runs with recorded configurations, dataset hashes,
+loss curves and metrics, use the [experiment runner](docs/evaluation.md).
+
+## Python tools and tests
 
 ```sh
-python3 scripts/experiment.py configs/protocols/train-reference.yml \
-  --train-only --output results/training/YYYY-MM-DD-reference-01
+python3 -m venv .venv
+. .venv/bin/activate
+python3 -m pip install -r requirements.txt
+make test
 ```
 
-The result directory groups the selected `model.nn`, loss history, execution log,
-parameters and a readable `README.md`. See the [training guide](docs/training.md)
-for the analyzer's direct command-line interface and checkpoint policy.
+`make test` runs C++ checks and Python integration/analysis tests. The optional
+`scripts/requirements.txt` enables legal-game generation and its tests;
+`notebooks/requirements.txt` adds notebook tools. `make smoke` runs a short
+generation/training/evaluation integration check on temporary data.
 
-Run either executable with `--help` for its command-line options.
+CI builds and tests pull requests. Successful builds on `main` are mirrored to
+the Epitech repository.
 
-Use the [training and evaluation workflow](docs/evaluation.md) to run standalone
-training, evaluate a saved model, or compare configurations. Results are grouped
-under `results/training/`, `results/evaluation/`, `results/experiments/` only. Each result starts with a readable `README.md`; notebooks
-show curves and confusion matrices.
+## Documentation
 
-## Development
+- [Architecture and configuration](docs/architecture.md): module boundaries, model format and design choices.
+- [Datasets](docs/datasets.md): 777-input encoding, frozen splits, color mirrors and generated positions.
+- [Training](docs/training.md), [evaluation](docs/evaluation.md) and [logs](docs/logging.md): commands and reproducibility.
+- [Experiment reports](docs/report/README.md) and [CPU benchmarks](benchmarks/cpu_blas/README.md): measurements and visual evidence.
+- [Project requirements and defense checklist](docs/project-roadmap.md): competencies and where to find supporting evidence.
 
-See the [project roadmap](docs/project-roadmap.md) for the implementation,
-training, experiment, and defense checklist.
-
-- `src/neural/` — shared neural network code (headers beside sources)
-- `src/generator/` — model generator
-- `src/analyzer/` — chess analyzer
-- `src/logging/` — run logs shared by both programs
-- `configs/networks/` — network architectures and parameters
-- `configs/protocols/` — training and comparison protocols
-- `tests/` — tests
-
-C++ handles network computation and the command-line programs. Python handles
-CLI tests, dataset preparation, experiment orchestration, and result analysis.
-Clean and split data with the
-[preparation notebook](notebooks/prepare_dataset.ipynb), then inspect class balance
-and position diversity with the [dataset analysis notebook](notebooks/dataset_analysis.ipynb). See the
-[dataset guide](docs/datasets.md) for encoding, cleaning, and splitting, and the
-[architecture guide](docs/architecture.md) for details.
-Experiments use the [frozen reference dataset](docs/datasets.md); verify it with
-`python3 -m scripts.reference_dataset verify` before a campaign.
-To extend training with new legal game positions, see
-[generated game data](docs/datasets.md#6-generated-game-data). Its Python rules
-library is optional and is not required to build or run the C++ programs.
-
-CI builds and tests the project, then synchronizes successful pushes on `main`
-to the Epitech repository.
+Large datasets and most raw run artifacts remain local. Tracked manifests,
+protocols and portable report data identify them; retain the original files for
+reproduction and the defense. See the [dataset guide](docs/datasets.md#4-frozen-reference-datasets)
+before preparing or restoring training data.
