@@ -19,6 +19,7 @@ The comparison notebook also requires those local result directories.
 | 2026-11-08 | [Seed robustness](2026-11-08-reference-seed-robustness.md) | Additional seeds 44–46: mean macro F1 82.28%, sample standard deviation 0.39 points |
 | 2026-11-08 | [Error analysis](2026-11-08-reference-error-analysis.md) | Check recall 77.36% on validation; shared errors and crowded Checkmate positions remain weaknesses |
 | 2026-11-08 | [Color-mirror augmentation](2026-11-08-color-mirror-augmentation.md) | Paired seeds 44–46: +4.91 pp macro F1; 2.69× historical epoch compute |
+| 2026-11-08 | [Augmented train versus validation](2026-11-08-augmented-train-validation.md) | Mean macro F1 90.92% train vs 87.20% validation; residual training errors and generalization gap |
 
 ## Training protocols
 
