@@ -2,9 +2,12 @@ GENERATOR = my_torch_generator
 ANALYZER = my_torch_analyzer
 CXX = g++
 PYTHON = python3
-CONFIG ?= configs/experiment.json
-CPPFLAGS = -Isrc -Isrc/chess/ -Isrc/neural/ -Iinclude -MMD -MP
-CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -O2
+CONFIG ?= configs/protocols/compare-network-sizes.yml
+YAML_CPP_CFLAGS ?=
+YAML_CPP_LIBS ?= -lyaml-cpp
+LDLIBS += $(YAML_CPP_LIBS)
+CPPFLAGS = -Isrc -Isrc/chess/ -Isrc/neural/ -Iinclude $(YAML_CPP_CFLAGS) -MMD -MP
+CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -O8
 
 # BLAS=auto uses Accelerate on macOS, OpenBLAS via pkg-config on Linux,
 # and keeps the portable scalar backend when neither is available.
@@ -82,20 +85,33 @@ $(BUILD_DIR)/tests/AnalyzerArguments_tests: $(BUILD_DIR)/tests/AnalyzerArguments
 $(BUILD_DIR)/tests/Logger_tests: $(BUILD_DIR)/tests/Logger.o $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-$(BUILD_DIR)/tests/AnalyzerSaving_tests: $(BUILD_DIR)/tests/AnalyzerSaving.o $(BUILD_DIR)/analyzer/Training.o $(COMMON_OBJ) $(CHESS_OBJ) $(LOGGING_OBJ)
+$(BUILD_DIR)/tests/AnalyzerSaving_tests: $(BUILD_DIR)/tests/AnalyzerSaving.o $(BUILD_DIR)/analyzer/Training.o $(BUILD_DIR)/analyzer/LossChart.o $(COMMON_OBJ) $(CHESS_OBJ) $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 # This test defines scripted neural methods instead of linking src/neural/Training.cpp.
-$(BUILD_DIR)/tests/Training_tests: $(BUILD_DIR)/tests/Training.o $(BUILD_DIR)/analyzer/Training.o $(filter-out $(BUILD_DIR)/neural/Training.o,$(COMMON_OBJ)) $(CHESS_OBJ) $(LOGGING_OBJ)
+$(BUILD_DIR)/tests/Training_tests: $(BUILD_DIR)/tests/Training.o $(BUILD_DIR)/analyzer/Training.o $(BUILD_DIR)/analyzer/LossChart.o $(filter-out $(BUILD_DIR)/neural/Training.o,$(COMMON_OBJ)) $(CHESS_OBJ) $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
+# The outer temporary directory also cleans artifacts after a test process crashes.
 test: all $(TEST_BIN)
-	@set -e; for executable in $(TEST_BIN); do ./$$executable; done
-	$(PYTHON) tests/cli.py
-	$(PYTHON) -m unittest discover -s tests -p 'test_*.py'
-	$(PYTHON) tests/evaluation.py
-	$(PYTHON) tests/comparison.py
+	@set -eu; \
+	test_tmp=$$(mktemp -d); \
+	trap 'rm -rf "$$test_tmp"' EXIT; \
+	export TMPDIR="$$test_tmp"; \
+	for executable in $(TEST_BIN); do ./$$executable; done; \
+	$(PYTHON) tests/cli.py; \
+	$(PYTHON) -m unittest discover -s tests -p 'test_*.py'; \
+	$(PYTHON) tests/evaluation.py; \
+	$(PYTHON) tests/comparison.py; \
 	$(PYTHON) tests/experiment.py
+
+# Reuse the integration test: real generation -> training -> validation evaluation.
+smoke: all
+	@set -eu; \
+	test_tmp=$$(mktemp -d); \
+	trap 'rm -rf "$$test_tmp"' EXIT; \
+	export TMPDIR="$$test_tmp"; \
+	$(PYTHON) tests/experiment.py ExperimentTests.test_real_builtin_training_and_before_after_evidence
 
 experiment: all
 	@test -n "$(OUTPUT)" || (echo 'Set OUTPUT=results/experiments/NAME'; exit 1)
@@ -113,5 +129,5 @@ re:
 
 -include $(DEP)
 
-.PHONY: all clean fclean re test experiment $(GENERATOR) $(ANALYZER)
+.PHONY: all clean fclean re test smoke experiment $(GENERATOR) $(ANALYZER)
 .SECONDARY: $(TEST_OBJ)

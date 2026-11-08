@@ -1,5 +1,7 @@
 #include "NetworkConfig.hpp"
 
+#include <yaml-cpp/yaml.h>
+
 #include <charconv>
 #include <cmath>
 #include <fstream>
@@ -11,15 +13,6 @@
 
 namespace {
 
-std::string_view trim(std::string_view value)
-{
-    const auto first = value.find_first_not_of(" \t\r\n");
-    if (first == std::string_view::npos)
-        return {};
-    const auto last = value.find_last_not_of(" \t\r\n");
-    return value.substr(first, last - first + 1);
-}
-
 template<typename T>
 T parseUnsigned(std::string_view value)
 {
@@ -30,24 +23,19 @@ T parseUnsigned(std::string_view value)
     return result;
 }
 
-std::vector<std::size_t> parseLayers(std::string_view value)
+std::vector<std::size_t> parseLayers(const YAML::Node &value)
 {
+    if (!value.IsSequence() || value.size() < 2)
+        throw std::runtime_error("layers requires a YAML list with at least an input and output layer");
     std::vector<std::size_t> layers;
-    while (true) {
-        const auto comma = value.find(',');
-        const auto item = trim(value.substr(0, comma));
-        if (item.empty())
-            throw std::runtime_error("layer size cannot be empty");
-        const auto size = parseUnsigned<std::size_t>(item);
+    for (const auto &item : value) {
+        if (!item.IsScalar())
+            throw std::runtime_error("layer sizes must be positive integers");
+        const auto size = parseUnsigned<std::size_t>(item.Scalar());
         if (size == 0)
             throw std::runtime_error("layer sizes must be positive");
         layers.push_back(size);
-        if (comma == std::string_view::npos)
-            break;
-        value.remove_prefix(comma + 1);
     }
-    if (layers.size() < 2)
-        throw std::runtime_error("layers requires at least an input and output layer");
     return layers;
 }
 
@@ -65,11 +53,16 @@ double parseLearningRate(std::string_view value)
     return rate;
 }
 
-void setOption(NetworkConfig &options, const std::string &key, std::string_view value)
+void setOption(NetworkConfig &options, const std::string &key, const YAML::Node &node)
 {
     if (key == "layers") {
-        options.layers = parseLayers(value);
-    } else if (key == "hidden_activation") {
+        options.layers = parseLayers(node);
+        return;
+    }
+    if (!node.IsScalar())
+        throw std::runtime_error(key + " must be a scalar value");
+    const std::string value = node.Scalar();
+    if (key == "hidden_activation") {
         if (value != "sigmoid" && value != "relu" && value != "tanh")
             throw std::runtime_error("hidden_activation must be sigmoid, relu or tanh");
         options.hidden_activation = value;
@@ -99,28 +92,26 @@ NetworkConfig loadNetworkConfig(const std::string &filepath)
         throw std::runtime_error(filepath + ": cannot open configuration file");
     NetworkConfig options;
     std::set<std::string> keys;
-    std::string line;
-    std::size_t lineNumber = 0;
-    while (std::getline(file, line)) {
-        ++lineNumber;
-        const auto content = trim(std::string_view(line).substr(0, line.find('#')));
-        if (content.empty())
-            continue;
-        try {
-            const auto separator = content.find('=');
-            if (separator == std::string_view::npos)
-                throw std::runtime_error("expected key=value");
-            const std::string key(trim(content.substr(0, separator)));
-            const auto value = trim(content.substr(separator + 1));
-            if (key.empty() || value.empty())
-                throw std::runtime_error("key and value must not be empty");
-            if (!keys.insert(key).second)
-                throw std::runtime_error("duplicate key '" + key + "'");
-            setOption(options, key, value);
-        } catch (const std::runtime_error &error) {
-            throw std::runtime_error(filepath + ":" + std::to_string(lineNumber)
-                + ": " + error.what());
+    try {
+        const auto documents = YAML::LoadAll(file);
+        if (documents.size() != 1 || !documents.front().IsMap())
+            throw std::runtime_error(filepath + ": expected one YAML mapping");
+        for (const auto &entry : documents.front()) {
+            const auto line = std::to_string(entry.first.Mark().line + 1);
+            try {
+                if (!entry.first.IsScalar())
+                    throw std::runtime_error("configuration keys must be strings");
+                const auto key = entry.first.Scalar();
+                if (!keys.insert(key).second)
+                    throw std::runtime_error("duplicate key '" + key + "'");
+                setOption(options, key, entry.second);
+            } catch (const std::runtime_error &error) {
+                throw std::runtime_error(filepath + ":" + line + ": " + error.what());
+            }
         }
+    } catch (const YAML::Exception &error) {
+        throw std::runtime_error(filepath + ":" + std::to_string(error.mark.line + 1)
+            + ": invalid YAML: " + error.msg);
     }
     if (file.bad())
         throw std::runtime_error(filepath + ": error reading configuration file");

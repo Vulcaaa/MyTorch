@@ -1,0 +1,31 @@
+# Training and evaluation reports
+
+Reports interpret recorded results. Portable measurements in `data/` and figures
+in `figures/` are versioned with these reports. Checkpoints, full histories, raw
+logs and frozen executables/data remain local in the ignored `models/` and
+`results/` directories; links into those directories require the local artifacts.
+The comparison notebook also requires those local result directories.
+
+| Date | Report | Main finding |
+| --- | --- | --- |
+| 2026-11-07 | [Reference checkpoints: epochs 100 and 338](2026-11-07-reference-checkpoints.md) | Continued training improves validation macro F1 by 9.69 percentage points |
+| 2026-11-07 | [Compact, reference and large](2026-11-07-three-models.md) | Reference retains the best validation macro F1; doubling its parameters adds no overall gain |
+| 2026-11-07 | [Batch-size screening: speed and early learning](2026-11-07-batch-size-screen.md) | Larger batches shorten epochs but learn more slowly per compute time at learning rate 0.01 |
+| 2026-11-07 | [Batch 128 with learning rate 0.04](2026-11-07-batch-learning-rate-screen.md) | Five epochs take 26% less compute time with similar early classification; later convergence remains untested |
+| 2026-11-07 | [Batch/LR follow-up: twenty epochs](2026-11-07-batch-learning-rate-followup.md) | Batch 128 / LR 0.08 uses 25.7% less epoch compute time and improves early validation F1 by 4.71 points; final convergence remains unmeasured |
+| 2026-11-07 | [Batch 32 / LR 0.02 control](2026-11-07-batch-learning-rate-control.md) | Retuning the smaller batch recovers quality; batch 128 remains faster but scores 1.23 F1 points lower at twenty epochs |
+| 2026-11-07 | [Matched 100-epoch comparison](2026-11-07-batch-learning-rate-100epochs.md) | Batch 128: 25.1% less epoch compute; -0.01 F1 points versus batch 32 at the 100-epoch horizon |
+| 2026-11-08 | [Selected batch-128 training](2026-11-08-reference-b128-lr008.md) | Validation macro F1 82.78%, +0.81 points versus the previous reference |
+| 2026-11-08 | [Seed robustness](2026-11-08-reference-seed-robustness.md) | Additional seeds 44–46: mean macro F1 82.28%, sample standard deviation 0.39 points |
+| 2026-11-08 | [Error analysis](2026-11-08-reference-error-analysis.md) | Check recall 77.36% on validation; shared errors and crowded Checkmate positions remain weaknesses |
+| 2026-11-08 | [Color-mirror augmentation](2026-11-08-color-mirror-augmentation.md) | Paired seeds 44–46: +4.91 pp macro F1; 2.69× historical epoch compute |
+| 2026-11-08 | [Augmented train versus validation](2026-11-08-augmented-train-validation.md) | Mean macro F1 90.92% train vs 87.20% validation; residual training errors and generalization gap |
+
+## Training protocols
+
+The selected batch-128 run and the three additional seed runs are complete.
+Their protocol uses network 777 → 128 → 64 → 3, sigmoid/softmax, Xavier,
+learning rate 0.08, maximum 500 epochs, patience 20 and one thread.
+See [`train-reference-b128.yml`](../../configs/protocols/train-reference-b128.yml).
+The original reference protocol is retained for comparison. Reports distinguish
+that old baseline from the selected batch-128 checkpoints.

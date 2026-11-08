@@ -9,7 +9,7 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
-from scripts.comparison import describe, load_comparison, load_history
+from scripts.comparison import describe, load_comparison, load_history, load_run_history
 from scripts.evaluate import compute_metrics, fingerprint
 
 
@@ -65,6 +65,21 @@ class ComparisonTests(unittest.TestCase):
         path = self.report("test-run", wrong)
         with self.assertRaisesRegex(ValueError, "declared validation"):
             load_comparison([path], self.validation)
+
+    def test_continuation_curve_uses_only_history_up_to_source_checkpoint(self):
+        previous = self.work / "previous.csv"
+        previous.write_text("epoch,train_loss,validation_loss\n1,1,1.1\n2,.8,.9\n3,.6,.7\n")
+        campaign = self.work / "campaign"
+        run = campaign / "runs" / "reference-seed-42"
+        run.mkdir(parents=True)
+        (run / "history.csv").write_text("epoch,train_loss,validation_loss\n1,.7,.8\n2,.5,.6\n")
+        (campaign / "config.json").write_text(json.dumps({"runs": [{
+            "directory": "runs/reference-seed-42", "previous_history": {"path": str(previous)},
+            "previous_checkpoint_epoch": 2}]}))
+        history = load_run_history(run)
+        self.assertEqual([row["epoch"] for row in history], [1, 2, 3, 4])
+        self.assertEqual([row["validation_loss"] for row in history], [1.1, .9, .8, .6])
+        self.assertEqual(len(load_history(previous)), 3)
 
     def test_rejects_mixed_builds_and_duplicate_runs(self):
         first = self.report("first")

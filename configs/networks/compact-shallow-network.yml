@@ -1,0 +1,7 @@
+# Single hidden layer for a smaller, shallower alternative.
+layers: [777, 64, 3]
+hidden_activation: sigmoid
+output_activation: softmax
+learning_rate: 0.01
+initialization: xavier
+seed: 42

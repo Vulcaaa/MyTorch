@@ -41,9 +41,9 @@ class EvaluationTests(unittest.TestCase):
     def test_real_analyzer_reports_and_failures(self):
         with tempfile.TemporaryDirectory(prefix="mytorch-eval-") as directory:
             work = Path(directory)
-            config = work / "constant.conf"
-            config.write_text("layers=777,3\nhidden_activation=relu\n"
-                              "output_activation=softmax\ninitialization=he\nseed=42\n")
+            config = work / "constant.yml"
+            config.write_text("layers: [777, 3]\nhidden_activation: relu\n"
+                              "output_activation: softmax\ninitialization: he\nseed: 42\n")
             result = subprocess.run([str(ROOT / "my_torch_generator"), str(config), "1"],
                                     cwd=work, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
@@ -58,7 +58,7 @@ class EvaluationTests(unittest.TestCase):
                                "8/8/8/8/8/8/8/8 b - - 0 1 Check Black\n")
             output = work / "run"
             command = [sys.executable, str(ROOT / "scripts/evaluate.py"), str(model),
-                       str(dataset), "--output", str(output)]
+                       str(dataset), "--output", str(output), "--predictions"]
             result = subprocess.run(command, capture_output=True, text=True)
             self.assertEqual(result.returncode, 0, result.stderr)
             metrics = json.loads((output / "metrics.json").read_text())
@@ -70,10 +70,13 @@ class EvaluationTests(unittest.TestCase):
                 self.assertEqual(list(csv.reader(source)), [
                     ["dataset_line", "actual", "predicted"],
                     ["2", "Nothing", "Nothing"], ["4", "Check", "Nothing"]])
-            with (output / "confusion_matrix.csv").open() as source:
-                self.assertEqual(list(csv.reader(source))[1:], [
-                    ["Nothing", "1", "0", "0"], ["Check", "1", "0", "0"],
-                    ["Checkmate", "0", "0", "0"]])
+            self.assertTrue((output / "confusion-matrix.svg").exists())
+            self.assertFalse((output / "confusion-matrix.csv").exists())
+            default_output = work / "default-report"
+            result_default = subprocess.run(command[:-2] + [str(default_output)], capture_output=True, text=True)
+            self.assertEqual(result_default.returncode, 0, result_default.stderr)
+            self.assertEqual(set(p.name for p in default_output.iterdir()),
+                             {"README.md", "metrics.json", "confusion-matrix.svg"})
             self.assertEqual(model.read_bytes(), original)
             result = subprocess.run(command, capture_output=True, text=True)
             self.assertNotEqual(result.returncode, 0)

@@ -1,0 +1,24 @@
+# Paths are relative to this file.
+# Use validation to compare models; keep test data for final evaluation.
+version: 1
+hypothesis: The reference validation loss was still improving at epoch 100; continuing with unchanged
+  network settings may improve validation macro-F1. Record class recall and elapsed cost before deciding
+  whether to keep the change.
+seeds:
+  - 43
+datasets:
+  train: ../../dataset/references/chess-v1/splits/train.txt
+  validation: ../../dataset/references/chess-v1/splits/validation.txt
+  split_metadata: ../../dataset/references/chess-v1/splits/split_info.json
+configurations:
+  - name: continued-reference
+    initial_model: ../../models/reference-epoch-100.nn
+    previous_history: ../../results/training/2026-11-05-reference-training-01/history.csv
+    previous_checkpoint_epoch: 100
+training:
+  command: builtin
+  settings:
+    epochs: 400
+    batch_size: 32
+    patience: 20
+    min_delta: 0.0001

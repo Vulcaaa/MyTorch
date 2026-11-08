@@ -124,12 +124,12 @@ Blank lines are skipped. The encoder validates FEN fields, but does not check
 whether a position is legal chess.
 
 ```sh
-./my_torch_analyzer --predict models/basic_network_1.nn positions.txt
+./my_torch_analyzer --predict models/basic-network_1.nn positions.txt
 ```
 
-The command prints one class per nonblank line in the same order. It returns 0
-on success, or 84 with a diagnostic on stderr for invalid arguments, models,
-or datasets. A newly generated model is untrained; its class outputs have no
+The command prints one class per nonblank line in the same order on stdout.
+On success, stderr is empty and the command returns 0. Invalid arguments, models,
+or datasets return 84 with a diagnostic on stderr. A newly generated model is untrained; its class outputs have no
 established predictive quality. See [output encoding](output-encoding.md) for
 the class mapping.
 
@@ -386,7 +386,7 @@ existing output directory. Never regenerate a manifest to conceal a changed file
 
 ### Experiment paths
 
-[`configs/experiment.json`](../configs/experiment.json) resolves train, validation,
+[`configs/protocols/compare-network-sizes.yml`](../configs/protocols/compare-network-sizes.yml) resolves train, validation,
 and metadata to `dataset/references/chess-v1/splits/`. The standalone comparison
 notebook defaults to this validation file too. Tests check the supplied config
 against a small frozen reference; the real paths and hashes were also checked
@@ -394,10 +394,10 @@ against this manifest.
 
 Train only on `train.txt`, choose settings/models on `validation.txt`, and reserve
 `test.txt` for the final selected model. The experiment config does not include a
-test dataset. After verification, the usual preparation command is:
+test dataset. After verification, launch a configured comparison with:
 
 ```sh
-make experiment OUTPUT=results/experiments/chess-v1-preparation OPTIONS=--prepare
+make experiment OUTPUT=results/experiments/YYYY-MM-DD-compare-network-sizes-01
 ```
 
 The runner captures the resolved dataset paths and hashes in its experiment
@@ -420,9 +420,9 @@ or label audit.
 
 Two train-fitted diagnostic rules (global majority and majority by side to
 move/piece count) quantify simple sampling shortcuts on validation. These rules
-do not replace the supervised neural model. Exports in
-`results/dataset-analysis/summary.json` and five PNG figures retain the values
-behind the plots; those generated files are ignored by Git.
+do not replace the supervised neural model. Numerical findings and charts stay
+in the notebook; no files are exported into `results/`. Its conclusion section
+records the observations for the checked dataset version.
 
 Use the findings alongside model errors to justify a controlled experiment,
 such as training-only balancing, material-coverage enrichment or a longer

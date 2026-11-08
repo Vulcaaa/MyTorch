@@ -62,7 +62,7 @@ int main(int ac, char **av)
         std::cout << "USAGE\n"
             << "    ./my_torch_generator config_file_1 nb_1 [config_file_2 nb_2...]\n"
             << "DESCRIPTION\n"
-            << "    config_file_i    Configuration file describing a neural network.\n"
+            << "    config_file_i    YAML file describing a neural network.\n"
             << "    nb_i             Number of neural networks to generate.\n"
             << "    Models are saved in models/ under the current directory.\n"
             << "    Each run is logged in logs/generation_<UTC time>.log.\n";

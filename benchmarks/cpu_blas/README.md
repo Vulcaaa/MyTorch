@@ -84,4 +84,4 @@ python3 benchmarks/cpu_blas/plot.py /path/to/evidence/cpu-blas-01 \
   --output /path/to/evidence/cpu-blas-01
 ```
 
-PNG and SVG exports show median epoch time and the observed timing range.
+SVG exports show median epoch time and the observed timing range.

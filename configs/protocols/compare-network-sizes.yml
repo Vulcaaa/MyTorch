@@ -1,0 +1,28 @@
+# Paths are relative to this file.
+# Use validation to compare models; keep test data for final evaluation.
+version: 1
+hypothesis: A compact network may retain validation quality with lower training and prediction cost than
+  the reference architecture.
+seeds:
+  - 42
+  - 43
+  - 44
+datasets:
+  train: ../../dataset/references/chess-v1/splits/train.txt
+  validation: ../../dataset/references/chess-v1/splits/validation.txt
+  split_metadata: ../../dataset/references/chess-v1/splits/split_info.json
+configurations:
+  - name: compact
+    network: ../networks/basic-network.yml
+    overrides:
+      layers: [777, 64, 3]
+  - name: reference
+    network: ../networks/basic-network.yml
+    overrides: {}
+training:
+  command: builtin
+  settings:
+    epochs: 100
+    batch_size: 32
+    patience: 10
+    min_delta: 0.0001

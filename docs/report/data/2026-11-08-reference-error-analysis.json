@@ -1,0 +1,2020 @@
+{
+  "protocol": {
+    "scope": "Inference-only diagnostic. Do not edit model, training, features, labels or test data. Labels are assumed correct; no label audit is performed.",
+    "inputs": {
+      "analyzer": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+        "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+      },
+      "train": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/train.fen",
+        "sha256": "76b038dda01a24c50e0980d407038d068538394d760c9637e717902b9540e167"
+      },
+      "validation": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/validation.fen",
+        "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+      }
+    },
+    "models": {
+      "43": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-43.nn",
+        "sha256": "84c3c6a17b9f183eb9772edb39b12cc0d03c5f94cafc9a70d17993803b606d79"
+      },
+      "previous_reference": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/previous-reference.nn",
+        "sha256": "cce70846073189797bbd50025017cd979e312a5eb3d2ed5b936df3be64711658"
+      },
+      "44": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-44.nn",
+        "sha256": "924c7c2483137fa40e485058762e992ed8149629b12f912c508b2482533b1629"
+      },
+      "45": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-45.nn",
+        "sha256": "53fc361a1cc7559f5552ef8a3923fb6b7fc073cac95ed535616279be46d77dce"
+      },
+      "46": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-46.nn",
+        "sha256": "d3089d1611193b2b1282b7b74c9767413f605c8b631ef3ef5576d17d99bd4e32"
+      }
+    },
+    "primary_model_seed": 43,
+    "seeds": [
+      43,
+      44,
+      45,
+      46
+    ],
+    "analyses": [
+      "Validation confusion and class precision/recall; train versus validation metrics for seed43.",
+      "Cross-seed prediction agreement, errors shared by all four, and majority-vote diagnostic with ties resolved by seed43.",
+      "Descriptive class-conditional slices: side to move, piece count <=6/7-12/13-20/21+, number of kings on outer edge, pawn presence and en-passant flag. Compare class support alongside recall.",
+      "Color-equivalent mirror diagnostic: reverse ranks, swap piece colors, side to move, castling rights and en-passant rank; labels unchanged except optional color suffix swapped. Mirror applied twice must reproduce normalized original.",
+      "Deterministic samples from each directed confusion, preferring errors common to all seeds."
+    ],
+    "mirror_reference": "https://python-chess.readthedocs.io/en/latest/core.html#chess.Board.mirror",
+    "limits": "Slices are descriptive, correlated and selected for interpretation; they do not prove causes. Synthetic mirrored positions are diagnostics, not independent validation/test samples. Seed43 was used for tuning. Predictions alone contain no confidence scores."
+  },
+  "validation_metrics": {
+    "43": {
+      "samples": 71555,
+      "accuracy": 0.8346167283907484,
+      "macro_f1": 0.8277748378318451,
+      "per_class": {
+        "Nothing": {
+          "precision": 0.8953161592505855,
+          "recall": 0.8993480306492808,
+          "f1": 0.8973275659725715,
+          "support": 29756
+        },
+        "Check": {
+          "precision": 0.778007457846952,
+          "recall": 0.7735864264699955,
+          "f1": 0.7757906436293827,
+          "support": 24813
+        },
+        "Checkmate": {
+          "precision": 0.8100394279997646,
+          "recall": 0.8103732485576357,
+          "f1": 0.8102063038935813,
+          "support": 16986
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "Nothing",
+          "Check",
+          "Checkmate"
+        ],
+        "rows": "actual",
+        "columns": "predicted",
+        "counts": [
+          [
+            26761,
+            2625,
+            370
+          ],
+          [
+            2760,
+            19195,
+            2858
+          ],
+          [
+            369,
+            2852,
+            13765
+          ]
+        ]
+      },
+      "artifacts": {
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-43.nn",
+          "sha256": "84c3c6a17b9f183eb9772edb39b12cc0d03c5f94cafc9a70d17993803b606d79"
+        },
+        "dataset": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/validation.fen",
+          "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+        },
+        "analyzer": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+          "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+        }
+      },
+      "command": [
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+        "--predict",
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-43.nn",
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/validation.fen"
+      ],
+      "prediction_seconds": 1.4121272699994734,
+      "analyzer_stderr": "Prediction summary: positions=71555 labeled=71555 correct=59721/71555 accuracy=83.46%\n"
+    },
+    "44": {
+      "samples": 71555,
+      "accuracy": 0.8238278247501921,
+      "macro_f1": 0.8183672893305597,
+      "per_class": {
+        "Nothing": {
+          "precision": 0.89073852976292,
+          "recall": 0.8775373034009948,
+          "f1": 0.884088639095326,
+          "support": 29756
+        },
+        "Check": {
+          "precision": 0.7587288977159881,
+          "recall": 0.7697980897110386,
+          "f1": 0.7642234136192687,
+          "support": 24813
+        },
+        "Checkmate": {
+          "precision": 0.8049223556987987,
+          "recall": 0.8086659602025197,
+          "f1": 0.8067898152770843,
+          "support": 16986
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "Nothing",
+          "Check",
+          "Checkmate"
+        ],
+        "rows": "actual",
+        "columns": "predicted",
+        "counts": [
+          [
+            26112,
+            3156,
+            488
+          ],
+          [
+            2871,
+            19101,
+            2841
+          ],
+          [
+            332,
+            2918,
+            13736
+          ]
+        ]
+      },
+      "artifacts": {
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-44.nn",
+          "sha256": "924c7c2483137fa40e485058762e992ed8149629b12f912c508b2482533b1629"
+        },
+        "dataset": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/validation.fen",
+          "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+        },
+        "analyzer": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+          "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+        }
+      },
+      "command": [
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+        "--predict",
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-44.nn",
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/validation.fen"
+      ],
+      "prediction_seconds": 0.8756885469992994,
+      "analyzer_stderr": "Prediction summary: positions=71555 labeled=71555 correct=58949/71555 accuracy=82.38%\n"
+    },
+    "45": {
+      "samples": 71555,
+      "accuracy": 0.8304800503109496,
+      "macro_f1": 0.8247704949369686,
+      "per_class": {
+        "Nothing": {
+          "precision": 0.9033059562426669,
+          "recall": 0.8796881301250168,
+          "f1": 0.8913406204242859,
+          "support": 29756
+        },
+        "Check": {
+          "precision": 0.7636099780357704,
+          "recall": 0.7846290251078064,
+          "f1": 0.7739768232324237,
+          "support": 24813
+        },
+        "Checkmate": {
+          "precision": 0.8067443358117207,
+          "recall": 0.8112563287413164,
+          "f1": 0.8089940411541962,
+          "support": 16986
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "Nothing",
+          "Check",
+          "Checkmate"
+        ],
+        "rows": "actual",
+        "columns": "predicted",
+        "counts": [
+          [
+            26176,
+            3135,
+            445
+          ],
+          [
+            2488,
+            19469,
+            2856
+          ],
+          [
+            314,
+            2892,
+            13780
+          ]
+        ]
+      },
+      "artifacts": {
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-45.nn",
+          "sha256": "53fc361a1cc7559f5552ef8a3923fb6b7fc073cac95ed535616279be46d77dce"
+        },
+        "dataset": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/validation.fen",
+          "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+        },
+        "analyzer": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+          "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+        }
+      },
+      "command": [
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+        "--predict",
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-45.nn",
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/validation.fen"
+      ],
+      "prediction_seconds": 0.88231809699937,
+      "analyzer_stderr": "Prediction summary: positions=71555 labeled=71555 correct=59425/71555 accuracy=83.05%\n"
+    },
+    "46": {
+      "samples": 71555,
+      "accuracy": 0.8318636014254769,
+      "macro_f1": 0.8253842607754001,
+      "per_class": {
+        "Nothing": {
+          "precision": 0.8960863697705803,
+          "recall": 0.892593090469149,
+          "f1": 0.8943363189440366,
+          "support": 29756
+        },
+        "Check": {
+          "precision": 0.7865007985206355,
+          "recall": 0.7542014266715028,
+          "f1": 0.770012549632769,
+          "support": 24813
+        },
+        "Checkmate": {
+          "precision": 0.7863804425804315,
+          "recall": 0.8389261744966443,
+          "f1": 0.8118039137493946,
+          "support": 16986
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "Nothing",
+          "Check",
+          "Checkmate"
+        ],
+        "rows": "actual",
+        "columns": "predicted",
+        "counts": [
+          [
+            26560,
+            2692,
+            504
+          ],
+          [
+            2732,
+            18714,
+            3367
+          ],
+          [
+            348,
+            2388,
+            14250
+          ]
+        ]
+      },
+      "artifacts": {
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-46.nn",
+          "sha256": "d3089d1611193b2b1282b7b74c9767413f605c8b631ef3ef5576d17d99bd4e32"
+        },
+        "dataset": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/validation.fen",
+          "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+        },
+        "analyzer": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+          "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+        }
+      },
+      "command": [
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+        "--predict",
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-46.nn",
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/validation.fen"
+      ],
+      "prediction_seconds": 0.9177836809976725,
+      "analyzer_stderr": "Prediction summary: positions=71555 labeled=71555 correct=59524/71555 accuracy=83.19%\n"
+    },
+    "previous_reference": {
+      "samples": 71555,
+      "accuracy": 0.8257144853609112,
+      "macro_f1": 0.8196461129187534,
+      "per_class": {
+        "Nothing": {
+          "precision": 0.8865664631282292,
+          "recall": 0.8880561903481651,
+          "f1": 0.8873107014539471,
+          "support": 29756
+        },
+        "Check": {
+          "precision": 0.7663274820610533,
+          "recall": 0.7618184016442994,
+          "f1": 0.7640662894098625,
+          "support": 24813
+        },
+        "Checkmate": {
+          "precision": 0.8052921203606135,
+          "recall": 0.8098434004474273,
+          "f1": 0.8075613478924505,
+          "support": 16986
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "Nothing",
+          "Check",
+          "Checkmate"
+        ],
+        "rows": "actual",
+        "columns": "predicted",
+        "counts": [
+          [
+            26425,
+            2936,
+            395
+          ],
+          [
+            2979,
+            18903,
+            2931
+          ],
+          [
+            402,
+            2828,
+            13756
+          ]
+        ]
+      },
+      "artifacts": {
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/previous-reference.nn",
+          "sha256": "cce70846073189797bbd50025017cd979e312a5eb3d2ed5b936df3be64711658"
+        },
+        "dataset": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/validation.fen",
+          "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+        },
+        "analyzer": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+          "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+        }
+      },
+      "command": [
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+        "--predict",
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/previous-reference.nn",
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/validation.fen"
+      ],
+      "prediction_seconds": 0.8847016840009019,
+      "analyzer_stderr": "Prediction summary: positions=71555 labeled=71555 correct=59084/71555 accuracy=82.57%\n"
+    }
+  },
+  "training_seed43": {
+    "samples": 572445,
+    "accuracy": 0.8919162539632628,
+    "macro_f1": 0.8861468783269171,
+    "per_class": {
+      "Nothing": {
+        "precision": 0.9406625302345146,
+        "recall": 0.9393743357515827,
+        "f1": 0.9400179916599408,
+        "support": 238051
+      },
+      "Check": {
+        "precision": 0.8535629947196124,
+        "recall": 0.8485191957966218,
+        "f1": 0.8510336220856354,
+        "support": 198507
+      },
+      "Checkmate": {
+        "precision": 0.8626570392907574,
+        "recall": 0.8721732027346251,
+        "f1": 0.867389021235175,
+        "support": 135887
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "Nothing",
+        "Check",
+        "Checkmate"
+      ],
+      "rows": "actual",
+      "columns": "predicted",
+      "counts": [
+        [
+          223619,
+          12735,
+          1697
+        ],
+        [
+          12898,
+          168437,
+          17172
+        ],
+        [
+          1208,
+          16162,
+          118517
+        ]
+      ]
+    },
+    "artifacts": {
+      "model": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-43.nn",
+        "sha256": "84c3c6a17b9f183eb9772edb39b12cc0d03c5f94cafc9a70d17993803b606d79"
+      },
+      "dataset": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/train.fen",
+        "sha256": "76b038dda01a24c50e0980d407038d068538394d760c9637e717902b9540e167"
+      },
+      "analyzer": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+        "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+      }
+    },
+    "command": [
+      "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+      "--predict",
+      "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-43.nn",
+      "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/train.fen"
+    ],
+    "prediction_seconds": 6.685911104999832,
+    "analyzer_stderr": "Prediction summary: positions=572445 labeled=572445 correct=510573/572445 accuracy=89.19%\n"
+  },
+  "cross_seed": {
+    "error_count_histogram": {
+      "4": 4313,
+      "0": 49278,
+      "3": 4095,
+      "1": 8674,
+      "2": 5195
+    },
+    "per_class": {
+      "Nothing": {
+        "support": 29756,
+        "error_count_histogram": {
+          "0": 23588,
+          "2": 1370,
+          "4": 1245,
+          "3": 1071,
+          "1": 2482
+        },
+        "all_four_wrong": 1245,
+        "seed43_errors": 2995
+      },
+      "Check": {
+        "support": 24813,
+        "error_count_histogram": {
+          "4": 1954,
+          "0": 14314,
+          "2": 2492,
+          "3": 1960,
+          "1": 4093
+        },
+        "all_four_wrong": 1954,
+        "seed43_errors": 5618
+      },
+      "Checkmate": {
+        "support": 16986,
+        "error_count_histogram": {
+          "3": 1064,
+          "1": 2099,
+          "2": 1333,
+          "0": 11376,
+          "4": 1114
+        },
+        "all_four_wrong": 1114,
+        "seed43_errors": 3221
+      }
+    },
+    "majority_vote_diagnostic": {
+      "samples": 71555,
+      "accuracy": 0.8506463559499685,
+      "macro_f1": 0.844499797777901,
+      "per_class": {
+        "Nothing": {
+          "precision": 0.9143070804582073,
+          "recall": 0.9039521441053905,
+          "f1": 0.9091001267427123,
+          "support": 29756
+        },
+        "Check": {
+          "precision": 0.7964356116989179,
+          "recall": 0.7978479023092734,
+          "f1": 0.7971411314676867,
+          "support": 24813
+        },
+        "Checkmate": {
+          "precision": 0.8202442270964755,
+          "recall": 0.8343930295537502,
+          "f1": 0.8272581351233037,
+          "support": 16986
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "Nothing",
+          "Check",
+          "Checkmate"
+        ],
+        "rows": "actual",
+        "columns": "predicted",
+        "counts": [
+          [
+            26898,
+            2490,
+            368
+          ],
+          [
+            2278,
+            19797,
+            2738
+          ],
+          [
+            243,
+            2570,
+            14173
+          ]
+        ]
+      }
+    },
+    "note": "Four-model vote is diagnostic only, ties resolved by seed43; no model or deployment changed."
+  },
+  "paired_old_new": {
+    "old_wrong_new_correct": 5072,
+    "old_correct_new_wrong": 4435
+  },
+  "color_mirror_diagnostic": {
+    "metrics": {
+      "samples": 71555,
+      "accuracy": 0.8297533365942282,
+      "macro_f1": 0.8228999502710351,
+      "per_class": {
+        "Nothing": {
+          "precision": 0.8936070144791212,
+          "recall": 0.8939373571716629,
+          "f1": 0.8937721553013122,
+          "support": 29756
+        },
+        "Check": {
+          "precision": 0.772954721126073,
+          "recall": 0.765727642767904,
+          "f1": 0.769324209418148,
+          "support": 24813
+        },
+        "Checkmate": {
+          "precision": 0.8004300575347243,
+          "recall": 0.8108442246555987,
+          "f1": 0.805603486093645,
+          "support": 16986
+        }
+      },
+      "confusion_matrix": {
+        "labels": [
+          "Nothing",
+          "Check",
+          "Checkmate"
+        ],
+        "rows": "actual",
+        "columns": "predicted",
+        "counts": [
+          [
+            26600,
+            2711,
+            445
+          ],
+          [
+            2824,
+            19000,
+            2989
+          ],
+          [
+            343,
+            2870,
+            13773
+          ]
+        ]
+      },
+      "artifacts": {
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-43.nn",
+          "sha256": "84c3c6a17b9f183eb9772edb39b12cc0d03c5f94cafc9a70d17993803b606d79"
+        },
+        "dataset": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/validation-mirrored.fen",
+          "sha256": "2f7ce6cc5096f788310c5a481d6db6345e515b82ce9c060a203438edb96df4dd"
+        },
+        "analyzer": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+          "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+        }
+      },
+      "command": [
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/tools/my_torch_analyzer",
+        "--predict",
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/models/seed-43.nn",
+        "/home/mathys/3/CNA/MyTorch/results/error-analysis/2026-11-08-reference-errors-01/data/validation-mirrored.fen"
+      ],
+      "prediction_seconds": 0.8869548619986745,
+      "analyzer_stderr": "Prediction summary: positions=71555 labeled=71555 correct=59373/71555 accuracy=82.98%\n"
+    },
+    "changed_predictions": 12517,
+    "original_correct_mirror_wrong": 6117,
+    "original_wrong_mirror_correct": 5769
+  },
+  "class_conditional_slices": {
+    "side_to_move": {
+      "b": {
+        "samples": 38290,
+        "accuracy": 0.843927918516584,
+        "macro_f1": 0.8369501729494959,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.8972650110028293,
+            "recall": 0.9146318015766198,
+            "f1": 0.90586517709788,
+            "support": 15603
+          },
+          "Check": {
+            "precision": 0.7893194637755476,
+            "recall": 0.7975573649148778,
+            "f1": 0.7934170317734988,
+            "support": 13510
+          },
+          "Checkmate": {
+            "precision": 0.8321502175406458,
+            "recall": 0.7919799498746867,
+            "f1": 0.811568309977109,
+            "support": 9177
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              14271,
+              1193,
+              139
+            ],
+            [
+              1408,
+              10775,
+              1327
+            ],
+            [
+              226,
+              1683,
+              7268
+            ]
+          ]
+        },
+        "all_four_error_count": 1986
+      },
+      "w": {
+        "samples": 33265,
+        "accuracy": 0.8238989929355178,
+        "macro_f1": 0.8169335356884933,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.8930997497318556,
+            "recall": 0.8824984102310465,
+            "f1": 0.8877674319425688,
+            "support": 14153
+          },
+          "Check": {
+            "precision": 0.7639960076218129,
+            "recall": 0.7449349730160134,
+            "f1": 0.754345099444544,
+            "support": 11303
+          },
+          "Checkmate": {
+            "precision": 0.7866569802639545,
+            "recall": 0.8319887309514663,
+            "f1": 0.808688075678367,
+            "support": 7809
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              12490,
+              1432,
+              231
+            ],
+            [
+              1352,
+              8420,
+              1531
+            ],
+            [
+              143,
+              1169,
+              6497
+            ]
+          ]
+        },
+        "all_four_error_count": 2327
+      }
+    },
+    "piece_count": {
+      "13-20": {
+        "samples": 27021,
+        "accuracy": 0.8102216794345138,
+        "macro_f1": 0.8113165407448188,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.8879686625629547,
+            "recall": 0.8754275626172349,
+            "f1": 0.8816535170574509,
+            "support": 9063
+          },
+          "Check": {
+            "precision": 0.7511615900877646,
+            "recall": 0.7563156253248778,
+            "f1": 0.7537297969332781,
+            "support": 9619
+          },
+          "Checkmate": {
+            "precision": 0.7956195690989168,
+            "recall": 0.8015349562297638,
+            "f1": 0.7985663082437275,
+            "support": 8339
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              7934,
+              931,
+              198
+            ],
+            [
+              825,
+              7275,
+              1519
+            ],
+            [
+              176,
+              1479,
+              6684
+            ]
+          ]
+        },
+        "all_four_error_count": 1836
+      },
+      "21+": {
+        "samples": 15514,
+        "accuracy": 0.8607709165914658,
+        "macro_f1": 0.8193493605025468,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.9351667496266799,
+            "recall": 0.93099603567889,
+            "f1": 0.9330767320586043,
+            "support": 8072
+          },
+          "Check": {
+            "precision": 0.7988274093074387,
+            "recall": 0.8167853128512551,
+            "f1": 0.8077065579844386,
+            "support": 5338
+          },
+          "Checkmate": {
+            "precision": 0.7321782178217822,
+            "recall": 0.7029467680608364,
+            "f1": 0.7172647914645974,
+            "support": 2104
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              7515,
+              521,
+              36
+            ],
+            [
+              473,
+              4360,
+              505
+            ],
+            [
+              48,
+              577,
+              1479
+            ]
+          ]
+        },
+        "all_four_error_count": 748
+      },
+      "7-12": {
+        "samples": 19949,
+        "accuracy": 0.8377863552057747,
+        "macro_f1": 0.8347308741108973,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.8742796660002352,
+            "recall": 0.8915807147997121,
+            "f1": 0.8828454367317855,
+            "support": 8338
+          },
+          "Check": {
+            "precision": 0.7916666666666666,
+            "recall": 0.7733029742422086,
+            "f1": 0.7823770786840398,
+            "support": 7027
+          },
+          "Checkmate": {
+            "precision": 0.8391532082060236,
+            "recall": 0.8387870855148342,
+            "f1": 0.8389701069168666,
+            "support": 4584
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              7434,
+              805,
+              99
+            ],
+            [
+              955,
+              5434,
+              638
+            ],
+            [
+              114,
+              625,
+              3845
+            ]
+          ]
+        },
+        "all_four_error_count": 1176
+      },
+      "<=6": {
+        "samples": 9071,
+        "accuracy": 0.8555837283651196,
+        "macro_f1": 0.8517924892698558,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.8781702898550725,
+            "recall": 0.9054401120709783,
+            "f1": 0.8915967352569261,
+            "support": 4283
+          },
+          "Check": {
+            "precision": 0.7977485928705441,
+            "recall": 0.751502297631672,
+            "f1": 0.7739352020385875,
+            "support": 2829
+          },
+          "Checkmate": {
+            "precision": 0.8829145728643216,
+            "recall": 0.8968861664114344,
+            "f1": 0.8898455305140541,
+            "support": 1959
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              3878,
+              368,
+              37
+            ],
+            [
+              507,
+              2126,
+              196
+            ],
+            [
+              31,
+              171,
+              1757
+            ]
+          ]
+        },
+        "all_four_error_count": 553
+      }
+    },
+    "kings_on_edge": {
+      "0": {
+        "samples": 16183,
+        "accuracy": 0.8301303837360193,
+        "macro_f1": 0.7908798365681721,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.8772227885377732,
+            "recall": 0.8995354239256679,
+            "f1": 0.8882390045300763,
+            "support": 8610
+          },
+          "Check": {
+            "precision": 0.7918041326619205,
+            "recall": 0.7631799163179916,
+            "f1": 0.7772285665587182,
+            "support": 5975
+          },
+          "Checkmate": {
+            "precision": 0.7078369905956113,
+            "recall": 0.7065081351689612,
+            "f1": 0.7071719386157219,
+            "support": 1598
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              7745,
+              792,
+              73
+            ],
+            [
+              1022,
+              4560,
+              393
+            ],
+            [
+              62,
+              407,
+              1129
+            ]
+          ]
+        },
+        "all_four_error_count": 1001
+      },
+      "1": {
+        "samples": 26476,
+        "accuracy": 0.8150778063151534,
+        "macro_f1": 0.8154350502726609,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.8705515535963875,
+            "recall": 0.8672879177377892,
+            "f1": 0.8689166711380587,
+            "support": 9336
+          },
+          "Check": {
+            "precision": 0.7639961900730236,
+            "recall": 0.7590158763536957,
+            "f1": 0.7614978902953586,
+            "support": 9511
+          },
+          "Checkmate": {
+            "precision": 0.8107688325135904,
+            "recall": 0.8210774675580024,
+            "f1": 0.8158905893845653,
+            "support": 7629
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              8097,
+              1054,
+              185
+            ],
+            [
+              1015,
+              7219,
+              1277
+            ],
+            [
+              189,
+              1176,
+              6264
+            ]
+          ]
+        },
+        "all_four_error_count": 1820
+      },
+      "2": {
+        "samples": 28896,
+        "accuracy": 0.855031838316722,
+        "macro_f1": 0.8472335979497964,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.9284863945578231,
+            "recall": 0.9245554614733277,
+            "f1": 0.9265167585914298,
+            "support": 11810
+          },
+          "Check": {
+            "precision": 0.7836010143702451,
+            "recall": 0.7951109681569637,
+            "f1": 0.7893140333138206,
+            "support": 9327
+          },
+          "Checkmate": {
+            "precision": 0.8305526590198123,
+            "recall": 0.821239850496198,
+            "f1": 0.8258700019441385,
+            "support": 7759
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              10919,
+              779,
+              112
+            ],
+            [
+              723,
+              7416,
+              1188
+            ],
+            [
+              118,
+              1269,
+              6372
+            ]
+          ]
+        },
+        "all_four_error_count": 1492
+      }
+    },
+    "pawns_present": {
+      "False": {
+        "samples": 2109,
+        "accuracy": 0.838311996206733,
+        "macro_f1": 0.8330891474615908,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.8490351872871736,
+            "recall": 0.88,
+            "f1": 0.8642403235124205,
+            "support": 850
+          },
+          "Check": {
+            "precision": 0.7563884156729132,
+            "recall": 0.7254901960784313,
+            "f1": 0.7406171809841534,
+            "support": 612
+          },
+          "Checkmate": {
+            "precision": 0.8985959438377535,
+            "recall": 0.8902627511591963,
+            "f1": 0.8944099378881987,
+            "support": 647
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              748,
+              90,
+              12
+            ],
+            [
+              115,
+              444,
+              53
+            ],
+            [
+              18,
+              53,
+              576
+            ]
+          ]
+        },
+        "all_four_error_count": 165
+      },
+      "True": {
+        "samples": 69446,
+        "accuracy": 0.834504507099041,
+        "macro_f1": 0.8272897626208687,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.8967217070564307,
+            "recall": 0.8999169722548952,
+            "f1": 0.8983164983164983,
+            "support": 28906
+          },
+          "Check": {
+            "precision": 0.7785343574839112,
+            "recall": 0.7748026941035494,
+            "f1": 0.7766640434080272,
+            "support": 24201
+          },
+          "Checkmate": {
+            "precision": 0.8065680039138943,
+            "recall": 0.8072097435583573,
+            "f1": 0.8068887461380809,
+            "support": 16339
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              26013,
+              2535,
+              358
+            ],
+            [
+              2645,
+              18751,
+              2805
+            ],
+            [
+              351,
+              2799,
+              13189
+            ]
+          ]
+        },
+        "all_four_error_count": 4148
+      }
+    },
+    "en_passant_present": {
+      "False": {
+        "samples": 71534,
+        "accuracy": 0.8346240948360221,
+        "macro_f1": 0.8277946665978962,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.8953005757129469,
+            "recall": 0.8993342747629615,
+            "f1": 0.8973128920795733,
+            "support": 29742
+          },
+          "Check": {
+            "precision": 0.77800299995946,
+            "recall": 0.773643473353221,
+            "f1": 0.7758171123643199,
+            "support": 24806
+          },
+          "Checkmate": {
+            "precision": 0.8101347772350068,
+            "recall": 0.8103732485576357,
+            "f1": 0.8102539953497955,
+            "support": 16986
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              26748,
+              2624,
+              370
+            ],
+            [
+              2759,
+              19191,
+              2856
+            ],
+            [
+              369,
+              2852,
+              13765
+            ]
+          ]
+        },
+        "all_four_error_count": 4311
+      },
+      "True": {
+        "samples": 21,
+        "accuracy": 0.8095238095238095,
+        "macro_f1": 0.5317460317460317,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.9285714285714286,
+            "recall": 0.9285714285714286,
+            "f1": 0.9285714285714286,
+            "support": 14
+          },
+          "Check": {
+            "precision": 0.8,
+            "recall": 0.5714285714285714,
+            "f1": 0.6666666666666666,
+            "support": 7
+          },
+          "Checkmate": {
+            "precision": 0.0,
+            "recall": 0.0,
+            "f1": 0.0,
+            "support": 0
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              13,
+              1,
+              0
+            ],
+            [
+              1,
+              4,
+              2
+            ],
+            [
+              0,
+              0,
+              0
+            ]
+          ]
+        },
+        "all_four_error_count": 2
+      }
+    }
+  },
+  "directed_confusions": [
+    {
+      "actual": "Nothing",
+      "predicted": "Check",
+      "count": 2625,
+      "all_four_wrong": 1029,
+      "all_four_same_wrong_prediction": 859
+    },
+    {
+      "actual": "Nothing",
+      "predicted": "Checkmate",
+      "count": 370,
+      "all_four_wrong": 216,
+      "all_four_same_wrong_prediction": 123
+    },
+    {
+      "actual": "Check",
+      "predicted": "Nothing",
+      "count": 2760,
+      "all_four_wrong": 750,
+      "all_four_same_wrong_prediction": 677
+    },
+    {
+      "actual": "Check",
+      "predicted": "Checkmate",
+      "count": 2858,
+      "all_four_wrong": 1204,
+      "all_four_same_wrong_prediction": 1128
+    },
+    {
+      "actual": "Checkmate",
+      "predicted": "Nothing",
+      "count": 369,
+      "all_four_wrong": 125,
+      "all_four_same_wrong_prediction": 45
+    },
+    {
+      "actual": "Checkmate",
+      "predicted": "Check",
+      "count": 2852,
+      "all_four_wrong": 989,
+      "all_four_same_wrong_prediction": 845
+    }
+  ],
+  "sampled_examples": [
+    {
+      "dataset_line": 3326,
+      "fen": "4Rq1k/pp5b/5p1P/3P4/2PQ1P2/3n4/PP6/5K2 b - - 0 41",
+      "actual": "Nothing",
+      "seed43_predicted": "Check",
+      "predictions": {
+        "43": "Check",
+        "44": "Check",
+        "45": "Check",
+        "46": "Check"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "b",
+        "piece_count": "13-20",
+        "kings_on_edge": "2",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 26558,
+      "fen": "4K3/8/3R2p1/5q1k/8/3R4/8/8 w - - 11 90",
+      "actual": "Nothing",
+      "seed43_predicted": "Check",
+      "predictions": {
+        "43": "Check",
+        "44": "Check",
+        "45": "Check",
+        "46": "Check"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "<=6",
+        "kings_on_edge": "2",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 61001,
+      "fen": "7R/k7/5K1P/r7/8/8/8/8 w - - 4 73",
+      "actual": "Nothing",
+      "seed43_predicted": "Check",
+      "predictions": {
+        "43": "Check",
+        "44": "Check",
+        "45": "Check",
+        "46": "Check"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "<=6",
+        "kings_on_edge": "1",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 66040,
+      "fen": "r1b3k1/ppp3bp/3p2p1/3P1p2/2P3B1/P1N1q2P/1P2N3/3RK2R w K - 2 21",
+      "actual": "Nothing",
+      "seed43_predicted": "Check",
+      "predictions": {
+        "43": "Check",
+        "44": "Check",
+        "45": "Check",
+        "46": "Check"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "21+",
+        "kings_on_edge": "2",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 13370,
+      "fen": "r5k1/pp2b2p/2p3p1/3pPb2/5P2/8/1qPK1QPP/3R3R w - - 0 27",
+      "actual": "Nothing",
+      "seed43_predicted": "Check",
+      "predictions": {
+        "43": "Check",
+        "44": "Check",
+        "45": "Check",
+        "46": "Check"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "13-20",
+        "kings_on_edge": "1",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 70931,
+      "fen": "3r4/8/8/8/K1k2N2/p1b5/2R2P2/8 w - - 3 55",
+      "actual": "Nothing",
+      "seed43_predicted": "Checkmate",
+      "predictions": {
+        "43": "Checkmate",
+        "44": "Checkmate",
+        "45": "Checkmate",
+        "46": "Checkmate"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "7-12",
+        "kings_on_edge": "1",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 31677,
+      "fen": "6r1/2R3p1/p2k1p1r/P1R1p2p/1pK1P2P/8/1PP2PP1/8 b - - 2 46",
+      "actual": "Nothing",
+      "seed43_predicted": "Checkmate",
+      "predictions": {
+        "43": "Checkmate",
+        "44": "Checkmate",
+        "45": "Checkmate",
+        "46": "Checkmate"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "b",
+        "piece_count": "13-20",
+        "kings_on_edge": "0",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 27536,
+      "fen": "7Q/4R2p/5ppk/p3p3/3qP3/6P1/3NK2P/8 b - - 2 50",
+      "actual": "Nothing",
+      "seed43_predicted": "Checkmate",
+      "predictions": {
+        "43": "Checkmate",
+        "44": "Checkmate",
+        "45": "Checkmate",
+        "46": "Checkmate"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "b",
+        "piece_count": "13-20",
+        "kings_on_edge": "1",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 50098,
+      "fen": "8/8/K1b5/8/8/1q6/4k3/8 w - - 21 74",
+      "actual": "Nothing",
+      "seed43_predicted": "Checkmate",
+      "predictions": {
+        "43": "Checkmate",
+        "44": "Checkmate",
+        "45": "Checkmate",
+        "46": "Checkmate"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "<=6",
+        "kings_on_edge": "1",
+        "pawns_present": "False",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 52428,
+      "fen": "8/2N5/8/8/8/8/3QQQ1K/1k6 b - - 100 137",
+      "actual": "Nothing",
+      "seed43_predicted": "Checkmate",
+      "predictions": {
+        "43": "Checkmate",
+        "44": "Checkmate",
+        "45": "Checkmate",
+        "46": "Checkmate"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "b",
+        "piece_count": "<=6",
+        "kings_on_edge": "2",
+        "pawns_present": "False",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 11592,
+      "fen": "8/5ppp/2k1pb2/p2p1P2/Pp2K1P1/1P2B3/7P/8 w - - 0 38",
+      "actual": "Check",
+      "seed43_predicted": "Nothing",
+      "predictions": {
+        "43": "Nothing",
+        "44": "Nothing",
+        "45": "Nothing",
+        "46": "Nothing"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "13-20",
+        "kings_on_edge": "0",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 50533,
+      "fen": "8/8/P1p3pk/q7/8/5r2/KP6/8 w - - 1 55",
+      "actual": "Check",
+      "seed43_predicted": "Nothing",
+      "predictions": {
+        "43": "Nothing",
+        "44": "Nothing",
+        "45": "Nothing",
+        "46": "Nothing"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "7-12",
+        "kings_on_edge": "2",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 65756,
+      "fen": "8/2k5/3pP2P/1PpP1p1n/2P2P2/6K1/2b1B3/8 w - - 3 43",
+      "actual": "Check",
+      "seed43_predicted": "Nothing",
+      "predictions": {
+        "43": "Nothing",
+        "44": "Nothing",
+        "45": "Nothing",
+        "46": "Nothing"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "13-20",
+        "kings_on_edge": "0",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 54558,
+      "fen": "8/8/1k3R1p/p5p1/2p3Pr/5P2/KPP5/8 b - - 3 47",
+      "actual": "Check",
+      "seed43_predicted": "Nothing",
+      "predictions": {
+        "43": "Nothing",
+        "44": "Nothing",
+        "45": "Nothing",
+        "46": "Nothing"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "b",
+        "piece_count": "7-12",
+        "kings_on_edge": "1",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 66406,
+      "fen": "4R3/8/8/2r3KP/3npP2/3k4/8/8 w - - 4 67",
+      "actual": "Check",
+      "seed43_predicted": "Nothing",
+      "predictions": {
+        "43": "Nothing",
+        "44": "Nothing",
+        "45": "Nothing",
+        "46": "Nothing"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "7-12",
+        "kings_on_edge": "0",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 2515,
+      "fen": "8/4R3/6p1/6k1/1p2Bpp1/6Kn/PP1r1P1P/8 w - - 0 47",
+      "actual": "Check",
+      "seed43_predicted": "Checkmate",
+      "predictions": {
+        "43": "Checkmate",
+        "44": "Checkmate",
+        "45": "Checkmate",
+        "46": "Checkmate"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "13-20",
+        "kings_on_edge": "0",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 66277,
+      "fen": "r1b3Bk/ppq2N2/2pn2Q1/2P3p1/3b4/B7/6PP/R6K b - - 3 33",
+      "actual": "Check",
+      "seed43_predicted": "Checkmate",
+      "predictions": {
+        "43": "Checkmate",
+        "44": "Checkmate",
+        "45": "Checkmate",
+        "46": "Checkmate"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "b",
+        "piece_count": "13-20",
+        "kings_on_edge": "2",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 56202,
+      "fen": "1b4r1/pk5p/7P/2B1pp2/8/3PN2K/PP3P2/2R3n1 w - - 18 36",
+      "actual": "Check",
+      "seed43_predicted": "Checkmate",
+      "predictions": {
+        "43": "Checkmate",
+        "44": "Checkmate",
+        "45": "Checkmate",
+        "46": "Checkmate"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "13-20",
+        "kings_on_edge": "1",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 48095,
+      "fen": "r4r2/ppp3k1/3p4/3B4/2P2pb1/1PNQb3/P5Pq/R4R1K w - - 0 26",
+      "actual": "Check",
+      "seed43_predicted": "Checkmate",
+      "predictions": {
+        "43": "Checkmate",
+        "44": "Checkmate",
+        "45": "Checkmate",
+        "46": "Checkmate"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "21+",
+        "kings_on_edge": "1",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 70783,
+      "fen": "2r5/4k3/p4p1p/2N1p1bP/3K2P1/6B1/P1P1b3/7R w - - 0 35",
+      "actual": "Check",
+      "seed43_predicted": "Checkmate",
+      "predictions": {
+        "43": "Checkmate",
+        "44": "Checkmate",
+        "45": "Checkmate",
+        "46": "Checkmate"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "13-20",
+        "kings_on_edge": "0",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 40505,
+      "fen": "8/5b2/2Bk3p/5pbK/8/5N2/8/8 w - - 15 72",
+      "actual": "Checkmate",
+      "seed43_predicted": "Nothing",
+      "predictions": {
+        "43": "Nothing",
+        "44": "Nothing",
+        "45": "Nothing",
+        "46": "Nothing"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "7-12",
+        "kings_on_edge": "1",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 38122,
+      "fen": "2rnRk1r/5Ppp/p2q1b2/3B4/Pp1Q4/8/PBP3PP/7K b - - 2 27",
+      "actual": "Checkmate",
+      "seed43_predicted": "Nothing",
+      "predictions": {
+        "43": "Nothing",
+        "44": "Nothing",
+        "45": "Nothing",
+        "46": "Nothing"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "b",
+        "piece_count": "21+",
+        "kings_on_edge": "2",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 15427,
+      "fen": "8/1BP1N3/7p/4p2P/2P1k3/R3P3/6p1/6K1 b - - 0 51",
+      "actual": "Checkmate",
+      "seed43_predicted": "Nothing",
+      "predictions": {
+        "43": "Nothing",
+        "44": "Nothing",
+        "45": "Nothing",
+        "46": "Nothing"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "b",
+        "piece_count": "7-12",
+        "kings_on_edge": "1",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 5359,
+      "fen": "5r1k/2p1b3/3p2R1/4p2p/BPPPr2P/P7/1B1P4/3RK3 w - - 1 30",
+      "actual": "Checkmate",
+      "seed43_predicted": "Nothing",
+      "predictions": {
+        "43": "Nothing",
+        "44": "Nothing",
+        "45": "Nothing",
+        "46": "Nothing"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "13-20",
+        "kings_on_edge": "2",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 10335,
+      "fen": "4k3/4Bp1p/p3n3/3NP2P/B7/4K3/P6r/8 b - - 6 40",
+      "actual": "Checkmate",
+      "seed43_predicted": "Nothing",
+      "predictions": {
+        "43": "Nothing",
+        "44": "Nothing",
+        "45": "Nothing",
+        "46": "Nothing"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "b",
+        "piece_count": "13-20",
+        "kings_on_edge": "1",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 71045,
+      "fen": "6k1/1b3pb1/1p2p3/p3N3/Pn1P1QPq/5P2/1P4PK/1Br5 w - - 2 37",
+      "actual": "Checkmate",
+      "seed43_predicted": "Check",
+      "predictions": {
+        "43": "Check",
+        "44": "Check",
+        "45": "Check",
+        "46": "Check"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "13-20",
+        "kings_on_edge": "2",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 11643,
+      "fen": "2n2k1Q/1p3r2/p1p1q3/5pBp/1RP3pP/P5P1/KPP3B1/4r3 b - - 1 34",
+      "actual": "Checkmate",
+      "seed43_predicted": "Check",
+      "predictions": {
+        "43": "Check",
+        "44": "Check",
+        "45": "Check",
+        "46": "Check"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "b",
+        "piece_count": "21+",
+        "kings_on_edge": "2",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 34356,
+      "fen": "6Q1/8/8/7p/5bpP/2k5/2p5/2K5 w - - 1 57",
+      "actual": "Checkmate",
+      "seed43_predicted": "Check",
+      "predictions": {
+        "43": "Check",
+        "44": "Check",
+        "45": "Check",
+        "46": "Check"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "7-12",
+        "kings_on_edge": "1",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 13446,
+      "fen": "6k1/p4pp1/1q3n1p/8/8/N2P1B2/PPP3PP/R1B1r2K w - - 1 22",
+      "actual": "Checkmate",
+      "seed43_predicted": "Check",
+      "predictions": {
+        "43": "Check",
+        "44": "Check",
+        "45": "Check",
+        "46": "Check"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "w",
+        "piece_count": "13-20",
+        "kings_on_edge": "2",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    },
+    {
+      "dataset_line": 9087,
+      "fen": "4Q3/p1R5/1p3q1p/1P3kp1/3PPpp1/8/5P1P/6K1 b - - 0 40",
+      "actual": "Checkmate",
+      "seed43_predicted": "Check",
+      "predictions": {
+        "43": "Check",
+        "44": "Check",
+        "45": "Check",
+        "46": "Check"
+      },
+      "wrong_seed_count": 4,
+      "features": {
+        "side_to_move": "b",
+        "piece_count": "13-20",
+        "kings_on_edge": "1",
+        "pawns_present": "True",
+        "en_passant_present": "False"
+      }
+    }
+  ],
+  "cross_seed_prediction_disagreements": {
+    "43-44": 10387,
+    "43-45": 10588,
+    "43-46": 10440,
+    "44-45": 10258,
+    "44-46": 10565,
+    "45-46": 10378
+  }
+}

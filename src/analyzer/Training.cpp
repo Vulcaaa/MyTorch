@@ -1,4 +1,5 @@
 #include "Training.hpp"
+#include "LossChart.hpp"
 #include "chess/Dataset.hpp"
 #include "neural/ModelSerializer.hpp"
 #include "neural/CpuBackend.hpp"
@@ -345,6 +346,8 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
     TrainingResult result;
     result.bestValidationLoss = checkedLoss(working.loss(validation));
     log.info("Initial validation_loss=" + formatLoss(result.bestValidationLoss));
+    const double initialValidationLoss = result.bestValidationLoss;
+    std::vector<std::array<double, 3>> chartRows;
     double patienceReference = result.bestValidationLoss;
     std::size_t staleEpochs = 0;
     std::mt19937 random(network.config().seed);
@@ -369,8 +372,10 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
         const double trainLoss = checkedLoss(working.loss(training));
         const double validationLoss = checkedLoss(working.loss(validation));
         history.write(historyRow(epoch, trainLoss, validationLoss));
-        progress << "Epoch " << epoch << ": train_loss=" << trainLoss
-            << " validation_loss=" << validationLoss << '\n';
+        chartRows.push_back({static_cast<double>(epoch), trainLoss, validationLoss});
+        progress << "Epoch " << epoch << '/' << arguments.training.epochs << ": train_loss=" << trainLoss
+            << " validation_loss=" << validationLoss
+            << " (" << formatSeconds(std::chrono::steady_clock::now() - epochStart) << ")" << std::endl;
         log.info("Epoch " + std::to_string(epoch) + "/" + std::to_string(arguments.training.epochs)
             + ": train_loss=" + formatLoss(trainLoss) + " validation_loss=" + formatLoss(validationLoss)
             + " (" + formatSeconds(std::chrono::steady_clock::now() - epochStart) + ")");
@@ -398,6 +403,15 @@ TrainingResult runTraining(NeuralNetwork& network, const AnalyzerArguments& argu
     log.info("Saved model from epoch " + std::to_string(result.bestEpoch) + " (validation_loss="
         + formatLoss(result.bestValidationLoss) + ") to " + modelDestination(arguments));
     network = std::move(best);
+    try {
+        auto chartPath = history.path;
+        chartPath.replace_extension(".svg");
+        saveLossChart(chartPath.string(), chartRows, result.bestEpoch, initialValidationLoss);
+        progress << "Training chart: " << chartPath.string() << '\n';
+    } catch (const std::exception& error) {
+        // A chart export must not turn a successfully saved model into a failed run.
+        progress << "warning: chart export failed: " << error.what() << '\n';
+    }
     progress << "Training complete: best_epoch=" << result.bestEpoch
         << " validation_loss=" << result.bestValidationLoss
         << " saved_model=" << modelDestination(arguments) << '\n';

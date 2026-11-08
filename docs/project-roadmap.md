@@ -7,11 +7,16 @@ les expériences, la documentation et la livraison dans le temps disponible.
 **Légende :** ☑ réalisé, même en PR non fusionnée · ☐ restant ou à confirmer · ◇ optionnel.
 Les cases suivent le travail réalisé ; la fusion et la livraison restent des étapes distinctes.
 
-**Point au 5 novembre 2026 :** le nettoyage, les splits, les outils d’évaluation,
-l’orchestration de `--train` et la référence `chess-v1` sont fusionnés. Le moteur
-d’apprentissage (#5) et le parcours CLI complet sont implémentés et testés dans
-la PR #25, avec validation explicite ou découpage automatique. L’adaptateur du
-runner, les entraînements complets et les résultats sur les échecs restent à produire.
+**Point au 7 novembre 2026 :** génération, sauvegarde, rechargement,
+rétropropagation, entraînement et runner `builtin` sont disponibles. La branche
+`feat/experiment-progress` ajoute la progression des expériences en direct et
+le résumé de `--predict` avec accuracy sur les positions labellisées.
+Une référence entraînée et sa continuation disposent de résultats locaux :
+macro-F1 de validation **72,28 % → 81,96 %**, et **81,49 % sur test** pour le
+checkpoint retenu à l’époque totale 338. Ce sont deux checkpoints du même réseau,
+pas une comparaison d’architectures. Les benchmarks CPU BLAS sont versionnés ;
+les modèles et résultats d’entraînement restent locaux et ignorés par Git.
+Les priorités sont les comparaisons contrôlées, leur synthèse et la livraison.
 
 ```mermaid
 flowchart LR
@@ -31,10 +36,10 @@ flowchart LR
 | Problème et conception | Contrats d’entrée/sortie documentés | Justifier les choix liés à l’apprentissage |
 | Données | Nettoyage/splits et référence `chess-v1` fusionnés et vérifiés | Conserver les fichiers locaux pour les expériences |
 | Module neuronal | Génération, sauvegarde, chargement, prédiction et rétropropagation disponibles | Mesurer et optimiser les entraînements complets |
-| Entraînement | Commande complète, validation explicite ou automatique, arrêt anticipé et sauvegarde testés | Connecter le runner aux entraînements |
-| Qualité des prédictions | Évaluateur, métriques et notebooks disponibles | Mesurer les modèles entraînés et comparer à la classe majoritaire |
-| Expériences et coûts | Runner et protocole prêts ; entraînement non connecté | Lancer les comparaisons, mesurer les coûts et choisir un modèle |
-| Documentation et livraison | Guides existants ; résultats à produire | Rapport reproductible et modèle entraîné |
+| Entraînement | Runner connecté au vrai moteur ; arrêt anticipé, continuation et progression disponibles | Comparer les réglages à budget commun |
+| Qualité des prédictions | Référence évaluée en validation et sur test ; métriques par classe disponibles localement | Comparer au diagnostic majoritaire et analyser les erreurs |
+| Expériences et coûts | Continuation mesurée ; benchmark BLAS reproductible et versionné | Comparer architectures, learning rates et tailles de lots |
+| Documentation et livraison | Guides, CI et preuves locales disponibles | Versionner les preuves retenues et livrer le modèle final |
 
 ## 1 · Problème et conception
 
@@ -62,7 +67,9 @@ flowchart LR
       licences et droits d’utilisation externes inconnus.
 - [ ] Retrouver ces informations externes si possible ; ne pas présenter les droits comme établis.
 - [x] Décrire les effectifs, distributions et limites des labels dans le guide des données.
-- [ ] Analyser les limites de l’échantillonnage et leurs effets sur les résultats réels.
+- [x] Fournir le notebook d’analyse des distributions, de la couverture et des raccourcis
+      statistiques (classe majoritaire et règles simples ajustées sur train).
+- [ ] Relier ces observations aux erreurs du modèle et documenter les limites de généralisation.
 
 | Train | Validation | Test |
 | --- | --- | --- |
@@ -99,9 +106,14 @@ flowchart LR
 - [x] Vérifier le parcours CLI avec le vrai moteur et l’exclusion de la validation
       des mises à jour dans les tests de la boucle.
 - [ ] Fixer le budget commun des expériences.
-- [ ] Produire les courbes réelles ; relever les métriques de validation et les temps
-      d’entraînement avec le runner et les outils d’évaluation.
-- [ ] Examiner les problèmes réellement observés : divergence, stagnation, instabilité ou classe unique prédite.
+- [x] Conserver les historiques réels, les métriques de validation et le temps de
+      continuation ; les notebooks permettent de tracer les courbes.
+- [ ] Préparer les courbes retenues pour la défense avec meilleure époque, arrêt, axes et unités.
+- [x] Mesurer le gain de la continuation et identifier les confusions entre classes.
+- [ ] Diagnostiquer les essais compacts interrompus/échoués avant de les relancer ;
+      conserver leurs traces et distinguer problème d’exécution et problème d’apprentissage.
+      Le manifeste de `2026-11-07-compact-blas-01` signale un exécutable analyzer
+      modifié pendant l’expérience : relancer avec un binaire figé dans un nouveau dossier.
 
 **À présenter :** courbes train/validation avec meilleure époque et époque d’arrêt.
 Le découpage aide à détecter le surapprentissage ; l’arrêt et la restauration agissent dessus.
@@ -117,10 +129,14 @@ Le découpage aide à détecter le surapprentissage ; l’arrêt et la restaurat
 
 - [x] Créer le script d’évaluation ; vérifier les métriques sur des exemples calculés à la main.
 - [x] Rejeter les prédictions manquantes/en trop, les classes inconnues et les exécutions échouées.
-- [ ] Comparer à une référence prédisant toujours la classe majoritaire du train.
+- [x] Implémenter le diagnostic majoritaire ajusté sur train dans le notebook de données.
+- [ ] Présenter côte à côte ses scores et ceux du modèle sur la même validation.
 - [x] Fournir les exports numériques, la matrice de confusion et les notebooks
-      d’inspection/comparaison ; fonctionnement testé, sans résultat d’apprentissage livré.
-- [ ] Générer les rapports et graphiques des vrais modèles entraînés.
+      d’inspection/comparaison ; évaluations réelles disponibles localement.
+- [x] Évaluer la référence continuée : macro-F1 validation 81,96 %, test 81,49 %.
+- [x] Afficher avec `--predict` le nombre de positions, de labels, de bonnes réponses
+      et l’accuracy sur les seules positions labellisées.
+- [ ] Versionner une synthèse des modèles entraînés et les graphiques nécessaires à la défense.
 - [ ] Examiner des erreurs représentatives ; distinguer observations et hypothèses.
 
 **À présenter :** tableau référence/modèle, matrice de confusion et quelques erreurs expliquées.
@@ -135,16 +151,26 @@ avant les expériences ; répéter les finalistes avec plusieurs graines si poss
 
 - [x] Préparer le runner configuration × graine, les manifestes d’exécution et
       le protocole de comparaison sur validation ; réserver test au modèle final.
-- [ ] Connecter le vrai `--train` au runner via un adaptateur qui valide et applique
-      les réglages de `training.json` ; renseigner commande et paramètres dans la configuration.
+- [x] Connecter le vrai `--train` au runner `builtin`, avec validation des réglages
+      et enregistrement de la commande réellement exécutée.
+- [x] Afficher en direct l’essai courant, les époques, les pertes, leur durée
+      et les étapes d’évaluation, tout en conservant `training.log`.
+- [x] Comparer le moteur CPU initial au moteur BLAS avec contrôle numérique :
+      gain mesuré de 1,72× sur le dataset complet avec un thread.
+- [x] Mesurer 1/2/4/8 threads sur un sous-ensemble ; conserver les mesures
+      même quand davantage de threads ralentissent le calcul.
+- [ ] Comparer quelques learning rates, puis deux tailles de lots, à protocole commun.
+- [ ] Comparer compact/référence depuis des initialisations neuves et répéter
+      les finalistes sur plusieurs graines. Le protocole existant utilise encore
+      100 époques/patience 10 ; harmoniser son budget avant la campagne.
 - [ ] Fixer une petite grille justifiée, le budget et la règle de sélection du modèle.
 - [ ] Exécuter les comparaisons ci-dessous et conserver les résultats, y compris les échecs.
 
 | Comparaison | Expérience minimale utile | À relever |
 | --- | --- | --- |
 | Architecture | Réseau de référence contre un réseau plus petit | Couches, activations, paramètres, qualité en validation |
-| Réglages d’apprentissage | Quelques taux d’apprentissage ; tailles de lots si disponibles | Courbes, stabilité, époques, qualité en validation |
-| Alternative concrète | Train original contre train équilibré | Rappel par classe, macro-F1, surcoût, décision motivée |
+| Réglages d’apprentissage | Quelques taux d’apprentissage, puis deux tailles de lots | Courbes, stabilité, époques, qualité en validation |
+| Alternative concrète | Moteur initial contre BLAS : mesures disponibles ; équilibrage du train en complément si utile | Vitesse, équivalence numérique ; qualité par classe pour l’équilibrage |
 | Coût d’entraînement | Même matériel et règle d’arrêt déclarée | Temps total/par époque, exemples traités, environnement et graines |
 | Coût de prédiction | Même fichier ; mesures courtes répétées | Temps médian, positions/seconde, inclusion du chargement et du décodage FEN |
 | Taille du modèle | Comparaison des candidats | Nombre de paramètres, taille du fichier ; mémoire si mesurée |
@@ -157,11 +183,15 @@ les exemples traités. Un résultat négatif mesuré permet également de justif
 
 - [x] Fournir les manifestes du runner : commandes, réglages, graines, empreintes,
       environnement, états des exécutions, modèles et résultats disponibles.
-- [ ] Utiliser ces manifestes pour les vrais entraînements ; compléter la révision
-      du projet et les informations d’arrêt/sélection nécessaires à leur reproduction.
+- [x] Utiliser les manifestes pour les vrais entraînements, avec révision Git,
+      état du checkout et informations d’arrêt/sélection.
+- [ ] Lancer les prochaines comparaisons depuis un état Git propre et publié ;
+      ne pas reconstruire des métadonnées historiques manquantes par supposition.
 - [x] Ajouter le logger partagé génération/entraînement (#13) ; l’historique CSV
       de pertes existe déjà et ne remplace pas ce journal ([journaux](logging.md)).
-- [ ] Conserver les valeurs derrière les graphiques ; indiquer axes, unités et expériences.
+- [x] Versionner les mesures brutes, environnements et figures du benchmark BLAS.
+- [ ] Publier de la même manière les preuves d’apprentissage retenues, sans copier
+      les datasets dans les résultats ; indiquer axes, unités et expériences.
 - [ ] Tenir un journal court des problèmes et décisions significatifs :
 
 | Exécution / observation | Hypothèse | Vérification ou changement | Avant → après | Décision / limite |
@@ -172,16 +202,27 @@ les exemples traités. Un résultat négatif mesuré permet également de justif
 | --- | --- | --- |
 | Guide des données | Guide consolidé ; référence, effectifs et limites documentés en PR #24 | Origines/droits inconnus à clarifier si possible ; limites observées |
 | Guide d’entraînement | [Guide unifié](training.md) : commande, boucle, rétropropagation et intégration | Réglages retenus et résultats |
-| Guide d’évaluation | Runner, notebooks et protocole de comparaison disponibles | Brancher l’entraînement et renseigner les expériences réelles |
-| Rapport d’expériences | À produire | Essais, courbes, coûts, alternatives, problèmes et choix final |
+| Guide d’évaluation | Runner connecté, notebooks et métriques réelles locales | Synthétiser les comparaisons contrôlées |
+| Rapport d’expériences | Rapport de référence local ; benchmark BLAS versionné | Publier essais, courbes, coûts, problèmes et choix final |
 | README | Compilation, génération, prédiction et liens vers les guides | Modèle livré et liens vers les résultats |
 
 ## 8 · Modèle final et soutenance
 
-- [ ] Sélectionner sur validation, figer les réglages, puis évaluer le modèle final sur test.
+- [x] Évaluer sur test le checkpoint de référence à l’époque 338.
+- [ ] Figer les réglages finaux et la règle de sélection avant leur évaluation finale.
+      Le score de test de la référence est déjà connu : ne pas présenter ce jeu
+      comme un nouvel échantillon aveugle pour les prochaines expériences.
 - [ ] Livrer et pousser un modèle entraîné nommé `my_torch_network…`.
 - [ ] Vérifier que le fichier livré se charge et prédit une classe par entrée, dans l’ordre.
-- [ ] Conserver scripts, configurations, commandes et données d’entraînement pour la reproduction.
+- [ ] Préparer les éléments de reproduction : scripts, configurations, commandes,
+      empreintes et accès aux données ; conserver les datasets hors des résultats.
+- [ ] Sélectionner explicitement les modèles et preuves à publier : `models/` et
+      `results/` sont ignorés par Git. Vérifier la livraison depuis un checkout neuf.
+- [x] Disposer d’une CI de compilation/tests et du miroir Epitech après validation sur `main`.
+- [ ] Ajouter une vérification explicite du moteur OpenBLAS à la CI, en complément
+      du moteur sans BLAS ; ne pas supposer le chemin accéléré couvert.
+- [ ] Préparer une courte démonstration reproductible : générer, entraîner,
+      sauvegarder, recharger, prédire ; créer une release si utile pour les livrables.
 - [ ] Démontrer l’indépendance du module, la génération, l’entraînement, la sauvegarde et la prédiction.
 - [ ] Justifier les choix par des mesures, avec les limites et les essais infructueux.
 
@@ -193,14 +234,21 @@ chiffrés, graphiques lisibles et compromis justifiés. Le barème fourni décri
 
 | Quand | Priorité |
 | --- | --- |
-| Maintenant | Finaliser la fusion de #25 ; préparer l’adaptateur du runner et la grille d’essai ; avancer #13 en parallèle |
-| Ensuite | Connecter le runner ; entraîner une référence et examiner courbes, arrêt et comparaison à la classe majoritaire |
-| Après une référence stable | Comparer quelques architectures/réglages et une alternative concrète |
-| Dernière passe | Figer le modèle, mesurer qualité/coûts finaux, terminer le rapport et vérifier les livrables |
+| Maintenant | Vérifier les échecs compacts ; fixer les budgets et grilles learning rate/batch/architectures ; compléter la CI BLAS |
+| Ensuite | Exécuter les comparaisons sur validation ; conserver les échecs ; répéter les finalistes sur plusieurs graines |
+| Après les mesures | Synthétiser qualité/coût, courbes de surapprentissage, références simples et justification des choix |
+| Dernière passe | Figer le modèle, publier les preuves et le modèle retenus, vérifier la livraison et répéter la démonstration |
 
-**◇ Après l’essentiel uniquement :** parallélisation, recherches plus larges,
-optimiseurs supplémentaires, calibration ou classes supplémentaires. Priorité à
-un modèle entraîné fonctionnel, documenté et reproductible.
+**◇ Après l’essentiel uniquement :** recherches plus larges, optimiseurs
+supplémentaires, calibration ou changement d’encodage. Ne pas refaire les 777
+entrées sans hypothèse mesurable et budget de réentraînement.
+
+Preuve versionnée : [benchmark CPU BLAS](../benchmarks/cpu_blas/results/linux-2026-11-07/README.md).
+Preuves locales à conserver et sélectionner pour publication :
+`results/training/2026-11-07-continue-reference-01/`,
+`results/evaluation/2026-11-07-reference-test-01/`, `docs/report/` et les modèles.
+Les états des essais dans les manifestes décrivent la dernière trace enregistrée ;
+ils ne prouvent pas à eux seuls qu’un processus tourne encore.
 
 Fondations existantes : [architecture](architecture.md),
 [contrat d’entrée](datasets.md), [contrat de sortie](output-encoding.md).

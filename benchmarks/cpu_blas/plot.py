@@ -47,7 +47,6 @@ def main():
                   "Bars: medians; whiskers: observed min/max.\n"
                   "Fixed-epoch throughput; time to target validation quality is unmeasured.", fontsize=9)
     args.output.mkdir(parents=True, exist_ok=True)
-    fig.savefig(args.output / "timings.png", dpi=200)
     svg = args.output / "timings.svg"
     fig.savefig(svg)
     svg.write_text("\n".join(line.rstrip() for line in svg.read_text().splitlines()) + "\n")

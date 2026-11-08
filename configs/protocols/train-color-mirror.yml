@@ -1,0 +1,25 @@
+# Create and verify this derived train with scripts.augment_dataset first.
+# Run with one OpenBLAS/OMP thread; see the color-mirror experiment report.
+# Paths are relative to this file. All three seeds start from fresh weights.
+version: 1
+hypothesis: Color-equivalent train augmentation improves validation class metrics under the fixed reference training protocol.
+seeds: [44, 45, 46]
+datasets:
+  train: ../../dataset/processed/chess-v1-color-mirror/train.fen
+  validation: ../../dataset/references/chess-v1/splits/validation.txt
+configurations:
+  - name: color-mirror
+    network: ../networks/basic-network.yml
+    overrides:
+      layers: [777, 128, 64, 3]
+      hidden_activation: sigmoid
+      output_activation: softmax
+      learning_rate: 0.08
+      initialization: xavier
+training:
+  command: builtin
+  settings:
+    epochs: 500
+    batch_size: 128
+    patience: 20
+    min_delta: 0.0001

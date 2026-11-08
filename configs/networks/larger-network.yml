@@ -1,0 +1,7 @@
+# Two hidden layers with twice the reference widths; other settings unchanged.
+layers: [777, 256, 128, 3]
+hidden_activation: sigmoid
+output_activation: softmax
+learning_rate: 0.01
+initialization: xavier
+seed: 42

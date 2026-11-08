@@ -1,0 +1,523 @@
+{
+  "name": "Augmented checkpoints: train versus validation",
+  "seeds": [
+    44,
+    45,
+    46
+  ],
+  "labels": [
+    "Nothing",
+    "Check",
+    "Checkmate"
+  ],
+  "scope": "Inference only on the full augmented train; reuse frozen validation metrics at the same selected checkpoints. No retraining or test evaluation.",
+  "runs": [
+    {
+      "seed": 44,
+      "selected_epoch": 227,
+      "train": {
+        "samples": 1141143,
+        "accuracy": 0.9118769514425449,
+        "macro_f1": 0.9052535976585384,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.9602195163635059,
+            "recall": 0.9595635443571767,
+            "f1": 0.9598914182905763,
+            "support": 474275
+          },
+          "Check": {
+            "precision": 0.8901064609911742,
+            "recall": 0.8639751631182402,
+            "f1": 0.8768461675412654,
+            "support": 396185
+          },
+          "Checkmate": {
+            "precision": 0.8604327797394548,
+            "recall": 0.8984347003690664,
+            "f1": 0.8790232071437737,
+            "support": 270683
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              455097,
+              16482,
+              2696
+            ],
+            [
+              17140,
+              342294,
+              36751
+            ],
+            [
+              1714,
+              25778,
+              243191
+            ]
+          ]
+        },
+        "artifacts": {
+          "model": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-44/model.nn",
+            "sha256": "f86f2f8b520c14e2b3e9fbc5f50170283a3227324c4be7a17f97c5ba1b81ef45"
+          },
+          "dataset": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/data/train.fen",
+            "sha256": "78481ab5110970c19d9283ff1549075a5b3d9788a9597b50afff134eeb520279"
+          },
+          "analyzer": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/tools/my_torch_analyzer",
+            "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+          }
+        },
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/tools/my_torch_analyzer",
+          "--predict",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-44/model.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/data/train.fen"
+        ],
+        "prediction_seconds": 14.490519969986053,
+        "analyzer_stderr": "Prediction summary: positions=1141143 labeled=1141143 correct=1040582/1141143 accuracy=91.19%\n"
+      },
+      "validation": {
+        "samples": 71555,
+        "accuracy": 0.8763468660470967,
+        "macro_f1": 0.8691810626392709,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.9283311686149133,
+            "recall": 0.9367858583142895,
+            "f1": 0.9325393506515229,
+            "support": 29756
+          },
+          "Check": {
+            "precision": 0.8424249989597636,
+            "recall": 0.8159432555515254,
+            "f1": 0.8289726896777627,
+            "support": 24813
+          },
+          "Checkmate": {
+            "precision": 0.8337239211203201,
+            "recall": 0.8587071706110915,
+            "f1": 0.846031147588527,
+            "support": 16986
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              27875,
+              1622,
+              259
+            ],
+            [
+              1917,
+              20246,
+              2650
+            ],
+            [
+              235,
+              2165,
+              14586
+            ]
+          ]
+        },
+        "artifacts": {
+          "model": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-44/model.nn",
+            "sha256": "f86f2f8b520c14e2b3e9fbc5f50170283a3227324c4be7a17f97c5ba1b81ef45"
+          },
+          "dataset": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/data/validation.fen",
+            "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+          },
+          "analyzer": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/tools/my_torch_analyzer",
+            "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+          }
+        },
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/tools/my_torch_analyzer",
+          "--predict",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-44/model.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/data/validation.fen"
+        ],
+        "prediction_seconds": 0.8896021439941251,
+        "analyzer_stderr": "Prediction summary: positions=71555 labeled=71555 correct=62707/71555 accuracy=87.63%\n"
+      },
+      "train_metrics_file": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/evaluation/2026-11-08-augmented-train-seed-44-01/metrics.json",
+        "sha256": "da78db64d7624948ed32ba3ed72f2097a490a4e4b1ba58789b04b1bd3bb09e86"
+      }
+    },
+    {
+      "seed": 45,
+      "selected_epoch": 240,
+      "train": {
+        "samples": 1141143,
+        "accuracy": 0.916614306883537,
+        "macro_f1": 0.9096734866227091,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.9723843029268742,
+            "recall": 0.9575035580623056,
+            "f1": 0.9648865601747385,
+            "support": 474275
+          },
+          "Check": {
+            "precision": 0.8765512704465978,
+            "recall": 0.8946073172886404,
+            "f1": 0.8854872578326137,
+            "support": 396185
+          },
+          "Checkmate": {
+            "precision": 0.8801171324783157,
+            "recall": 0.8771810568081483,
+            "f1": 0.878646641860775,
+            "support": 270683
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              454120,
+              18090,
+              2065
+            ],
+            [
+              11478,
+              354430,
+              30277
+            ],
+            [
+              1419,
+              31826,
+              237438
+            ]
+          ]
+        },
+        "artifacts": {
+          "model": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-45/model.nn",
+            "sha256": "07ce0dc9031fca9acf547d5339e39802aea6952912c3448f552b0717b563e11f"
+          },
+          "dataset": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/data/train.fen",
+            "sha256": "78481ab5110970c19d9283ff1549075a5b3d9788a9597b50afff134eeb520279"
+          },
+          "analyzer": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/tools/my_torch_analyzer",
+            "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+          }
+        },
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/tools/my_torch_analyzer",
+          "--predict",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-45/model.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/data/train.fen"
+        ],
+        "prediction_seconds": 13.5483884139976,
+        "analyzer_stderr": "Prediction summary: positions=1141143 labeled=1141143 correct=1045988/1141143 accuracy=91.66%\n"
+      },
+      "validation": {
+        "samples": 71555,
+        "accuracy": 0.8801760883236671,
+        "macro_f1": 0.872696970580674,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.9432563832319043,
+            "recall": 0.9323833848635569,
+            "f1": 0.9377883689093952,
+            "support": 29756
+          },
+          "Check": {
+            "precision": 0.8276228733459358,
+            "recall": 0.8469350743561842,
+            "f1": 0.8371676127875709,
+            "support": 24813
+          },
+          "Checkmate": {
+            "precision": 0.8490746268656716,
+            "recall": 0.8372777581537737,
+            "f1": 0.8431349300450557,
+            "support": 16986
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              27744,
+              1790,
+              222
+            ],
+            [
+              1492,
+              21015,
+              2306
+            ],
+            [
+              177,
+              2587,
+              14222
+            ]
+          ]
+        },
+        "artifacts": {
+          "model": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-45/model.nn",
+            "sha256": "07ce0dc9031fca9acf547d5339e39802aea6952912c3448f552b0717b563e11f"
+          },
+          "dataset": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/data/validation.fen",
+            "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+          },
+          "analyzer": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/tools/my_torch_analyzer",
+            "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+          }
+        },
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/tools/my_torch_analyzer",
+          "--predict",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-45/model.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/data/validation.fen"
+        ],
+        "prediction_seconds": 0.8796710110036656,
+        "analyzer_stderr": "Prediction summary: positions=71555 labeled=71555 correct=62981/71555 accuracy=88.02%\n"
+      },
+      "train_metrics_file": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/evaluation/2026-11-08-augmented-train-seed-45-01/metrics.json",
+        "sha256": "ac758e08781f37f18e4765c3a3e7744229ecbcbb89aa2a468dfef1b7bc3f805e"
+      }
+    },
+    {
+      "seed": 46,
+      "selected_epoch": 281,
+      "train": {
+        "samples": 1141143,
+        "accuracy": 0.9187016876938298,
+        "macro_f1": 0.9126822588335876,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.9718787010178336,
+            "recall": 0.9551019977860946,
+            "f1": 0.9634173186312095,
+            "support": 474275
+          },
+          "Check": {
+            "precision": 0.887810606060606,
+            "recall": 0.8873960397289146,
+            "f1": 0.8876032744876513,
+            "support": 396185
+          },
+          "Checkmate": {
+            "precision": 0.8737202343624016,
+            "recall": 0.9007436743349231,
+            "f1": 0.8870261833819019,
+            "support": 270683
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              452981,
+              18799,
+              2495
+            ],
+            [
+              11868,
+              351573,
+              32744
+            ],
+            [
+              1239,
+              25628,
+              243816
+            ]
+          ]
+        },
+        "artifacts": {
+          "model": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-46/model.nn",
+            "sha256": "3ce70f8052f213573905e7fe8cd8a278309759083212b68768f424352aa392bf"
+          },
+          "dataset": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/data/train.fen",
+            "sha256": "78481ab5110970c19d9283ff1549075a5b3d9788a9597b50afff134eeb520279"
+          },
+          "analyzer": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/tools/my_torch_analyzer",
+            "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+          }
+        },
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/tools/my_torch_analyzer",
+          "--predict",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-46/model.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/data/train.fen"
+        ],
+        "prediction_seconds": 13.41727430598985,
+        "analyzer_stderr": "Prediction summary: positions=1141143 labeled=1141143 correct=1048370/1141143 accuracy=91.87%\n"
+      },
+      "validation": {
+        "samples": 71555,
+        "accuracy": 0.8806093215009433,
+        "macro_f1": 0.8740418010632188,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.9414650766609881,
+            "recall": 0.9286194380965184,
+            "f1": 0.9349981389368254,
+            "support": 29756
+          },
+          "Check": {
+            "precision": 0.8361090996862177,
+            "recall": 0.8376254382783218,
+            "f1": 0.8368665821102856,
+            "support": 24813
+          },
+          "Checkmate": {
+            "precision": 0.8414135008935263,
+            "recall": 0.8592958907335453,
+            "f1": 0.8502606821425451,
+            "support": 16986
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              27632,
+              1886,
+              238
+            ],
+            [
+              1516,
+              20784,
+              2513
+            ],
+            [
+              202,
+              2188,
+              14596
+            ]
+          ]
+        },
+        "artifacts": {
+          "model": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-46/model.nn",
+            "sha256": "3ce70f8052f213573905e7fe8cd8a278309759083212b68768f424352aa392bf"
+          },
+          "dataset": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/data/validation.fen",
+            "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+          },
+          "analyzer": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/tools/my_torch_analyzer",
+            "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+          }
+        },
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/tools/my_torch_analyzer",
+          "--predict",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-46/model.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/data/validation.fen"
+        ],
+        "prediction_seconds": 0.8793049810046796,
+        "analyzer_stderr": "Prediction summary: positions=71555 labeled=71555 correct=63012/71555 accuracy=88.06%\n"
+      },
+      "train_metrics_file": {
+        "path": "/home/mathys/3/CNA/MyTorch/results/evaluation/2026-11-08-augmented-train-seed-46-01/metrics.json",
+        "sha256": "318b5cfe02a95ba838645f891926b91f18dc766516daa21cd7374d9244c027be"
+      }
+    }
+  ],
+  "statistics": {
+    "train": {
+      "macro_f1": 0.9092031143716117,
+      "accuracy": 0.9157309820066372,
+      "per_class": {
+        "Nothing": {
+          "precision": 0.9681608401027378,
+          "recall": 0.9573897000685256,
+          "f1": 0.9627317656988414
+        },
+        "Check": {
+          "precision": 0.884822779166126,
+          "recall": 0.881992840045265,
+          "f1": 0.8833122332871768
+        },
+        "Checkmate": {
+          "precision": 0.8714233821933907,
+          "recall": 0.8921198105040459,
+          "f1": 0.8815653441288168
+        }
+      }
+    },
+    "validation": {
+      "macro_f1": 0.8719732780943878,
+      "accuracy": 0.8790440919572357,
+      "per_class": {
+        "Nothing": {
+          "precision": 0.9376842095026019,
+          "recall": 0.932596227091455,
+          "f1": 0.9351086194992478
+        },
+        "Check": {
+          "precision": 0.8353856573306391,
+          "recall": 0.8335012560620104,
+          "f1": 0.8343356281918731
+        },
+        "Checkmate": {
+          "precision": 0.8414040162931726,
+          "recall": 0.8517602731661368,
+          "f1": 0.8464755865920426
+        }
+      }
+    }
+  },
+  "mean_macro_f1_gap": 0.03722983627722387
+}
