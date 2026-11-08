@@ -26,6 +26,7 @@ The comparison notebook also requires those local result directories.
 | 2026-11-08 | [ReLU on the color-mirror train: learning rate and seeds](2026-11-08-relu-color-mirror.md) | ReLU + Xavier at LR 0.16: 88.29% mean validation macro F1 on seeds 44–46 versus 87.20% for the augmented sigmoid, ahead on every seed, with 6.6× fewer updates to the checkpoint |
 | 2026-11-08 | [Label and error audit](2026-11-08-label-and-error-audit.md) | All 644,000 train and validation labels match the chess rules; the audited ReLU model reaches 92.66% on its own train, and 94% of validation errors are Check↔Checkmate or Nothing↔Check, concentrated on blocked lines and checks with few replies |
 | 2026-11-08 | [Adam optimizer](2026-11-08-adam-optimizer.md) | Larger ReLU + Adam: 89.25% accuracy / 88.58% macro F1 in 15.99 min; +0.51 accuracy points versus the small model on one seed |
+| 2026-11-08 | [Improving the delivered model: four changes](2026-11-08-mirror-view-ensemble.md) | ReLU + Adam at 256/128, doubled training data and dropout: 93.66% test accuracy / 93.15% macro F1 at 2.4 MB; four views reach 95.05% validation at 5.7× the computation |
 
 ## Training protocols
 
