@@ -95,4 +95,5 @@ __pycache__/
 !/dataset/raw/**/*.txt
 !/notebooks/requirements.txt
 !/requirements.txt
+!/scripts/requirements.txt
 .ipynb_checkpoints/

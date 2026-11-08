@@ -1,0 +1,3 @@
+# Optional: legal game generation and its tests; not used by the C++ build.
+python-chess==1.999
+chess==1.11.2
