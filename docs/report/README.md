@@ -22,6 +22,9 @@ The comparison notebook also requires those local result directories.
 | 2026-11-08 | [Color-mirror augmentation](2026-11-08-color-mirror-augmentation.md) | Paired seeds 44–46: +4.91 pp macro F1; 2.69× historical epoch compute |
 | 2026-11-08 | [Augmented train versus validation](2026-11-08-augmented-train-validation.md) | Mean macro F1 90.92% train vs 87.20% validation; residual training errors and generalization gap |
 | 2026-11-08 | [SGD checkpoint continuation](2026-11-08-sgd-checkpoint-resume.md) | LR 0.008: 87.57% validation macro F1, +0.165 pp; both reduced-rate checkpoints selected at additional epoch 1 |
+| 2026-11-08 | [Hidden activations: sigmoid, tanh and ReLU over three seeds](2026-11-08-hidden-activations.md) | At 100 epochs, tanh and ReLU lead sigmoid by 3.8–4.3 macro-F1 points on every seed and are not separated from each other; ReLU + Xavier (82.28%) matches the sigmoid 500-epoch seed mean with about 8× fewer epochs |
+| 2026-11-08 | [ReLU on the color-mirror train: learning rate and seeds](2026-11-08-relu-color-mirror.md) | ReLU + Xavier at LR 0.16: 88.29% mean validation macro F1 on seeds 44–46 versus 87.20% for the augmented sigmoid, ahead on every seed, with 6.6× fewer updates to the checkpoint |
+| 2026-11-08 | [Label and error audit](2026-11-08-label-and-error-audit.md) | All 644,000 train and validation labels match the chess rules; the audited ReLU model reaches 92.66% on its own train, and 94% of validation errors are Check↔Checkmate or Nothing↔Check, concentrated on blocked lines and checks with few replies |
 | 2026-11-08 | [Adam optimizer](2026-11-08-adam-optimizer.md) | Larger ReLU + Adam: 89.25% accuracy / 88.58% macro F1 in 15.99 min; +0.51 accuracy points versus the small model on one seed |
 
 ## Training protocols

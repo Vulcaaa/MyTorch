@@ -1,0 +1,27 @@
+# ReLU + Xavier on the color-mirror train, under the fixed reference protocol.
+# Same data, seed and settings as train-color-mirror.yml seed 46; only the
+# hidden activation changes. Create and verify the derived train with
+# scripts.augment_dataset first. Run with one BLAS thread
+# (VECLIB_MAXIMUM_THREADS=1 on macOS). Paths are relative to this file.
+version: 1
+hypothesis: With color-mirror train augmentation, ReLU hidden layers may reach the augmented sigmoid validation quality in fewer epochs.
+seeds: [46]
+datasets:
+  train: ../../dataset/processed/chess-v1-color-mirror/train.fen
+  validation: ../../dataset/references/chess-v1/splits/validation.txt
+configurations:
+  - name: relu-color-mirror
+    network: ../networks/basic-network.yml
+    overrides:
+      layers: [777, 128, 64, 3]
+      hidden_activation: relu
+      output_activation: softmax
+      learning_rate: 0.08
+      initialization: xavier
+training:
+  command: builtin
+  settings:
+    epochs: 500
+    batch_size: 128
+    patience: 20
+    min_delta: 0.0001
