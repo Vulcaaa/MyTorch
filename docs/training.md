@@ -1,8 +1,8 @@
 # Training
 
 Train a saved model, follow its learning progress, and understand how the
-parameters change. The C++ analyzer trains models end to end; the Python
-experiment adapter still needs to be implemented.
+parameters change. The C++ analyzer trains models end to end; the Python runner
+uses it to execute reproducible protocols and collect results.
 
 | I want to… | Go to |
 | --- | --- |
@@ -12,7 +12,7 @@ experiment adapter still needs to be implemented.
 | Read logs or diagnose a failure | [4. History and failures](#4-history-and-failures) |
 | Understand backpropagation | [5. Neural calculations](#5-neural-calculations) |
 | Connect automated experiments | [6. Experiment runner](#6-experiment-runner) |
-| Find tests and remaining work | [7. Verification and limits](#7-verification-and-limits) |
+| Find tests and limits | [7. Verification and limits](#7-verification-and-limits) |
 
 > **Validation is always used:** supply `--validation FILE` to keep existing
 > train/validation splits, or omit it to create an automatic 90/10 split from
@@ -59,6 +59,7 @@ mode are rejected.
 | `--validation FILE` | Automatic 90/10 split | Use a separate validation file instead of splitting `CHESSFILE`; never used for updates |
 | `--epochs N` | `100` | Maximum epochs |
 | `--batch-size N` | `32` | Training samples per update |
+| `--threads N` | Library/environment | CPU BLAS thread limit; scalar builds accept only `1` |
 | `--patience N` | `10` | Epochs without sufficient improvement before stopping |
 | `--min-delta X` | `0.0001` | Validation-loss improvement required to reset patience |
 | `--history FILE` | Automatic path | CSV destination; an existing file is rejected |
@@ -66,8 +67,14 @@ mode are rejected.
 
 Epochs, batch size, and patience must be positive integers. Minimum improvement
 must be finite and nonnegative. Learning rate and seed come from the loaded
-model. The seed controls training order; reproducibility requires the same
-inputs, settings, build, and runtime environment.
+model, as does the optimizer (`sgd` or `adam`). The seed controls training order;
+reproducibility requires the same inputs, settings, build, and runtime environment.
+
+Architecture, activations, initialization, optimizer, learning rate and seed are
+defined in the [network YAML](architecture.md#network-configuration), then stored
+in the generated model. Training options control the run budget and validation,
+not those model settings. The basic YAML uses sigmoid/SGD; ReLU/Adam experiments
+declare their changes in [protocols](evaluation.md#network-configuration).
 
 ## 2. Training flow
 
@@ -130,8 +137,8 @@ The operation happens in memory and never rewrites source files.
 `--validation validation.txt` alongside the reference `train.txt`.** This keeps
 the existing train/validation assignments intact and leaves the test set for
 final evaluation. Omitting the option intentionally splits the loaded train
-file again; the automatic-mode message makes that visible. The experiment
-adapter must pass its supplied validation path explicitly.
+file again; the automatic-mode message makes that visible. The built-in experiment
+adapter passes its supplied validation path explicitly.
 
 The analyzer seeds one `std::mt19937` from the model seed. Each epoch shuffles
 canonical sample indices, then processes every sample once, including the final
@@ -219,9 +226,11 @@ flowchart LR
 | `validateSamples(samples) const` | Rejects invalid dimensions, values, or targets |
 | `config()` / `layers()` | Read-only configuration / parameters; explicit parameters can be supplied to the constructor for checks |
 
-A `TrainingSample` contains `inputs` and `target` numeric vectors. The analyzer
-owns sample ordering and batches; the neural methods do not load files, shuffle,
-log, or save models.
+A `TrainingSample` contains a target vector and either dense numeric inputs or
+exact sparse binary inputs (`activeInputs`, `binaryInputSize`). The analyzer
+uses sparse storage for chess data to reduce memory without changing features.
+It owns sample ordering and batches; the neural methods do not load files,
+shuffle, log, or save models.
 
 ### Notation
 
@@ -321,6 +330,11 @@ moments. Adam allocates two additional parameter-sized tensors; rejected updates
 preserve parameters and optimizer state. No weight decay or learning-rate schedule
 is applied. See the [Adam paper](https://arxiv.org/abs/1412.6980).
 
+Adam adapts each parameter's update using gradient moments, at the cost of two
+extra parameter-sized state tensors and larger checkpoints. SGD is a simpler
+baseline with less optimizer memory. Neither is guaranteed to score better;
+compare saved validation results and cost under a declared protocol.
+
 With the default `optimizer: sgd`, `trainBatch` applies plain mini-batch stochastic gradient descent:
 
 ```text
@@ -393,7 +407,7 @@ training, continuation protocols and before/after validation scores.
 
 ### Optional external backend
 
-### Request and command
+#### Request and command
 
 Set `training.command` to an **argument array**; it runs from the repository root
 without a shell. It must consume `{initial_model}`, `{trained_model}`, and
@@ -414,7 +428,7 @@ apply its fields, reject unknown settings, and ensure that the model seed matche
 the request. External backends define their own settings schema. Passing `training.json`
 alone does not apply any settings.
 
-### Result and history
+#### Result and history
 
 The backend returns nonzero on failure. Success requires a valid model at
 `{trained_model}`, with the original configuration and seed preserved. The runner
@@ -449,7 +463,7 @@ data to the backend.
 | CLI arguments and defaults | [`src/analyzer/Arguments.cpp`](../src/analyzer/Arguments.cpp), [`Arguments.hpp`](../src/analyzer/Arguments.hpp) |
 | Epochs, batches, validation, checkpoints, history, saving | [`src/analyzer/Training.cpp`](../src/analyzer/Training.cpp) |
 | Forward pass and sample validation | [`src/neural/NeuralNetwork.cpp`](../src/neural/NeuralNetwork.cpp) |
-| Backpropagation and SGD | [`src/neural/Training.cpp`](../src/neural/Training.cpp) |
+| Backpropagation and SGD/Adam | [`src/neural/Training.cpp`](../src/neural/Training.cpp), [`Batch.cpp`](../src/neural/Batch.cpp) |
 | Stable losses and activation derivatives | [`Loss.cpp`](../src/neural/Loss.cpp), [`Activation.cpp`](../src/neural/Activation.cpp) |
 | Experiment requests and result checks | [`scripts/experiment.py`](../scripts/experiment.py) |
 
@@ -460,6 +474,7 @@ Run `make test` to build and run the checks:
 | `tests/Loss.cpp`, `tests/Activation.cpp` | Hand-computed losses and derivatives, extreme logits, numerical stability |
 | `tests/Backpropagation.cpp` | Known gradients and updates, batch averaging, invalid inputs, unchanged parameters on failure, XOR learning; finite differences with zero/sparse/dense inputs and dead ReLU neurons; indexed/copy batch agreement and invalid index ranges |
 | Finite differences in `tests/Backpropagation.cpp` | Perturb every weight and bias by `±1e-6`; compare the measured loss slope with backpropagation for all eight hidden/output activation pairs (test tolerance `1e-7`) |
+| `tests/Adam.cpp`, `tests/ModelSerializer.cpp`, `tests/BinaryTraining.cpp` | Adam updates and saved state, serialization, dense/sparse binary agreement and validation |
 | `tests/Training.cpp` | Scripted neural methods isolate scheduling, partial batches, shuffling, patience, checkpoint selection, and file failures; automatic split checks cover seed reproducibility, stratification, duplicate groups, coverage, and holdout exclusion from updates |
 | `tests/cli.py` | Real training in explicit and automatic validation modes, minimal subject syntax, both save modes, repeatable outputs, and invalid split/argument errors |
 | `tests/experiment.py`, `tests/comparison.py` | Runner failure handling, output validation, and history parsing |
@@ -468,13 +483,13 @@ The orchestration test substitutes scripted neural methods when linking; shipped
 executables use the real backend. Its tests verify control flow, while the
 backpropagation and CLI tests verify actual learning and integration.
 
-### Practical limits and next work
+### Practical limits
 
-| Topic | Current behavior / remaining work |
+| Topic | Current behavior / limitation |
 | --- | --- |
-| Chess quality | An operational training pipeline does not establish good classification; run full validation comparisons before final test evaluation |
+| Chess quality | Completed comparisons and audits are in the [reports](report/README.md); quality claims must identify the evaluated checkpoint, data and metric |
 | CLI compatibility | Minimal subject invocation supported through automatic validation; explicit validation preserves reference splits |
-| Automated campaigns | Built-in adapter and reports available; execute and interpret controlled comparisons |
+| Automated campaigns | Built-in adapter and reports available; the runner does not select or export a final delivered model |
 | Optimizer | Mini-batch SGD (default) or Adam; standalone momentum, dropout and weight decay are not implemented |
 | Activations | Training supports softmax/sigmoid outputs; hidden derivatives support sigmoid/tanh/ReLU/linear, while file configurations accept sigmoid/tanh/ReLU |
 | Memory | Chess train/validation inputs store only active binary feature indices; mini-batches reconstruct the exact double inputs. Generic numeric training still accepts dense vectors. |
@@ -529,7 +544,7 @@ Forward uses `A * W^T`, weight gradients use `D^T * A`, and hidden deltas use
 `D * W`. Sparse first-layer inputs retain indexed forward/gradient accumulation,
 avoiding dense multiplications by the zeros in the chess encoding. Mixed sparse
 and dense blocks still contribute to the same logical batch gradient.
-Activations, stable losses, backpropagation and SGD remain our own code;
+Activations, stable losses, backpropagation and SGD/Adam remain our own code;
 BLAS provides matrix multiplication only. Arithmetic stays FP64 (`double`), with
 the same mean batch gradient, learning rate, shuffle and model format. Different
 addition orders can cause small floating-point differences.
@@ -575,12 +590,14 @@ executables are relinked when switching backends. For nonstandard installations,
 override `BLAS_CFLAGS` and `BLAS_LIBS`. A BLAS-linked binary requires that library
 at runtime; build with `BLAS=none` for deployment on machines without it.
 
-Validation: the complete `make test` suite passes on Linux with OpenBLAS and
-with `BLAS=none`, including finite differences, overflow/rollback, indexed
+The Linux benchmark validation records successful `make test` runs with OpenBLAS
+and `BLAS=none`, including finite differences, overflow/rollback, indexed
 batches and XOR. Additional tests compare batched loss with scalar predictions
 and batched gradients/updates with the mean of per-sample gradients across a
-256-position block boundary for all eight activation pairs. macOS build support
-is implemented but has not been executed on a Mac in this environment.
+256-position block boundary for all eight activation pairs. Gustave's activation
+experiments use macOS/Accelerate; their [report](report/2026-11-08-hidden-activations.md)
+records cross-platform random-number differences. A common seed does not imply
+identical initial weights or shuffles across C++ standard libraries.
 
 ### CPU BLAS measurements
 

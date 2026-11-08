@@ -1,14 +1,15 @@
 # Chess datasets
 
-This guide covers the input format, cleaning, and reproducible dataset splits.
-Follow the preparation workflow: **raw data → cleaning → train/validation/test**.
+This guide covers the input format, reproducible splits and training-only
+enrichment. The workflow is **raw data → cleaning → frozen train/validation/test
+→ optional train augmentation**. Validation and test assignments stay fixed.
 
 ## Contents
 
 1. [FEN encoding and C++ dataset contract](#1-fen-encoding-and-c-dataset-contract)
 2. [Dataset cleaning](#2-dataset-cleaning)
 3. [Dataset splitting](#3-dataset-splitting)
-4. [Frozen reference datasets](#4-frozen-reference-datasets)
+4. [Frozen reference datasets](#4-frozen-reference-datasets) and [color mirrors](#color-mirror-augmentation)
 5. [Analyze balance and diversity](#5-analyze-balance-and-diversity)
 6. [Generated game data](#6-generated-game-data)
 
@@ -27,6 +28,16 @@ Follow the preparation workflow: **raw data → cleaning → train/validation/te
 
 Castling rights and move counters are validated but not encoded. All indices
 are zero-based.
+
+This one-hot layout avoids assigning an artificial numeric order to piece types.
+Side to move identifies the king whose status is classified; en passant can
+affect the legal replies to a check. For legal positions, castling cannot escape
+check, so castling rights do not change these three labels. Move counters are
+irrelevant to this classification, which has no draw class. This compact
+contract preserves the relevant board information, but a dense network must
+still learn interactions such as blocked attack lines and escape squares.
+The [label/error audit](report/2026-11-08-label-and-error-audit.md) investigates
+these limits; full chess legality is not enforced by the encoder.
 
 ### Piece placement
 
@@ -96,6 +107,10 @@ For example, `Check White` maps to `[0, 1, 0]`; see
 `target`: a missing label is represented by `std::nullopt`, never by `Nothing`.
 Prediction accepts both six-field FEN lines and labeled lines.
 Use `DatasetMode::Training` to require a label for every position.
+
+Training uses `readDataset` to consume samples incrementally and stores active
+binary feature indices, avoiding a second full dense dataset in memory. This is
+an exact storage optimization; the feature order and model format are unchanged.
 
 The loader skips blank lines and accepts whitespace-separated fields, including
 Windows line endings. It rejects unknown labels, extra fields, and malformed
@@ -332,8 +347,12 @@ These files reproduce the existing notebook outputs; no split algorithm changed.
 The external source, generator, license, and usage grant are **unknown**. The
 repository filenames and Git history do not establish them. Local retention for
 project experiments and the defense does not establish redistribution rights.
-FEN syntax and label format are checked; chess legality and label correctness
-have not been audited. These limitations are also recorded in the manifest.
+The original preparation checks FEN syntax and label format, not full chess
+legality or rule-derived labels. A [later independent audit](report/2026-11-08-label-and-error-audit.md)
+found all 644,000 train/validation labels consistent with the chess rules, while
+flagging 11 positions as invalid per the oracle. It does not establish the external
+data's origin, license or test-label correctness. The original manifest retains
+the preparation-time limitations rather than rewriting its history.
 
 ### Commands and reproduction
 
@@ -404,8 +423,43 @@ make experiment OUTPUT=results/experiments/YYYY-MM-DD-compare-network-sizes-01
 ```
 
 The runner captures the resolved dataset paths and hashes in its experiment
-manifest and detects changes during a campaign. This issue adds no training,
-model selection, or final test evaluation.
+manifest and detects changes during a campaign. Dataset verification does not
+train, select a model or evaluate it on test.
+
+### Color-mirror augmentation
+
+[`scripts/augment_dataset.py`](../scripts/augment_dataset.py) reflects ranks
+(`a1` ↔ `a8`, files unchanged), exchanges piece colors and the side to move,
+maps castling colors and the en passant rank, and preserves move counters.
+The three-class label is preserved; optional White/Black suffixes are exchanged.
+This differs from a left-right reflection, which is not implemented here.
+
+The transformation creates another view of a training example without adding a
+rules-derived answer to the network inputs. Applying it twice recovers the
+canonical original row. Original rows are retained first; mirrors follow in
+source order. Original duplicate inputs are collapsed, contradictory original
+labels are rejected, and conflicting or duplicate added inputs are excluded.
+Any mirror matching validation or test inputs is excluded; held-out labels
+are not parsed for augmentation. Those splits are never augmented or reshuffled.
+
+```sh
+python3 -m scripts.augment_dataset \
+  --splits dataset/references/chess-v1/splits \
+  --output dataset/processed/chess-v1-color-mirror
+```
+
+The destination must be new. It contains `train.fen`, `additions.fen`,
+`additions-source-lines.csv` and `manifest.json` with source/output hashes,
+class counts and exclusions. Generation uses only the Python standard library.
+The original train produces **1,141,143 unique rows** after exclusions. The
+same transform can be applied to the generated-data reference described below;
+use that reference's `splits/` as the input.
+
+[`scripts/verify_augmentation.py`](../scripts/verify_augmentation.py) provides
+additional checks against the optional Python chess oracle and the production
+C++ encoder. The [augmentation report](report/2026-11-08-color-mirror-augmentation.md#augmentation-and-integrity)
+records the independent checks and measured outcomes. More rows also mean more
+updates per epoch; compare quality and total training cost, not epoch count alone.
 
 ## 5. Analyze balance and diversity
 

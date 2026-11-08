@@ -37,7 +37,7 @@ precision, such as `0.081 s`.
 | Level | Meaning |
 | --- | --- |
 | `INFO` | Normal progress of the run |
-| `WARN` | Unusual but non-fatal situation (available to the code, not emitted by the current programs) |
+| `WARN` | Unusual but non-fatal situation |
 | `ERROR` | Failure that stops the run; the same message is printed on stderr |
 
 ## Generation log
@@ -49,7 +49,7 @@ its seed, and the total time. Example for `./my_torch_generator basic-network.ym
 2026-11-05T19:00:28.028Z [INFO] Generation started
 2026-11-05T19:00:28.028Z [INFO] Configuration basic-network.yml: layers=777,128,64,3 hidden_activation=sigmoid output_activation=softmax initialization=xavier learning_rate=0.01 seed=42
 2026-11-05T19:00:28.070Z [INFO] Generated models/basic-network_1.nn (seed 42)
-2026-11-05T19:00:28.109Z [INFO] Generated models/basic_network_2.nn (seed 43)
+2026-11-05T19:00:28.109Z [INFO] Generated models/basic-network_2.nn (seed 43)
 2026-11-05T19:00:28.109Z [INFO] Generation complete: 2 models in 0.081 s
 ```
 
@@ -65,8 +65,10 @@ are unchanged:
 The log records the loaded model and its configuration, the train and
 validation sets, the [training settings](training.md), the initial validation
 loss, the history path, every epoch with its losses and duration, early
-stopping, and the saved model with the epoch it comes from. Example on 1,200
-positions with an explicit validation file:
+stopping, and the saved model with the epoch it comes from. Current configuration
+summaries also include `optimizer=sgd` or `optimizer=adam`; a separate line records
+the CPU backend and thread limit. The abbreviated historical example below
+shows a run on 1,200 positions with an explicit validation file:
 
 ```text
 2026-11-05T20:21:16.927Z [INFO] Training started
