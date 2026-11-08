@@ -128,13 +128,8 @@ whether a position is legal chess.
 ```
 
 The command prints one class per nonblank line in the same order on stdout.
-At the end, stderr shows a short summary with the number of positions and labeled
-positions. When labels are present, it also shows correct predictions and accuracy
-(percentage correct, calculated only over labeled positions). For example:
-`Prediction summary: positions=4 labeled=3 correct=2/3 accuracy=66.67%`.
-It returns 0
-on success, or 84 with a diagnostic on stderr for invalid arguments, models,
-or datasets. A newly generated model is untrained; its class outputs have no
+On success, stderr is empty and the command returns 0. Invalid arguments, models,
+or datasets return 84 with a diagnostic on stderr. A newly generated model is untrained; its class outputs have no
 established predictive quality. See [output encoding](output-encoding.md) for
 the class mapping.
 
