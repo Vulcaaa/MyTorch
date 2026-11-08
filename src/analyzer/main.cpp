@@ -69,7 +69,7 @@ int main(int ac, char** av)
                   << "\t--min-delta X      Minimum loss improvement (finite, >= 0; default: 0.0001)\n"
                   << "\t--history FILE     Override automatic per-run history CSV path\n"
                   << "\t--save FILE        Save trained model here (default: LOADFILE)\n\n"
-                  << "Learning rate and seed come from the loaded model.\n"
+                  << "Learning rate, optimizer and seed come from the loaded model.\n"
                   << "Each training run is logged in logs/train_<UTC time>.log.\n";
         return 0;
     }

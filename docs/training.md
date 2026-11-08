@@ -214,7 +214,7 @@ flowchart LR
 | --- | --- |
 | `loss(samples) const` | Mean loss; never updates parameters |
 | `gradients(samples) const` | Gradients for every weight and bias, shaped like `layers()`; no update |
-| `trainBatch(batch)` | One SGD update; returns mean batch loss **before** the update |
+| `trainBatch(batch)` | One SGD or Adam update; returns mean batch loss **before** the update |
 | `trainBatch(samples, order, begin, count)` | Same update over a slice of shuffled indices; borrows samples instead of copying a mini-batch |
 | `validateSamples(samples) const` | Rejects invalid dimensions, values, or targets |
 | `config()` / `layers()` | Read-only configuration / parameters; explicit parameters can be supplied to the constructor for checks |
@@ -300,7 +300,28 @@ actual batch size: a final partial batch uses its own size.
 
 ### Update
 
-`trainBatch` applies one step of plain mini-batch stochastic gradient descent:
+Set `optimizer: adam` in the generator's network YAML to use Adam, with
+`learning_rate: 0.001` as a starting candidate. Missing `optimizer` selects
+`sgd`, including for existing `.nn` files. The optimizer and learning rate are
+saved in the model configuration; inference is unchanged.
+
+Adam uses the mean mini-batch gradients with beta1 = 0.9, beta2 = 0.999,
+epsilon = 1e-8 (outside the square root), and bias correction at every batch:
+
+```text
+m ← 0.9 m + 0.1 g
+v ← 0.999 v + 0.001 g²
+θ ← θ − learning_rate × [m / (1 − 0.9^t)] / [sqrt(v / (1 − 0.999^t)) + 1e-8]
+```
+
+Both moments start at zero. They and the batch counter are copied with the
+network and persisted in Adam checkpoints, so loading a trained checkpoint
+continues its optimizer state. Freshly generated models have no accumulated
+moments. Adam allocates two additional parameter-sized tensors; rejected updates
+preserve parameters and optimizer state. No weight decay or learning-rate schedule
+is applied. See the [Adam paper](https://arxiv.org/abs/1412.6980).
+
+With the default `optimizer: sgd`, `trainBatch` applies plain mini-batch stochastic gradient descent:
 
 ```text
 θ ← θ - η · ∂L_batch/∂θ        for every weight and bias θ, with η = config().learning_rate
@@ -313,8 +334,8 @@ measured with different parameters.
 
 The new parameters are computed aside and installed only when all of them are
 finite. **Whenever `trainBatch` throws, the network is unchanged.** Training only
-changes weights and biases, never the configuration (architecture, activations,
-learning rate, seed). Networks are plain values, so a copy is an independent
+changes weights, biases and optimizer state, never the configuration (architecture, activations,
+learning rate, optimizer, seed). Networks are plain values, so a copy is an independent
 checkpoint.
 
 ### CPU implementation
@@ -454,9 +475,9 @@ backpropagation and CLI tests verify actual learning and integration.
 | Chess quality | An operational training pipeline does not establish good classification; run full validation comparisons before final test evaluation |
 | CLI compatibility | Minimal subject invocation supported through automatic validation; explicit validation preserves reference splits |
 | Automated campaigns | Built-in adapter and reports available; execute and interpret controlled comparisons |
-| Optimizer | Plain mini-batch SGD; momentum, Adam, dropout, and weight decay are not implemented |
+| Optimizer | Mini-batch SGD (default) or Adam; standalone momentum, dropout and weight decay are not implemented |
 | Activations | Training supports softmax/sigmoid outputs; hidden derivatives support sigmoid/tanh/ReLU/linear, while file configurations accept sigmoid/tanh/ReLU |
-| Memory | Train and validation samples are loaded into memory as dense vectors |
+| Memory | Chess train/validation inputs store only active binary feature indices; mini-batches reconstruct the exact double inputs. Generic numeric training still accepts dense vectors. |
 | Speed | Whole-block CPU BLAS training/loss evaluation when available; scalar sparse fallback and scalar prediction retained; no GPU dependency |
 
 Gustave's development measurement on an Apple M5: eight epochs on 2,400 positions
