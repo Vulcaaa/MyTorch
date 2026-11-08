@@ -8,6 +8,16 @@
 struct TrainingSample {
     std::vector<double> inputs;
     std::vector<double> target;
+    // Optional exact sparse storage of binary inputs; generic dense samples remain valid.
+    std::vector<std::size_t> activeInputs{};
+    std::size_t binaryInputSize = 0;
+    std::vector<double> expandInputs() const
+    {
+        std::vector<double> values(binaryInputSize, 0.0);
+        for (auto index : activeInputs)
+            values.at(index) = 1.0;
+        return values;
+    }
 };
 
 struct Layer {
@@ -28,8 +38,7 @@ class NeuralNetwork {
         NeuralNetwork(NetworkConfig config, std::vector<Layer> layers);
 
         std::vector<double> predict(const std::vector<double>& inputs) const;
-        // One mini-batch gradient descent step: every weight and bias moves by
-        // -learning_rate * gradient of the mean batch loss. Returns the mean loss before the
+        // One mini-batch optimizer step (SGD or Adam). Returns the mean loss before the
         // update. Throws like gradients(), std::invalid_argument when learning_rate is not
         // finite and positive, and std::runtime_error when an updated parameter would not be
         // finite. The network is unchanged whenever it throws.
@@ -83,6 +92,7 @@ class NeuralNetwork {
         };
         void validateSamples(SampleView samples) const;
         double trainBatchView(SampleView samples);
+        void applyAdam(std::vector<Layer> gradients);
 
         struct LossGradients {
             double loss;
@@ -101,4 +111,7 @@ class NeuralNetwork {
 
         NetworkConfig _config;
         std::vector<Layer> _layers;
+        std::vector<Layer> _adamFirst;
+        std::vector<Layer> _adamSecond;
+        std::uint64_t _adamStep = 0;
 };

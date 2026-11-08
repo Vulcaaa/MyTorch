@@ -1,6 +1,7 @@
 #pragma once
 
 #include <optional>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -17,3 +18,7 @@ enum class DatasetMode {
 };
 
 Dataset loadDataset(const std::string& path, DatasetMode mode = DatasetMode::Prediction);
+
+// Reads one sample at a time, avoiding a second full dense dataset during training.
+void readDataset(const std::string& path, DatasetMode mode,
+    const std::function<void(DatasetSample)>& consume);

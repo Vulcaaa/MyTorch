@@ -72,6 +72,10 @@ void setOption(NetworkConfig &options, const std::string &key, const YAML::Node 
         options.output_activation = value;
     } else if (key == "learning_rate") {
         options.learning_rate = parseLearningRate(value);
+    } else if (key == "optimizer") {
+        if (value != "sgd" && value != "adam")
+            throw std::runtime_error("optimizer must be sgd or adam");
+        options.optimizer = value;
     } else if (key == "initialization") {
         if (value != "xavier" && value != "he")
             throw std::runtime_error("initialization must be xavier or he");
@@ -133,6 +137,7 @@ std::string describeNetworkConfig(const NetworkConfig &config)
         << " output_activation=" << config.output_activation
         << " initialization=" << config.initialization
         << " learning_rate=" << config.learning_rate
-        << " seed=" << config.seed;
+        << " seed=" << config.seed
+        << " optimizer=" << config.optimizer;
     return description.str();
 }

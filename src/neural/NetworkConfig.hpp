@@ -12,6 +12,7 @@ struct NetworkConfig {
     double learning_rate = 0.01;
     std::string initialization;
     std::uint32_t seed = 42;
+    std::string optimizer = "sgd";
 };
 
 // Throws std::runtime_error when the file cannot be read or is invalid.
@@ -19,5 +20,5 @@ NetworkConfig loadNetworkConfig(const std::string &filepath);
 
 // Summarizes a configuration on one line, with the keys of the configuration file:
 // "layers=777,128,64,3 hidden_activation=sigmoid output_activation=softmax
-// initialization=xavier learning_rate=0.01 seed=42".
+// initialization=xavier learning_rate=0.01 seed=42 optimizer=sgd".
 std::string describeNetworkConfig(const NetworkConfig &config);

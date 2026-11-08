@@ -47,7 +47,7 @@ def builtin_command(values, settings):
     return command + [values["initial_model"], values["train"]]
 
 
-NETWORK_KEYS = {"layers", "hidden_activation", "output_activation", "learning_rate", "initialization", "seed"}
+NETWORK_KEYS = {"layers", "hidden_activation", "output_activation", "learning_rate", "initialization", "seed", "optimizer"}
 PLACEHOLDERS = {"root", "analyzer", "initial_model", "trained_model", "train", "validation",
                 "seed", "training_config", "history"}
 
@@ -89,6 +89,8 @@ def network_options(path, overrides):
         if options[key] not in allowed:
             raise ValueError(f"invalid {key}")
     rate = options.get("learning_rate", 0.01)
+    if options.get("optimizer", "sgd") not in ("sgd", "adam"):
+        raise ValueError("optimizer must be sgd or adam")
     if isinstance(rate, bool) or not isinstance(rate, (int, float)) or not math.isfinite(rate) or rate <= 0:
         raise ValueError("learning_rate must be a finite positive number")
     return options
@@ -383,7 +385,10 @@ def run_experiment(config_path, output, prepare=False, generator=None, analyzer=
                         raise ValueError("training returned success without writing model.nn; no evaluation was run")
                     saved_model = json.loads(trained.read_text(encoding="utf-8"))
                     initial_model = json.loads(initial.read_text(encoding="utf-8"))
-                    if saved_model["config"] != initial_model["config"]:
+                    # Legacy models omit optimizer; this is semantically SGD.
+                    saved_config = {"optimizer": "sgd", **saved_model["config"]}
+                    initial_config = {"optimizer": "sgd", **initial_model["config"]}
+                    if saved_config != initial_config:
                         raise ValueError("trained model must preserve its network configuration and seed")
                     if saved_model["layers"] == initial_model["layers"] and not builtin:
                         raise ValueError("training did not change any weights or biases; refusing to evaluate an unchanged initial model")

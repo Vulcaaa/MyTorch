@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <limits>
 #include <stdexcept>
 #include <utility>
 
@@ -56,7 +57,13 @@ double NeuralNetwork::trainBatchView(SampleView batch)
     const double rate = _config.learning_rate;
     if (!std::isfinite(rate) || rate <= 0.0)
         throw std::invalid_argument("learning_rate must be finite and positive");
+    if (_config.optimizer != "sgd" && _config.optimizer != "adam")
+        throw std::invalid_argument("optimizer must be sgd or adam");
     auto [batchLoss, updated] = lossAndGradients(batch);
+    if (_config.optimizer == "adam") {
+        applyAdam(std::move(updated));
+        return batchLoss;
+    }
 
     // Gradient descent: every parameter takes a step of size rate against its gradient.
     // The new values overwrite the gradients and are kept only if they are all finite.
@@ -79,6 +86,46 @@ double NeuralNetwork::trainBatchView(SampleView batch)
     return batchLoss;
 }
 
+void NeuralNetwork::applyAdam(std::vector<Layer> updated)
+{
+    if (_adamStep == std::numeric_limits<std::uint64_t>::max())
+        throw std::runtime_error("Adam step counter overflow");
+    // Work on copies so a rejected nonfinite update also preserves optimizer state.
+    auto first = _adamFirst;
+    auto second = _adamSecond;
+    if (first.empty()) {
+        for (const auto& layer : _layers) {
+            first.emplace_back(layer.weights.front().size(), layer.biases.size());
+            second.emplace_back(layer.weights.front().size(), layer.biases.size());
+        }
+    }
+    const auto nextStep = _adamStep + 1;
+    const double correction1 = 1.0 - std::pow(0.9, nextStep);
+    const double correction2 = 1.0 - std::pow(0.999, nextStep);
+    bool finite = true;
+    const auto step = [&](double parameter, double& gradient, double& m, double& v) {
+        m = 0.9 * m + 0.1 * gradient;
+        v = 0.999 * v + 0.001 * gradient * gradient;
+        gradient = parameter - _config.learning_rate * (m / correction1)
+            / (std::sqrt(v / correction2) + 1e-8);
+        finite = finite && std::isfinite(m) && std::isfinite(v) && std::isfinite(gradient);
+    };
+    for (std::size_t i = 0; i < _layers.size(); ++i) {
+        for (std::size_t j = 0; j < _layers[i].biases.size(); ++j) {
+            for (std::size_t k = 0; k < _layers[i].weights[j].size(); ++k)
+                step(_layers[i].weights[j][k], updated[i].weights[j][k],
+                    first[i].weights[j][k], second[i].weights[j][k]);
+            step(_layers[i].biases[j], updated[i].biases[j], first[i].biases[j], second[i].biases[j]);
+        }
+    }
+    if (!finite)
+        throw std::runtime_error("Adam parameters or moments are not finite after the update");
+    _layers = std::move(updated);
+    _adamFirst = std::move(first);
+    _adamSecond = std::move(second);
+    _adamStep = nextStep;
+}
+
 double NeuralNetwork::loss(const std::vector<TrainingSample>& samples) const
 {
     validateSamples(samples);
@@ -88,7 +135,8 @@ double NeuralNetwork::loss(const std::vector<TrainingSample>& samples) const
     double total = 0.0;
     ForwardPass pass(_layers);
     for (const auto& sample : samples) {
-        forward(sample.inputs, pass);
+        const auto expanded = sample.binaryInputSize ? sample.expandInputs() : std::vector<double>{};
+        forward(sample.binaryInputSize ? expanded : sample.inputs, pass);
         total += sampleLoss(pass.outputLogits, sample.target, _config.output_activation);
     }
 
@@ -138,7 +186,9 @@ NeuralNetwork::LossGradients NeuralNetwork::lossAndGradients(
 double NeuralNetwork::backpropagate(const TrainingSample& sample, std::vector<Layer>& sums,
     ForwardPass& pass, std::vector<std::vector<double>>& deltas) const
 {
-    forward(sample.inputs, pass);
+    const auto expanded = sample.binaryInputSize ? sample.expandInputs() : std::vector<double>{};
+    const auto& sampleInputs = sample.binaryInputSize ? expanded : sample.inputs;
+    forward(sampleInputs, pass);
     const auto& activations = pass.activations;
 
     // Output delta (loss derivative with respect to the output logits): p - y, both for
@@ -150,7 +200,7 @@ double NeuralNetwork::backpropagate(const TrainingSample& sample, std::vector<La
     // Walk the layers backwards, using the original sample as the first layer input.
     for (std::size_t i = _layers.size(); i > 0; --i) {
         const auto& layer = _layers[i - 1];
-        const auto& inputs = i == 1 ? sample.inputs : activations[i - 2];
+        const auto& inputs = i == 1 ? sampleInputs : activations[i - 2];
         const auto& delta = deltas[i - 1];
         const auto& nonzero = pass.nonzero[i - 1];
         const bool sparse = nonzero.size() < inputs.size() / 2;

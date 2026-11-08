@@ -61,12 +61,20 @@ DatasetSample parseSample(std::istringstream& stream, DatasetMode mode)
 
 Dataset loadDataset(const std::string& path, DatasetMode mode)
 {
+    Dataset dataset;
+    readDataset(path, mode, [&](DatasetSample sample) { dataset.push_back(std::move(sample)); });
+    return dataset;
+}
+
+void readDataset(const std::string& path, DatasetMode mode,
+    const std::function<void(DatasetSample)>& consume)
+{
     std::ifstream file(path);
     if (!file.is_open()) {
         throw std::runtime_error(path + ": cannot open dataset");
     }
 
-    Dataset dataset;
+    std::size_t samples = 0;
     std::string line;
     std::size_t lineNumber = 0;
     while (std::getline(file, line)) {
@@ -77,7 +85,8 @@ Dataset loadDataset(const std::string& path, DatasetMode mode)
             continue;
         }
         try {
-            dataset.push_back(parseSample(stream, mode));
+            consume(parseSample(stream, mode));
+            ++samples;
         } catch (const std::invalid_argument& error) {
             throw std::runtime_error(path + ":" + std::to_string(lineNumber)
                 + ": " + error.what());
@@ -87,8 +96,7 @@ Dataset loadDataset(const std::string& path, DatasetMode mode)
         throw std::runtime_error(path + ":" + std::to_string(lineNumber + 1)
             + ": cannot read dataset");
     }
-    if (dataset.empty()) {
+    if (samples == 0) {
         throw std::runtime_error(path + ": dataset contains no positions");
     }
-    return dataset;
 }

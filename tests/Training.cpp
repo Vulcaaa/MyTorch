@@ -18,6 +18,18 @@ namespace {
 
 namespace fs = std::filesystem;
 
+std::vector<TrainingSample> denseSamples(std::vector<TrainingSample> samples)
+{
+    for (auto& sample : samples) {
+        if (sample.binaryInputSize) {
+            sample.inputs = sample.expandInputs();
+            sample.binaryInputSize = 0;
+            sample.activeInputs.clear();
+        }
+    }
+    return samples;
+}
+
 std::string read(const fs::path& path)
 {
     std::ifstream file(path);
@@ -86,8 +98,9 @@ struct Probe {
     enum class Failure { None, InitialLoss, BatchLoss };
     Failure failure = Failure::None;
 
-    double trainBatch(NeuralNetwork& network, const std::vector<TrainingSample>& batch)
+    double trainBatch(NeuralNetwork& network, const std::vector<TrainingSample>& rawBatch)
     {
+        const auto batch = denseSamples(rawBatch);
         if (automaticSplit) {
             automaticUpdates.insert(automaticUpdates.end(), batch.begin(), batch.end());
             network = fixture.updated.at(++updates);
@@ -106,8 +119,9 @@ struct Probe {
         return 999.0; // Must not be used as the reported epoch loss.
     }
 
-    double loss(const std::vector<TrainingSample>& samples)
+    double loss(const std::vector<TrainingSample>& rawSamples)
     {
+        const auto samples = denseSamples(rawSamples);
         if (automaticSplit) {
             automaticLossInputs.push_back(samples);
             return automaticLossInputs.size() == 1 ? 1.0 : 0.5;
