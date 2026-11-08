@@ -24,7 +24,7 @@ jobs:
       - name: Compile
         run: make -j2
       - name: Install Python dependencies
-        run: python3 -m pip install -r requirements.txt
+        run: python3 -m pip install -r requirements.txt -r scripts/requirements.txt
       - name: Test
         run: make -j2 test
 

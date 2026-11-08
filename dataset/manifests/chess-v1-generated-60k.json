@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "kind": "derived-training",
+  "name": "chess-v1-generated-60k",
+  "storage": "dataset/references/chess-v1-generated-60k",
+  "base": {
+    "path": "dataset/manifests/chess-v1.json",
+    "sha256": "dfc11570aeca279db9bbf11a97859cc04212800b1d18769fc993cd0284dc72e0",
+    "bytes": 7757
+  },
+  "sources": {
+    "train": {
+      "path": "dataset/processed/chess-v1-generated-games-60k-mate-heavy/train.fen",
+      "sha256": "e88233cd3c05cc58a4dfe70001b4f8e7bd32ef9f85fb8d80ac48a41cbf3f643d",
+      "bytes": 36024827
+    },
+    "validation": {
+      "path": "dataset/references/chess-v1/splits/validation.txt",
+      "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df",
+      "bytes": 4072085
+    },
+    "test": {
+      "path": "dataset/references/chess-v1/splits/test.txt",
+      "sha256": "a55710b1d4eba1257e87ff883b97769c3e8f16466eb7e9cb894cc62589f09ee8",
+      "bytes": 4070233
+    },
+    "additions.fen": {
+      "path": "dataset/processed/chess-v1-generated-games-60k-mate-heavy/additions.fen",
+      "sha256": "378521ff569e875766c05b6f15490c627b38d024177312ee21b5e86c153d3e04",
+      "bytes": 3453813
+    },
+    "additions-source.csv": {
+      "path": "dataset/processed/chess-v1-generated-games-60k-mate-heavy/additions-source.csv",
+      "sha256": "29a3c153d0f55bba729741a069c03b930a7e615c913dcf7f3924affa79bb7af5",
+      "bytes": 983283
+    },
+    "games.jsonl": {
+      "path": "dataset/processed/chess-v1-generated-games-60k-mate-heavy/games.jsonl",
+      "sha256": "464104dd5816a94cf372e37d7648b579b67d282be7ff92166de8c958f9f9d69e",
+      "bytes": 165396040
+    },
+    "generation.json": {
+      "path": "dataset/processed/chess-v1-generated-games-60k-mate-heavy/manifest.json",
+      "sha256": "e5a799d9f449afd61d0e4b6d93d8926c4d7f9bdf413f7b4c65cba150fd845ac3",
+      "bytes": 3307
+    },
+    "verification.json": {
+      "path": "dataset/processed/chess-v1-generated-games-60k-mate-heavy/verification.json",
+      "sha256": "c03a5e176af852dfd636a3088f1598b87578f01a6a005b4d85b7f417f28a9213",
+      "bytes": 3363
+    },
+    "generate_dataset.py": {
+      "path": "scripts/generate_dataset.py",
+      "sha256": "f44e90547ab63b11fa9f0fa0e609cc6b419af06f0889aa56c9ede025a67f3acb",
+      "bytes": 14927
+    }
+  },
+  "policy": "Prepared train; unchanged base validation/test; unique model inputs across all splits.",
+  "artifacts": {
+    "train": {
+      "path": "splits/train.txt",
+      "sha256": "e88233cd3c05cc58a4dfe70001b4f8e7bd32ef9f85fb8d80ac48a41cbf3f643d",
+      "bytes": 36024827,
+      "class_counts": {
+        "Nothing": 253051,
+        "Checkmate": 160887,
+        "Check": 218507
+      },
+      "rows": 632445
+    },
+    "validation": {
+      "path": "splits/validation.txt",
+      "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df",
+      "bytes": 4072085,
+      "class_counts": {
+        "Check": 24813,
+        "Nothing": 29756,
+        "Checkmate": 16986
+      },
+      "rows": 71555
+    },
+    "test": {
+      "path": "splits/test.txt",
+      "sha256": "a55710b1d4eba1257e87ff883b97769c3e8f16466eb7e9cb894cc62589f09ee8",
+      "bytes": 4070233,
+      "class_counts": {
+        "Check": 24813,
+        "Checkmate": 16986,
+        "Nothing": 29756
+      },
+      "rows": 71555
+    },
+    "additions.fen": {
+      "path": "provenance/additions.fen",
+      "sha256": "378521ff569e875766c05b6f15490c627b38d024177312ee21b5e86c153d3e04",
+      "bytes": 3453813
+    },
+    "additions-source.csv": {
+      "path": "provenance/additions-source.csv",
+      "sha256": "29a3c153d0f55bba729741a069c03b930a7e615c913dcf7f3924affa79bb7af5",
+      "bytes": 983283
+    },
+    "games.jsonl": {
+      "path": "provenance/games.jsonl",
+      "sha256": "464104dd5816a94cf372e37d7648b579b67d282be7ff92166de8c958f9f9d69e",
+      "bytes": 165396040
+    },
+    "generation.json": {
+      "path": "provenance/generation.json",
+      "sha256": "e5a799d9f449afd61d0e4b6d93d8926c4d7f9bdf413f7b4c65cba150fd845ac3",
+      "bytes": 3307
+    },
+    "verification.json": {
+      "path": "provenance/verification.json",
+      "sha256": "c03a5e176af852dfd636a3088f1598b87578f01a6a005b4d85b7f417f28a9213",
+      "bytes": 3363
+    },
+    "generate_dataset.py": {
+      "path": "provenance/generate_dataset.py",
+      "sha256": "f44e90547ab63b11fa9f0fa0e609cc6b419af06f0889aa56c9ede025a67f3acb",
+      "bytes": 14927
+    }
+  }
+}

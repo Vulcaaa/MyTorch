@@ -10,6 +10,7 @@ Follow the preparation workflow: **raw data → cleaning → train/validation/te
 3. [Dataset splitting](#3-dataset-splitting)
 4. [Frozen reference datasets](#4-frozen-reference-datasets)
 5. [Analyze balance and diversity](#5-analyze-balance-and-diversity)
+6. [Generated game data](#6-generated-game-data)
 
 ---
 
@@ -431,3 +432,170 @@ such as training-only balancing, material-coverage enrichment or a longer
 baseline run. Compare validation macro-F1, per-class recall and runtime before
 keeping a change. Do not infer real-game representativeness from a balanced
 split, or tune settings on the final test set.
+
+## 6. Generated game data
+
+[`scripts/generate_dataset.py`](../scripts/generate_dataset.py) adds positions
+from new legal games to a separate training file. Generation uses the optional,
+pinned `python-chess` rules library. It is downloaded by pip, not bundled in the
+repository. Install it only for generation and its tests:
+
+```sh
+python3 -m pip install -r scripts/requirements.txt
+```
+
+`make` and both C++ executables do not use Python or this library. Without it,
+`make test` skips the generation tests and still runs the existing suite (whose
+Python dependencies remain in root `requirements.txt`). CI installs both sets
+so generation tests are exercised. The Makefile and C++ dependencies are unchanged.
+
+```sh
+python3 -m scripts.generate_dataset \
+  --splits dataset/references/chess-v1/splits \
+  --output dataset/processed/chess-v1-generated-games-60k-mate-heavy \
+  --policy mixed --targets 15000 20000 25000 --games 160000 --seed 43 --workers 8
+```
+
+The trial targets exactly **60,000 new unique positions**: 15,000 `Nothing`,
+20,000 `Check`, and 25,000 `Checkmate`. These are added to the original
+572,445-row train, giving 632,445 rows. Earlier local trials are preserved.
+`--workers` controls parallel game generation using the Python standard library.
+Each game has its own seeded random stream; worker count does not affect the
+resulting games or selected data. Set it to 1 for serial generation.
+
+All games begin at the standard starting board and run for at most 240 plies
+(half-moves). `mixed` alternates three policies: uniformly random legal moves,
+capture-biased play (80% preference when captures exist), and check-biased play
+(70% preference when checks exist, otherwise 40% capture preference). The two
+biased policies take an immediate mate when available. Choices use sorted UCI
+moves for reproducibility. This is a rules-based sampler, not engine self-play.
+Games stop at a terminal result, including claimable draws, or the ply budget.
+
+Sample every fourth ply, rotating the first sampled ply from 16 to 19 between
+games so both sides to move are covered. Keep every checkmate even before
+that threshold. Labels come from the resulting board: checkmate first, then
+check, otherwise `Nothing` (including stalemate). Mixed play randomly retains
+at most 12 candidates per class per game, across the full trajectory rather
+than its first few moves. Adjust this limit with `--per-game`.
+
+`--targets NOTHING CHECK CHECKMATE` sets exact class counts. Within each class,
+reservoir sampling selects uniformly among eligible unique inputs from the
+games processed so far. Common classes therefore continue drawing from later
+games while rare mates accumulate. Stop when all targets are met, or fail
+without installing an incomplete dataset if the `--games` budget runs out.
+No rows are repeated to fill a target. The manifest records both the maximum
+budget and the actual number of games played.
+
+Without `--targets`, generation retains the first admissible inputs, with a
+ceiling of `--per-class` (default 10,000) and runs the entire game budget.
+The original defaults remain `--policy random --games 1000 --seed 42`.
+Change `--max-plies`, `--min-ply`, or `--stride` to alter trajectory sampling.
+
+The existing train rows stay first, followed by unique additions. Deduplication
+uses the same 777-input key as color-mirror augmentation. Inputs already in
+train, validation or test are excluded; held-out labels are never parsed.
+Existing train/held-out overlap or contradictory original labels abort the run.
+Validation and test remain fixed; do not mix the additions into a new split.
+
+The new output directory contains:
+
+| File | Purpose |
+| --- | --- |
+| `train.fen` | Original training rows plus additions; ready for the analyzer. |
+| `additions.fen` | New positions only. |
+| `additions-source.csv` | Output line, game number and ply for every addition. |
+| `games.jsonl` | Full UCI move sequence and ending of each generated game. |
+| `manifest.json` | Source/output hashes, generator hash, environment, settings, exclusions and class counts. |
+
+An existing output directory is refused. Files are staged, generated labels and
+legality are checked, then the directory is installed. Repeating the command
+with a fresh destination and the same sources, settings and Python/chess versions
+reproduces the FEN and provenance files. Outputs stay local under the ignored
+`dataset/processed/` directory.
+
+To change sampling without playing the games again, add
+`--replay-games PATH/TO/games.jsonl` with the original game budget and ply limit
+and a fresh output directory. Moves and game endings are checked during replay;
+the source game file is hashed in the manifest. With unchanged sampling settings,
+replay produces identical FEN and provenance files to fresh generation.
+
+To compare against `train-reference-b128.yml` with matching initialization seed,
+architecture, batch size, learning rate and stopping settings:
+
+```sh
+python3 scripts/experiment.py configs/protocols/train-generated-games.yml \
+  --train-only --output results/training/generated-games-seed43-01
+```
+
+### Frozen training references
+
+Prepared data is retained as two separate references, each with copied held-outs
+that are byte-identical to `chess-v1`. The generated-only training protocol
+above now uses the frozen files, not disposable `dataset/processed/` outputs.
+
+| Reference | Training rows | Contents |
+| --- | ---: | --- |
+| `chess-v1` | 572,445 | Original baseline. |
+| `chess-v1-generated-60k` | 632,445 | Original train + 15k Nothing, 20k Check, 25k Checkmate. |
+| `chess-v1-generated-60k-mirror` | 1,260,989 | The previous train + 628,544 admissible color mirrors, including mirrors of generated positions. |
+
+Each reference lives under `dataset/references/NAME/`, with `splits/train.txt`,
+`splits/validation.txt`, `splits/test.txt` and retained provenance files.
+The tracked `dataset/manifests/NAME.json` records artifact hashes, counts,
+source paths and hashes, and the parent reference. Large data stays local.
+The original generated games and their source mapping are retained in the
+generated-only reference; the mirror reference records its source line mapping
+and links to that parent. No new chess games were generated to freeze these.
+
+Verify a frozen variant without the optional chess library:
+
+```sh
+python3 -m scripts.freeze_dataset verify dataset/manifests/chess-v1-generated-60k.json
+python3 -m scripts.freeze_dataset verify dataset/manifests/chess-v1-generated-60k-mirror.json
+```
+
+Verification checks retained file hashes, class counts, unique model inputs,
+split disjointness and unchanged held-outs. It does not require the disposable
+preparation outputs. `scripts.freeze_dataset freeze` creates a new reference
+from a prepared train and a parent manifest; existing references are refused.
+
+Train the mirrored variant with the same seed and optimization settings:
+
+```sh
+python3 scripts/experiment.py configs/protocols/train-generated-games-mirror.yml \
+  --train-only --output results/training/generated-games-mirror-seed43-01
+```
+
+Inspect validation macro-F1, per-class recall, loss and runtime before retaining
+the augmentation. An epoch now contains more batches, so equal epoch counts
+also mean more parameter updates. Random play adds legal board diversity but
+does not establish human-game coverage or improved model quality. Positions
+from one game remain correlated despite sampling. No training benefit is
+claimed by the generation checks; the reserved test set is used only to exclude
+input overlap, never to score or select this augmentation.
+
+### 60k trial (15k / 20k / 25k)
+
+The seed-43 run generated **118,044 games**. The retained positions come from
+51,083 distinct games. An independent audit replayed those games' 6,813,946
+legal moves and matched every addition to its source game and ply.
+All 60,000 inputs are unique and absent from the original train and held-outs;
+the original rows and source hashes are unchanged. The C++ encoder agreed on
+all added inputs, and the analyzer read all 60,000 positions successfully.
+
+| Class | Added | White to move | Black to move |
+| --- | ---: | ---: | ---: |
+| Nothing | 15,000 | 7,414 | 7,586 |
+| Check | 20,000 | 10,111 | 9,889 |
+| Checkmate | 25,000 | 12,324 | 12,676 |
+
+Material coverage includes 20,918 positions with 2–10 pieces, 21,389 with
+11–20 pieces, and 17,693 with 21–32 pieces. All three game policies contribute:
+16,899 random, 17,128 capture-biased, and 25,973 check-biased samples.
+The local `verification.json` records the detailed distributions and replay
+checks. No model was trained or selected in this data-generation run.
+
+Compatibility checks also passed: a fresh portable C++ build and prediction
+without Python in the build command, and `make test` both with the generation
+library and in a fresh environment containing only root `requirements.txt`.
+The latter skips the eight optional generation tests.

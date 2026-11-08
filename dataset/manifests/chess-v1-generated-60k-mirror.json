@@ -1,0 +1,104 @@
+{
+  "version": 1,
+  "kind": "derived-training",
+  "name": "chess-v1-generated-60k-mirror",
+  "storage": "dataset/references/chess-v1-generated-60k-mirror",
+  "base": {
+    "path": "dataset/manifests/chess-v1-generated-60k.json",
+    "sha256": "ef280f2cd754370e701c5df62e8ccac57055f6b1afe52e76acddca5e4e749d68",
+    "bytes": 4381
+  },
+  "sources": {
+    "train": {
+      "path": "dataset/processed/chess-v1-generated-60k-mirror/train.fen",
+      "sha256": "e5dbae9048ae04b4e58197bb132217d373bd2514f8df191d24db654f642bf267",
+      "bytes": 71887295
+    },
+    "validation": {
+      "path": "dataset/references/chess-v1-generated-60k/splits/validation.txt",
+      "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df",
+      "bytes": 4072085
+    },
+    "test": {
+      "path": "dataset/references/chess-v1-generated-60k/splits/test.txt",
+      "sha256": "a55710b1d4eba1257e87ff883b97769c3e8f16466eb7e9cb894cc62589f09ee8",
+      "bytes": 4070233
+    },
+    "additions.fen": {
+      "path": "dataset/processed/chess-v1-generated-60k-mirror/additions.fen",
+      "sha256": "bd991cbfe19ddd777cbd0154fc87f2a051bca11030414c1bee7ed797f487e26e",
+      "bytes": 35862468
+    },
+    "additions-source-lines.csv": {
+      "path": "dataset/processed/chess-v1-generated-60k-mirror/additions-source-lines.csv",
+      "sha256": "b88c886ad4dd249f70d7040724ecffe4a1dab6d924ef5e0f42472d98a33d21a2",
+      "bytes": 8950302
+    },
+    "augmentation.json": {
+      "path": "dataset/processed/chess-v1-generated-60k-mirror/manifest.json",
+      "sha256": "fc2ed14130ac600a2f4a7f897be99c5ed52375343cc0cd6198b5d7e1d0bc5a76",
+      "bytes": 3103
+    },
+    "augment_dataset.py": {
+      "path": "scripts/augment_dataset.py",
+      "sha256": "25851e8158b44a41be6d9f3853cbc5d64a8bfb2ab4f085762a67bea6d5c20eb3",
+      "bytes": 11008
+    }
+  },
+  "policy": "Prepared train; unchanged base validation/test; unique model inputs across all splits.",
+  "artifacts": {
+    "train": {
+      "path": "splits/train.txt",
+      "sha256": "e5dbae9048ae04b4e58197bb132217d373bd2514f8df191d24db654f642bf267",
+      "bytes": 71887295,
+      "class_counts": {
+        "Nothing": 504267,
+        "Checkmate": 320543,
+        "Check": 436179
+      },
+      "rows": 1260989
+    },
+    "validation": {
+      "path": "splits/validation.txt",
+      "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df",
+      "bytes": 4072085,
+      "class_counts": {
+        "Check": 24813,
+        "Nothing": 29756,
+        "Checkmate": 16986
+      },
+      "rows": 71555
+    },
+    "test": {
+      "path": "splits/test.txt",
+      "sha256": "a55710b1d4eba1257e87ff883b97769c3e8f16466eb7e9cb894cc62589f09ee8",
+      "bytes": 4070233,
+      "class_counts": {
+        "Check": 24813,
+        "Checkmate": 16986,
+        "Nothing": 29756
+      },
+      "rows": 71555
+    },
+    "additions.fen": {
+      "path": "provenance/additions.fen",
+      "sha256": "bd991cbfe19ddd777cbd0154fc87f2a051bca11030414c1bee7ed797f487e26e",
+      "bytes": 35862468
+    },
+    "additions-source-lines.csv": {
+      "path": "provenance/additions-source-lines.csv",
+      "sha256": "b88c886ad4dd249f70d7040724ecffe4a1dab6d924ef5e0f42472d98a33d21a2",
+      "bytes": 8950302
+    },
+    "augmentation.json": {
+      "path": "provenance/augmentation.json",
+      "sha256": "fc2ed14130ac600a2f4a7f897be99c5ed52375343cc0cd6198b5d7e1d0bc5a76",
+      "bytes": 3103
+    },
+    "augment_dataset.py": {
+      "path": "provenance/augment_dataset.py",
+      "sha256": "25851e8158b44a41be6d9f3853cbc5d64a8bfb2ab4f085762a67bea6d5c20eb3",
+      "bytes": 11008
+    }
+  }
+}

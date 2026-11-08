@@ -106,6 +106,9 @@ and position diversity with the [dataset analysis notebook](notebooks/dataset_an
 [architecture guide](docs/architecture.md) for details.
 Experiments use the [frozen reference dataset](docs/datasets.md); verify it with
 `python3 -m scripts.reference_dataset verify` before a campaign.
+To extend training with new legal game positions, see
+[generated game data](docs/datasets.md#6-generated-game-data). Its Python rules
+library is optional and is not required to build or run the C++ programs.
 
 CI builds and tests the project, then synchronizes successful pushes on `main`
 to the Epitech repository.
