@@ -1,0 +1,867 @@
+{
+  "protocol": {
+    "status": "completed",
+    "started_utc": "2026-11-08T12:33:26.903765+00:00",
+    "seed": 46,
+    "source_candidates": [
+      {
+        "seed": 44,
+        "macro_f1": 0.8691810626392709
+      },
+      {
+        "seed": 45,
+        "macro_f1": 0.872696970580674
+      },
+      {
+        "seed": 46,
+        "macro_f1": 0.8740418010632188
+      }
+    ],
+    "inputs": {
+      "model.nn": {
+        "source": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-46/model.nn",
+          "sha256": "3ce70f8052f213573905e7fe8cd8a278309759083212b68768f424352aa392bf"
+        },
+        "frozen": {
+          "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/model.nn",
+          "sha256": "3ce70f8052f213573905e7fe8cd8a278309759083212b68768f424352aa392bf"
+        }
+      },
+      "analyzer": {
+        "source": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/tools/my_torch_analyzer",
+          "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+        },
+        "frozen": {
+          "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/analyzer",
+          "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+        }
+      },
+      "train.fen": {
+        "source": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/data/train.fen",
+          "sha256": "78481ab5110970c19d9283ff1549075a5b3d9788a9597b50afff134eeb520279"
+        },
+        "frozen": {
+          "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/train.fen",
+          "sha256": "78481ab5110970c19d9283ff1549075a5b3d9788a9597b50afff134eeb520279"
+        }
+      },
+      "validation.fen": {
+        "source": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/data/validation.fen",
+          "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+        },
+        "frozen": {
+          "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/validation.fen",
+          "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+        }
+      },
+      "recorded-metrics.json": {
+        "source": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-46/candidate-metrics.json",
+          "sha256": "e8958ef6dcdead49201f65e22516f37120e4c1a7ed39a9a4d2cd2750261b6df1"
+        },
+        "frozen": {
+          "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/recorded-metrics.json",
+          "sha256": "e8958ef6dcdead49201f65e22516f37120e4c1a7ed39a9a4d2cd2750261b6df1"
+        }
+      },
+      "previous-history.csv": {
+        "source": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-46/history.csv",
+          "sha256": "6f00956f8ca8bbf32953ce011464f145cd3eda77a9cdf745defb01a04ff1612f"
+        },
+        "frozen": {
+          "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/previous-history.csv",
+          "sha256": "6f00956f8ca8bbf32953ce011464f145cd3eda77a9cdf745defb01a04ff1612f"
+        }
+      },
+      "previous-config.json": {
+        "source": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-color-mirror-augmentation-01/runs/seed-46/config.json",
+          "sha256": "d73ee6669c600bb1aaf0375b8213180ea38dce1ede7d3c11538ca6081b582545"
+        },
+        "frozen": {
+          "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/previous-config.json",
+          "sha256": "d73ee6669c600bb1aaf0375b8213180ea38dce1ede7d3c11538ca6081b582545"
+        }
+      }
+    },
+    "rates": [
+      0.08,
+      0.02,
+      0.008
+    ],
+    "settings": {
+      "epochs": 40,
+      "batch_size": 128,
+      "patience": 20,
+      "min_delta": 0.0001
+    },
+    "selection": "minimum validation-loss checkpoint per arm, including epoch zero; compare macro F1",
+    "concurrency": "Other training may run concurrently; durations are descriptive only.",
+    "continuation": "Weights restored; shuffle RNG and patience restart from the same seed in every arm.",
+    "scope": "Only three resumed runs; no subsequent training, test evaluation, or model promotion.",
+    "runs": [
+      {
+        "learning_rate": 0.08,
+        "directory": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-008",
+        "command": [
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/analyzer",
+          "--train",
+          "--validation",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/validation.fen",
+          "--save",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-008/model.nn",
+          "--history",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-008/history.csv",
+          "--epochs",
+          "40",
+          "--batch-size",
+          "128",
+          "--patience",
+          "20",
+          "--min-delta",
+          "0.0001",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-008/initial.nn",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/train.fen"
+        ],
+        "status": "completed",
+        "initial": {
+          "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-008/initial.nn",
+          "sha256": "6235a73779f3e536a56a6b61f6cf37bda397b77517996e81e8fc2c3ca757b1a9"
+        },
+        "wall_seconds": 331.217376229004,
+        "returncode": 0,
+        "selected_epoch": 0,
+        "epochs_completed": 20,
+        "final_train_loss": 0.20506683352788588,
+        "final_validation_loss": 0.31868463784981094,
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-008/model.nn",
+          "sha256": "3ce70f8052f213573905e7fe8cd8a278309759083212b68768f424352aa392bf"
+        },
+        "metrics": {
+          "samples": 71555,
+          "accuracy": 0.8806093215009433,
+          "macro_f1": 0.8740418010632188,
+          "per_class": {
+            "Nothing": {
+              "precision": 0.9414650766609881,
+              "recall": 0.9286194380965184,
+              "f1": 0.9349981389368254,
+              "support": 29756
+            },
+            "Check": {
+              "precision": 0.8361090996862177,
+              "recall": 0.8376254382783218,
+              "f1": 0.8368665821102856,
+              "support": 24813
+            },
+            "Checkmate": {
+              "precision": 0.8414135008935263,
+              "recall": 0.8592958907335453,
+              "f1": 0.8502606821425451,
+              "support": 16986
+            }
+          },
+          "confusion_matrix": {
+            "labels": [
+              "Nothing",
+              "Check",
+              "Checkmate"
+            ],
+            "rows": "actual",
+            "columns": "predicted",
+            "counts": [
+              [
+                27632,
+                1886,
+                238
+              ],
+              [
+                1516,
+                20784,
+                2513
+              ],
+              [
+                202,
+                2188,
+                14596
+              ]
+            ]
+          },
+          "artifacts": {
+            "model": {
+              "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-008/model.nn",
+              "sha256": "3ce70f8052f213573905e7fe8cd8a278309759083212b68768f424352aa392bf"
+            },
+            "dataset": {
+              "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/validation.fen",
+              "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+            },
+            "analyzer": {
+              "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/analyzer",
+              "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+            }
+          },
+          "command": [
+            "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/analyzer",
+            "--predict",
+            "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-008/model.nn",
+            "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/validation.fen"
+          ],
+          "prediction_seconds": 0.9082266900077229,
+          "analyzer_stderr": "Prediction summary: positions=71555 labeled=71555 correct=63012/71555 accuracy=88.06%\n"
+        },
+        "history": [
+          {
+            "epoch": 1,
+            "train_loss": 0.20213517715054385,
+            "validation_loss": 0.3140757978014516
+          },
+          {
+            "epoch": 2,
+            "train_loss": 0.20681609631970646,
+            "validation_loss": 0.3180658297468436
+          },
+          {
+            "epoch": 3,
+            "train_loss": 0.20233414232359986,
+            "validation_loss": 0.3125162732413017
+          },
+          {
+            "epoch": 4,
+            "train_loss": 0.20960799012041303,
+            "validation_loss": 0.32221400580187914
+          },
+          {
+            "epoch": 5,
+            "train_loss": 0.20412688249593555,
+            "validation_loss": 0.3152665597759297
+          },
+          {
+            "epoch": 6,
+            "train_loss": 0.2069704057195673,
+            "validation_loss": 0.3170968354254477
+          },
+          {
+            "epoch": 7,
+            "train_loss": 0.20043932320194263,
+            "validation_loss": 0.3102718964957384
+          },
+          {
+            "epoch": 8,
+            "train_loss": 0.20588373855982275,
+            "validation_loss": 0.3164050873888365
+          },
+          {
+            "epoch": 9,
+            "train_loss": 0.20271182011278707,
+            "validation_loss": 0.31097596019661067
+          },
+          {
+            "epoch": 10,
+            "train_loss": 0.20229299449986501,
+            "validation_loss": 0.3129694116132857
+          },
+          {
+            "epoch": 11,
+            "train_loss": 0.20135627400339495,
+            "validation_loss": 0.31248103638078883
+          },
+          {
+            "epoch": 12,
+            "train_loss": 0.20892043874417612,
+            "validation_loss": 0.3226349206756348
+          },
+          {
+            "epoch": 13,
+            "train_loss": 0.19818552724324384,
+            "validation_loss": 0.31050822154039504
+          },
+          {
+            "epoch": 14,
+            "train_loss": 0.19726485334276847,
+            "validation_loss": 0.3094536840656288
+          },
+          {
+            "epoch": 15,
+            "train_loss": 0.2014480226735538,
+            "validation_loss": 0.3180755922646926
+          },
+          {
+            "epoch": 16,
+            "train_loss": 0.20853703679386287,
+            "validation_loss": 0.3214575074030674
+          },
+          {
+            "epoch": 17,
+            "train_loss": 0.20430604133121644,
+            "validation_loss": 0.31802370610128156
+          },
+          {
+            "epoch": 18,
+            "train_loss": 0.198218705842208,
+            "validation_loss": 0.3112824299439862
+          },
+          {
+            "epoch": 19,
+            "train_loss": 0.20067842899950278,
+            "validation_loss": 0.310916753005046
+          },
+          {
+            "epoch": 20,
+            "train_loss": 0.20506683352788588,
+            "validation_loss": 0.31868463784981094
+          }
+        ],
+        "selected_validation_loss": 0.3090909045685105,
+        "epoch_compute_seconds": 322.625
+      },
+      {
+        "learning_rate": 0.02,
+        "directory": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-002",
+        "command": [
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/analyzer",
+          "--train",
+          "--validation",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/validation.fen",
+          "--save",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-002/model.nn",
+          "--history",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-002/history.csv",
+          "--epochs",
+          "40",
+          "--batch-size",
+          "128",
+          "--patience",
+          "20",
+          "--min-delta",
+          "0.0001",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-002/initial.nn",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/train.fen"
+        ],
+        "status": "completed",
+        "initial": {
+          "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-002/initial.nn",
+          "sha256": "b716776747d502844039d158a3a29614098db835aa0b4adb62e1aee2b091e1f7"
+        },
+        "wall_seconds": 346.4521261339978,
+        "returncode": 0,
+        "selected_epoch": 1,
+        "epochs_completed": 21,
+        "final_train_loss": 0.19299930861280284,
+        "final_validation_loss": 0.3134340679504863,
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-002/model.nn",
+          "sha256": "36389a36798467f18eb6bb6c6440b07bb5855cc3f5727b1838921094fe2262ac"
+        },
+        "metrics": {
+          "samples": 71555,
+          "accuracy": 0.8819509468241213,
+          "macro_f1": 0.8752329300425686,
+          "per_class": {
+            "Nothing": {
+              "precision": 0.9374452308729356,
+              "recall": 0.934735851592956,
+              "f1": 0.9360885807558981,
+              "support": 29756
+            },
+            "Check": {
+              "precision": 0.8414331611696287,
+              "recall": 0.8338371015193649,
+              "f1": 0.8376179102060646,
+              "support": 24813
+            },
+            "Checkmate": {
+              "precision": 0.8443570767807586,
+              "recall": 0.8597668668315083,
+              "f1": 0.851992299165743,
+              "support": 16986
+            }
+          },
+          "confusion_matrix": {
+            "labels": [
+              "Nothing",
+              "Check",
+              "Checkmate"
+            ],
+            "rows": "actual",
+            "columns": "predicted",
+            "counts": [
+              [
+                27814,
+                1721,
+                221
+              ],
+              [
+                1652,
+                20690,
+                2471
+              ],
+              [
+                204,
+                2178,
+                14604
+              ]
+            ]
+          },
+          "artifacts": {
+            "model": {
+              "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-002/model.nn",
+              "sha256": "36389a36798467f18eb6bb6c6440b07bb5855cc3f5727b1838921094fe2262ac"
+            },
+            "dataset": {
+              "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/validation.fen",
+              "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+            },
+            "analyzer": {
+              "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/analyzer",
+              "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+            }
+          },
+          "command": [
+            "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/analyzer",
+            "--predict",
+            "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-002/model.nn",
+            "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/validation.fen"
+          ],
+          "prediction_seconds": 0.9757152370002586,
+          "analyzer_stderr": "Prediction summary: positions=71555 labeled=71555 correct=63108/71555 accuracy=88.20%\n"
+        },
+        "history": [
+          {
+            "epoch": 1,
+            "train_loss": 0.19417672282580706,
+            "validation_loss": 0.3073227731110216
+          },
+          {
+            "epoch": 2,
+            "train_loss": 0.19443657050912783,
+            "validation_loss": 0.3083644414762666
+          },
+          {
+            "epoch": 3,
+            "train_loss": 0.19427389249308386,
+            "validation_loss": 0.3088187934442272
+          },
+          {
+            "epoch": 4,
+            "train_loss": 0.19463756401001234,
+            "validation_loss": 0.31022935695196974
+          },
+          {
+            "epoch": 5,
+            "train_loss": 0.19346986660962734,
+            "validation_loss": 0.3091715864776492
+          },
+          {
+            "epoch": 6,
+            "train_loss": 0.19476722513772454,
+            "validation_loss": 0.3104462734491163
+          },
+          {
+            "epoch": 7,
+            "train_loss": 0.19346044478610672,
+            "validation_loss": 0.3088730851440746
+          },
+          {
+            "epoch": 8,
+            "train_loss": 0.1940058613196268,
+            "validation_loss": 0.3100295443763648
+          },
+          {
+            "epoch": 9,
+            "train_loss": 0.193439818309989,
+            "validation_loss": 0.3093292293324661
+          },
+          {
+            "epoch": 10,
+            "train_loss": 0.1938555515171079,
+            "validation_loss": 0.3098693460770716
+          },
+          {
+            "epoch": 11,
+            "train_loss": 0.19342183865991358,
+            "validation_loss": 0.3110167029765179
+          },
+          {
+            "epoch": 12,
+            "train_loss": 0.19398568484042195,
+            "validation_loss": 0.3117480253093974
+          },
+          {
+            "epoch": 13,
+            "train_loss": 0.19282919168506227,
+            "validation_loss": 0.3110589361380218
+          },
+          {
+            "epoch": 14,
+            "train_loss": 0.19289191983958376,
+            "validation_loss": 0.3118393908458136
+          },
+          {
+            "epoch": 15,
+            "train_loss": 0.19302060074403027,
+            "validation_loss": 0.31324370683327996
+          },
+          {
+            "epoch": 16,
+            "train_loss": 0.19408705610521762,
+            "validation_loss": 0.3123274914061075
+          },
+          {
+            "epoch": 17,
+            "train_loss": 0.19340017789120625,
+            "validation_loss": 0.31314405010350177
+          },
+          {
+            "epoch": 18,
+            "train_loss": 0.19236318855221154,
+            "validation_loss": 0.31146229430981626
+          },
+          {
+            "epoch": 19,
+            "train_loss": 0.192672717949995,
+            "validation_loss": 0.31064873092890144
+          },
+          {
+            "epoch": 20,
+            "train_loss": 0.19241248601240601,
+            "validation_loss": 0.31234245918475495
+          },
+          {
+            "epoch": 21,
+            "train_loss": 0.19299930861280284,
+            "validation_loss": 0.3134340679504863
+          }
+        ],
+        "selected_validation_loss": 0.3073227731110216,
+        "epoch_compute_seconds": 339.28
+      },
+      {
+        "learning_rate": 0.008,
+        "directory": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-0008",
+        "command": [
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/analyzer",
+          "--train",
+          "--validation",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/validation.fen",
+          "--save",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-0008/model.nn",
+          "--history",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-0008/history.csv",
+          "--epochs",
+          "40",
+          "--batch-size",
+          "128",
+          "--patience",
+          "20",
+          "--min-delta",
+          "0.0001",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-0008/initial.nn",
+          "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/train.fen"
+        ],
+        "status": "completed",
+        "initial": {
+          "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-0008/initial.nn",
+          "sha256": "4845f3f9df694e8cbd22197fc7fe3d47e53da5ae3985966f2acff35f85e3ffa2"
+        },
+        "wall_seconds": 330.1328967589943,
+        "returncode": 0,
+        "selected_epoch": 1,
+        "epochs_completed": 21,
+        "final_train_loss": 0.19246027904810445,
+        "final_validation_loss": 0.31112773218242906,
+        "model": {
+          "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-0008/model.nn",
+          "sha256": "b869cf6afd5254e36837f0252739cc1e4c198a10f588c828e9d4b5904003c9c5"
+        },
+        "metrics": {
+          "samples": 71555,
+          "accuracy": 0.8823422542100482,
+          "macro_f1": 0.8756930354038023,
+          "per_class": {
+            "Nothing": {
+              "precision": 0.938445434900054,
+              "recall": 0.9340301115741363,
+              "f1": 0.9362325675402546,
+              "support": 29756
+            },
+            "Check": {
+              "precision": 0.8413233204789933,
+              "recall": 0.8352879538951357,
+              "f1": 0.8382947743083643,
+              "support": 24813
+            },
+            "Checkmate": {
+              "precision": 0.8447179842810911,
+              "recall": 0.8605322029906982,
+              "f1": 0.852551764362788,
+              "support": 16986
+            }
+          },
+          "confusion_matrix": {
+            "labels": [
+              "Nothing",
+              "Check",
+              "Checkmate"
+            ],
+            "rows": "actual",
+            "columns": "predicted",
+            "counts": [
+              [
+                27793,
+                1743,
+                220
+              ],
+              [
+                1620,
+                20726,
+                2467
+              ],
+              [
+                203,
+                2166,
+                14617
+              ]
+            ]
+          },
+          "artifacts": {
+            "model": {
+              "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-0008/model.nn",
+              "sha256": "b869cf6afd5254e36837f0252739cc1e4c198a10f588c828e9d4b5904003c9c5"
+            },
+            "dataset": {
+              "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/validation.fen",
+              "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+            },
+            "analyzer": {
+              "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/analyzer",
+              "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+            }
+          },
+          "command": [
+            "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/analyzer",
+            "--predict",
+            "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/lr-0008/model.nn",
+            "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/validation.fen"
+          ],
+          "prediction_seconds": 0.8913587979914155,
+          "analyzer_stderr": "Prediction summary: positions=71555 labeled=71555 correct=63136/71555 accuracy=88.23%\n"
+        },
+        "history": [
+          {
+            "epoch": 1,
+            "train_loss": 0.19414102524881266,
+            "validation_loss": 0.30632403819750315
+          },
+          {
+            "epoch": 2,
+            "train_loss": 0.19379495406610941,
+            "validation_loss": 0.3070285171992992
+          },
+          {
+            "epoch": 3,
+            "train_loss": 0.19342177475982097,
+            "validation_loss": 0.3068000318466317
+          },
+          {
+            "epoch": 4,
+            "train_loss": 0.19332207264589926,
+            "validation_loss": 0.30788281598535117
+          },
+          {
+            "epoch": 5,
+            "train_loss": 0.19302506007814957,
+            "validation_loss": 0.30784672702495447
+          },
+          {
+            "epoch": 6,
+            "train_loss": 0.1933952974835079,
+            "validation_loss": 0.30820907087620464
+          },
+          {
+            "epoch": 7,
+            "train_loss": 0.19287007753051014,
+            "validation_loss": 0.3078763910962495
+          },
+          {
+            "epoch": 8,
+            "train_loss": 0.19310302379643646,
+            "validation_loss": 0.3081345090262686
+          },
+          {
+            "epoch": 9,
+            "train_loss": 0.19292037352090657,
+            "validation_loss": 0.30831510187109346
+          },
+          {
+            "epoch": 10,
+            "train_loss": 0.19278579536708879,
+            "validation_loss": 0.308155749478782
+          },
+          {
+            "epoch": 11,
+            "train_loss": 0.19269864252231952,
+            "validation_loss": 0.309251066939016
+          },
+          {
+            "epoch": 12,
+            "train_loss": 0.19276435063572966,
+            "validation_loss": 0.30897325435009043
+          },
+          {
+            "epoch": 13,
+            "train_loss": 0.19263014792049496,
+            "validation_loss": 0.3096723407213285
+          },
+          {
+            "epoch": 14,
+            "train_loss": 0.19255150605202037,
+            "validation_loss": 0.31008675996818696
+          },
+          {
+            "epoch": 15,
+            "train_loss": 0.19247175300719618,
+            "validation_loss": 0.3101407980882434
+          },
+          {
+            "epoch": 16,
+            "train_loss": 0.19265314022413188,
+            "validation_loss": 0.30965396936538425
+          },
+          {
+            "epoch": 17,
+            "train_loss": 0.19243122685598613,
+            "validation_loss": 0.3105544624071556
+          },
+          {
+            "epoch": 18,
+            "train_loss": 0.19228885196756137,
+            "validation_loss": 0.3102197552582247
+          },
+          {
+            "epoch": 19,
+            "train_loss": 0.19220420906808028,
+            "validation_loss": 0.30966055996571845
+          },
+          {
+            "epoch": 20,
+            "train_loss": 0.19227715192873276,
+            "validation_loss": 0.31065904013232765
+          },
+          {
+            "epoch": 21,
+            "train_loss": 0.19246027904810445,
+            "validation_loss": 0.31112773218242906
+          }
+        ],
+        "selected_validation_loss": 0.30632403819750315,
+        "epoch_compute_seconds": 323.202
+      }
+    ],
+    "recovered_driver": {
+      "started_utc": "2026-11-08T12:27:49.134334+00:00",
+      "error": "missing completion summary"
+    },
+    "completed_utc": "2026-11-08T12:44:48.087887+00:00"
+  },
+  "baseline": {
+    "samples": 71555,
+    "accuracy": 0.8806093215009433,
+    "macro_f1": 0.8740418010632188,
+    "per_class": {
+      "Nothing": {
+        "precision": 0.9414650766609881,
+        "recall": 0.9286194380965184,
+        "f1": 0.9349981389368254,
+        "support": 29756
+      },
+      "Check": {
+        "precision": 0.8361090996862177,
+        "recall": 0.8376254382783218,
+        "f1": 0.8368665821102856,
+        "support": 24813
+      },
+      "Checkmate": {
+        "precision": 0.8414135008935263,
+        "recall": 0.8592958907335453,
+        "f1": 0.8502606821425451,
+        "support": 16986
+      }
+    },
+    "confusion_matrix": {
+      "labels": [
+        "Nothing",
+        "Check",
+        "Checkmate"
+      ],
+      "rows": "actual",
+      "columns": "predicted",
+      "counts": [
+        [
+          27632,
+          1886,
+          238
+        ],
+        [
+          1516,
+          20784,
+          2513
+        ],
+        [
+          202,
+          2188,
+          14596
+        ]
+      ]
+    },
+    "artifacts": {
+      "model": {
+        "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/model.nn",
+        "sha256": "3ce70f8052f213573905e7fe8cd8a278309759083212b68768f424352aa392bf"
+      },
+      "dataset": {
+        "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/validation.fen",
+        "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+      },
+      "analyzer": {
+        "path": "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/analyzer",
+        "sha256": "9c48b567004ee2bc93456b6959ffa352d15ac9af6cc0d008860abd76a901c1b3"
+      }
+    },
+    "command": [
+      "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/analyzer",
+      "--predict",
+      "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/model.nn",
+      "/home/mathys/3/CNA/MyTorch-sgd-resume/results/experiments/2026-11-08-sgd-resume-01/snapshot/validation.fen"
+    ],
+    "prediction_seconds": 0.9073847310064593,
+    "analyzer_stderr": "Prediction summary: positions=71555 labeled=71555 correct=63012/71555 accuracy=88.06%\n"
+  },
+  "environment": {
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "ldd": "\tlinux-vdso.so.1 (0x00007f7f3801e000)\n\tlibyaml-cpp.so.0.8 => /lib/x86_64-linux-gnu/libyaml-cpp.so.0.8 (0x00007f7f37f53000)\n\tlibopenblas.so.0 => /lib/x86_64-linux-gnu/libopenblas.so.0 (0x00007f7f35b70000)\n\tlibstdc++.so.6 => /lib/x86_64-linux-gnu/libstdc++.so.6 (0x00007f7f35800000)\n\tlibm.so.6 => /lib/x86_64-linux-gnu/libm.so.6 (0x00007f7f35a87000)\n\tlibgcc_s.so.1 => /lib/x86_64-linux-gnu/libgcc_s.so.1 (0x00007f7f357d2000)\n\tlibc.so.6 => /lib/x86_64-linux-gnu/libc.so.6 (0x00007f7f35400000)\n\tlibgfortran.so.5 => /lib/x86_64-linux-gnu/libgfortran.so.5 (0x00007f7f35000000)\n\t/lib64/ld-linux-x86-64.so.2 (0x00007f7f38020000)\n",
+    "shared_libraries_sha256": {
+      "/lib/x86_64-linux-gnu/libyaml-cpp.so.0.8": "55749fdb0a78969cf15c67c326f9a506e67cace47aa8520c2ae137b9e6189e3b",
+      "/lib/x86_64-linux-gnu/libopenblas.so.0": "bfc7492adbf84a8f567720a9e1fae2afc18f3d817da233e7f4d453683485308e",
+      "/lib/x86_64-linux-gnu/libstdc++.so.6": "1fd75fe70354a416d75aef22bcae68c47bd25d20e2d0568c30b1a9838cf62f11",
+      "/lib/x86_64-linux-gnu/libm.so.6": "fce00b6f25f459cf4ae0b7fae4257909a1a8a86f9149e7c029a5d617baf1ccd0",
+      "/lib/x86_64-linux-gnu/libgcc_s.so.1": "d93224d2b0dab4247598be683adca02f5cf00586f99c187579cd7e92058fb7cb",
+      "/lib/x86_64-linux-gnu/libc.so.6": "3a15d66867d83762c7f2f1e37359cb8f6c5743edb369c65285cb0b1c4f7498bf",
+      "/lib/x86_64-linux-gnu/libgfortran.so.5": "342618ccfebe840446e4ef2b7893f4161b2084845e570f42d68a70bfde58a58d",
+      "/lib64/ld-linux-x86-64.so.2": "c20a2dc8917c755f02b94049356320fe1f62ac7d9f8994731f807d9df39302da"
+    },
+    "driver_revision_at_launch": "d45eef0",
+    "recovery_revision": "4d3735a",
+    "original_checkpoint_selected_epoch": 281,
+    "original_checkpoint_validation_loss": 0.309091,
+    "concurrent_training_authorized": true
+  },
+  "initial_validation_loss": 0.3090909045685105
+}
