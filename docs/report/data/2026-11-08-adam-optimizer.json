@@ -2347,16 +2347,510 @@
       ],
       "selected_epoch": 22,
       "completed_epochs": 42,
-      "wall_seconds": 612.5690059399931
+      "wall_seconds": 612.5690059399931,
+      "train_metrics": {
+        "samples": 1141143,
+        "accuracy": 0.9277031888203319,
+        "macro_f1": 0.922652660019124,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.9770859181141439,
+            "recall": 0.956445100416425,
+            "f1": 0.9666553369041619,
+            "support": 474275
+          },
+          "Check": {
+            "precision": 0.9017074951330305,
+            "recall": 0.8978633719095876,
+            "f1": 0.8997813277415291,
+            "support": 396185
+          },
+          "Checkmate": {
+            "precision": 0.8828326681799349,
+            "recall": 0.921018312934318,
+            "f1": 0.9015213154116809,
+            "support": 270683
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              453618,
+              18428,
+              2229
+            ],
+            [
+              9607,
+              355720,
+              30858
+            ],
+            [
+              1031,
+              20348,
+              249304
+            ]
+          ]
+        },
+        "artifacts": {
+          "model": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/training/2026-11-08-relu-adam-01/model.nn",
+            "sha256": "684a476b171e9f58ba56ba7de2e00418aa8f89acc02e9cc584f0f6c9d839216a"
+          },
+          "dataset": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-adam-screen-02/data/train.fen",
+            "sha256": "78481ab5110970c19d9283ff1549075a5b3d9788a9597b50afff134eeb520279"
+          },
+          "analyzer": {
+            "path": "/home/mathys/3/CNA/MyTorch/my_torch_analyzer",
+            "sha256": "e40dcdd23f5c0a1d552f6f31fa5f472d6b5d27d84296e64d6cef2044d43625a5"
+          }
+        },
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/my_torch_analyzer",
+          "--predict",
+          "/home/mathys/3/CNA/MyTorch/results/training/2026-11-08-relu-adam-01/model.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-adam-screen-02/data/train.fen"
+        ],
+        "prediction_seconds": 11.113370443999884,
+        "analyzer_stderr": ""
+      }
+    },
+    "adam_relu_large": {
+      "metrics": {
+        "samples": 71555,
+        "accuracy": 0.8924743204527985,
+        "macro_f1": 0.8857619043915177,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.9522654274584842,
+            "recall": 0.9365842183089125,
+            "f1": 0.9443597302700687,
+            "support": 29756
+          },
+          "Check": {
+            "precision": 0.8462968088892404,
+            "recall": 0.86253173739572,
+            "f1": 0.8543371522094926,
+            "support": 24813
+          },
+          "Checkmate": {
+            "precision": 0.8582352941176471,
+            "recall": 0.858942658660073,
+            "f1": 0.8585888306949919,
+            "support": 16986
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              27869,
+              1677,
+              210
+            ],
+            [
+              1211,
+              21402,
+              2200
+            ],
+            [
+              186,
+              2210,
+              14590
+            ]
+          ]
+        },
+        "artifacts": {
+          "model": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/training/2026-11-08-large-relu-adam-01/model.nn",
+            "sha256": "55944eb130c71cbcee29fddd6dc1e2239848fd9ec4697f5fc8017f6f8f0d911b"
+          },
+          "dataset": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-adam-screen-02/data/validation.fen",
+            "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df"
+          },
+          "analyzer": {
+            "path": "/home/mathys/3/CNA/MyTorch/my_torch_analyzer",
+            "sha256": "e40dcdd23f5c0a1d552f6f31fa5f472d6b5d27d84296e64d6cef2044d43625a5"
+          }
+        },
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/my_torch_analyzer",
+          "--predict",
+          "/home/mathys/3/CNA/MyTorch/results/training/2026-11-08-large-relu-adam-01/model.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-adam-screen-02/data/validation.fen"
+        ],
+        "prediction_seconds": 1.1137129889975768,
+        "analyzer_stderr": "",
+        "experiment": {
+          "configuration": "large-relu-adam",
+          "seed": 46,
+          "training_seconds": 959.1714230689977,
+          "model_bytes": 23544584
+        }
+      },
+      "model_sha256": "55944eb130c71cbcee29fddd6dc1e2239848fd9ec4697f5fc8017f6f8f0d911b",
+      "selected_epoch": 9,
+      "completed_epochs": 29,
+      "wall_seconds": 959.1714230689977,
+      "history": [
+        {
+          "epoch": 1,
+          "train_loss": 0.4036921325793646,
+          "validation_loss": 0.44058452407328424
+        },
+        {
+          "epoch": 2,
+          "train_loss": 0.2988926899527532,
+          "validation_loss": 0.35613739132715017
+        },
+        {
+          "epoch": 3,
+          "train_loss": 0.24976568346988315,
+          "validation_loss": 0.3192065915397708
+        },
+        {
+          "epoch": 4,
+          "train_loss": 0.2167568958119169,
+          "validation_loss": 0.29873025500705325
+        },
+        {
+          "epoch": 5,
+          "train_loss": 0.19433947094221238,
+          "validation_loss": 0.2887401159217691
+        },
+        {
+          "epoch": 6,
+          "train_loss": 0.17590790620015875,
+          "validation_loss": 0.2851920643065638
+        },
+        {
+          "epoch": 7,
+          "train_loss": 0.15936313618297862,
+          "validation_loss": 0.28316821302477185
+        },
+        {
+          "epoch": 8,
+          "train_loss": 0.14913750751288987,
+          "validation_loss": 0.2817120251173119
+        },
+        {
+          "epoch": 9,
+          "train_loss": 0.1385471372268949,
+          "validation_loss": 0.28049030930958607
+        },
+        {
+          "epoch": 10,
+          "train_loss": 0.13004663663361662,
+          "validation_loss": 0.28490327605334775
+        },
+        {
+          "epoch": 11,
+          "train_loss": 0.12322830221525342,
+          "validation_loss": 0.28851875247410724
+        },
+        {
+          "epoch": 12,
+          "train_loss": 0.11696071957738327,
+          "validation_loss": 0.2995822106101183
+        },
+        {
+          "epoch": 13,
+          "train_loss": 0.10957356126874883,
+          "validation_loss": 0.30728401651219345
+        },
+        {
+          "epoch": 14,
+          "train_loss": 0.10493689889306759,
+          "validation_loss": 0.3088921208809773
+        },
+        {
+          "epoch": 15,
+          "train_loss": 0.10072971251786696,
+          "validation_loss": 0.315808473101634
+        },
+        {
+          "epoch": 16,
+          "train_loss": 0.09573934386141181,
+          "validation_loss": 0.32176367596948496
+        },
+        {
+          "epoch": 17,
+          "train_loss": 0.08993103879329929,
+          "validation_loss": 0.3319629474282102
+        },
+        {
+          "epoch": 18,
+          "train_loss": 0.08736180055895394,
+          "validation_loss": 0.3339932442280787
+        },
+        {
+          "epoch": 19,
+          "train_loss": 0.08310195930548146,
+          "validation_loss": 0.3478346688287366
+        },
+        {
+          "epoch": 20,
+          "train_loss": 0.07879306155586997,
+          "validation_loss": 0.35648340529848876
+        },
+        {
+          "epoch": 21,
+          "train_loss": 0.0779442766278363,
+          "validation_loss": 0.3637239327189964
+        },
+        {
+          "epoch": 22,
+          "train_loss": 0.07332851883956222,
+          "validation_loss": 0.3699954112432158
+        },
+        {
+          "epoch": 23,
+          "train_loss": 0.07061843173348227,
+          "validation_loss": 0.3832903356298537
+        },
+        {
+          "epoch": 24,
+          "train_loss": 0.06898272805394445,
+          "validation_loss": 0.3902785070962105
+        },
+        {
+          "epoch": 25,
+          "train_loss": 0.06640679919162851,
+          "validation_loss": 0.40088497046596505
+        },
+        {
+          "epoch": 26,
+          "train_loss": 0.06240256690038383,
+          "validation_loss": 0.4120332802422559
+        },
+        {
+          "epoch": 27,
+          "train_loss": 0.059779467335891116,
+          "validation_loss": 0.41806019205655176
+        },
+        {
+          "epoch": 28,
+          "train_loss": 0.05882621939698885,
+          "validation_loss": 0.42588905061385196
+        },
+        {
+          "epoch": 29,
+          "train_loss": 0.05799391765173336,
+          "validation_loss": 0.44192540327755353
+        }
+      ],
+      "train_metrics": {
+        "samples": 1141143,
+        "accuracy": 0.9473659304749712,
+        "macro_f1": 0.943334673547425,
+        "per_class": {
+          "Nothing": {
+            "precision": 0.9821513838912669,
+            "recall": 0.9714595962258183,
+            "f1": 0.9767762328715576,
+            "support": 474275
+          },
+          "Check": {
+            "precision": 0.9265127683781145,
+            "recall": 0.9270366116839356,
+            "f1": 0.9267746160076912,
+            "support": 396185
+          },
+          "Checkmate": {
+            "precision": 0.9181523971235969,
+            "recall": 0.9349054059545667,
+            "f1": 0.9264531717630261,
+            "support": 270683
+          }
+        },
+        "confusion_matrix": {
+          "labels": [
+            "Nothing",
+            "Check",
+            "Checkmate"
+          ],
+          "rows": "actual",
+          "columns": "predicted",
+          "counts": [
+            [
+              460739,
+              12316,
+              1220
+            ],
+            [
+              7568,
+              367278,
+              21339
+            ],
+            [
+              805,
+              16815,
+              253063
+            ]
+          ]
+        },
+        "artifacts": {
+          "model": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/training/2026-11-08-large-relu-adam-01/model.nn",
+            "sha256": "55944eb130c71cbcee29fddd6dc1e2239848fd9ec4697f5fc8017f6f8f0d911b"
+          },
+          "dataset": {
+            "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-adam-screen-02/data/train.fen",
+            "sha256": "78481ab5110970c19d9283ff1549075a5b3d9788a9597b50afff134eeb520279"
+          },
+          "analyzer": {
+            "path": "/home/mathys/3/CNA/MyTorch/my_torch_analyzer",
+            "sha256": "e40dcdd23f5c0a1d552f6f31fa5f472d6b5d27d84296e64d6cef2044d43625a5"
+          }
+        },
+        "command": [
+          "/home/mathys/3/CNA/MyTorch/my_torch_analyzer",
+          "--predict",
+          "/home/mathys/3/CNA/MyTorch/results/training/2026-11-08-large-relu-adam-01/model.nn",
+          "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-adam-screen-02/data/train.fen"
+        ],
+        "prediction_seconds": 16.154676619000384,
+        "analyzer_stderr": ""
+      }
     }
   },
   "scope": {
-    "single_fresh_run": true,
+    "single_fresh_run": false,
     "test_evaluated": false,
-    "delivered_model_replaced": false
+    "delivered_model_replaced": false,
+    "fresh_relu_runs": 2
   },
   "limits": [
     "One seed and reused validation; optimizer and activation/LR combinations, not isolated activation effects.",
     "SGD times are historical and use dense storage; both Adam runs use compact storage. Timing is descriptive, not a repeated controlled benchmark."
-  ]
+  ],
+  "capacity_followup": {
+    "protocol": {
+      "source": {
+        "path": "/home/mathys/3/CNA/MyTorch/configs/protocols/train-large-relu-adam.yml",
+        "sha256": "3205b3841935c650c0de5b1661e4bb46e7dd0439f7624a7f8eee9d3f3b04f578"
+      },
+      "spec": {
+        "version": 1,
+        "hypothesis": "Doubling both hidden layer widths improves validation accuracy over the small ReLU plus Adam model at unchanged training settings.",
+        "seeds": [
+          46
+        ],
+        "datasets": {
+          "train": "../../results/experiments/2026-11-08-adam-screen-02/data/train.fen",
+          "validation": "../../results/experiments/2026-11-08-adam-screen-02/data/validation.fen"
+        },
+        "configurations": [
+          {
+            "name": "large-relu-adam",
+            "network": "../networks/basic-network.yml",
+            "overrides": {
+              "layers": [
+                777,
+                256,
+                128,
+                3
+              ],
+              "hidden_activation": "relu",
+              "output_activation": "softmax",
+              "initialization": "xavier",
+              "optimizer": "adam",
+              "learning_rate": 0.001
+            }
+          }
+        ],
+        "training": {
+          "command": "builtin",
+          "settings": {
+            "epochs": 500,
+            "batch_size": 128,
+            "patience": 20,
+            "min_delta": 0.0001
+          }
+        }
+      },
+      "datasets": {
+        "train": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-adam-screen-02/data/train.fen",
+          "sha256": "78481ab5110970c19d9283ff1549075a5b3d9788a9597b50afff134eeb520279",
+          "class_counts": {
+            "Nothing": 474275,
+            "Checkmate": 270683,
+            "Check": 396185
+          }
+        },
+        "validation": {
+          "path": "/home/mathys/3/CNA/MyTorch/results/experiments/2026-11-08-adam-screen-02/data/validation.fen",
+          "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df",
+          "class_counts": {
+            "Check": 24813,
+            "Nothing": 29756,
+            "Checkmate": 16986
+          }
+        }
+      },
+      "configurations": [
+        {
+          "name": "large-relu-adam",
+          "source": {
+            "path": "/home/mathys/3/CNA/MyTorch/configs/networks/basic-network.yml",
+            "sha256": "0062a0a1f0ae5b2d975ff482e8bb131493b4095aa96f50988a8d03e4fdb9c8d4"
+          },
+          "options": {
+            "layers": [
+              777,
+              256,
+              128,
+              3
+            ],
+            "hidden_activation": "relu",
+            "output_activation": "softmax",
+            "learning_rate": 0.001,
+            "initialization": "xavier",
+            "optimizer": "adam"
+          }
+        }
+      ],
+      "seeds": [
+        46
+      ],
+      "training": {
+        "command": "builtin",
+        "settings": {
+          "epochs": 500,
+          "batch_size": 128,
+          "patience": 20,
+          "min_delta": 0.0001
+        }
+      }
+    },
+    "git": {
+      "revision": "2d9b67f41fd1c479f6331a8300a8768d07036d2f",
+      "dirty": false,
+      "status": []
+    },
+    "stopping": {
+      "epochs_completed": 29,
+      "best_epoch": 9,
+      "best_validation_loss": 0.28049,
+      "initial_validation_loss": 1.10492,
+      "reason": "patience",
+      "unchanged_checkpoint": false
+    },
+    "scope": "One additional fresh run; only layer widths change relative to small ReLU + Adam. No test evaluation or delivered-model replacement."
+  }
 }
