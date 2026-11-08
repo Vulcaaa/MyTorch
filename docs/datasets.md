@@ -39,6 +39,14 @@ still learn interactions such as blocked attack lines and escape squares.
 The [label/error audit](report/2026-11-08-label-and-error-audit.md) investigates
 these limits; full chess legality is not enforced by the encoder.
 
+This is a justified baseline, not a demonstrated optimal encoding. Adding an
+explicit empty-square channel would raise placement inputs from 768 to 832
+without adding information. Integer piece IDs would be smaller but introduce
+an artificial numeric ordering. Attack maps or spatial architectures might
+help model interactions, but have no controlled quality benchmark here. Changing
+the contract would require consistent preprocessing/deduplication changes and
+fresh training; no improvement should be claimed without that comparison.
+
 ### Piece placement
 
 Squares follow FEN order: `a8 … h8`, `a7 … h7`, down to `a1 … h1`.
@@ -225,6 +233,29 @@ train/validation/test splits.
 ---
 
 ## 3. Dataset splitting
+
+### Why there are several preparation directories
+
+Preparation keeps intermediate outputs so that a transformation can be audited
+and rebuilt without editing raw sources. They are not all independent datasets
+that should be concatenated into training.
+
+| Location / output | Purpose | Retention rule |
+| --- | --- | --- |
+| `dataset/raw/` | Original labeled source files | Preserve unchanged |
+| `dataset/processed/cleaned.txt`, `report.json`, `provenance.jsonl` | Cleaned rows, rejected/duplicate counts and source mapping | Rebuildable preparation outputs; retain while needed to audit a run |
+| `dataset/processed/chess-v1-color-mirror/` | Symmetry-derived training data | Keep while referenced by protocols/runs; validation/test remain separate |
+| `dataset/processed/chess-v1-generated-*` | Different generation budgets, pools and mirrored variants | Inspect each manifest/report before using it; prepared data alone does not demonstrate a learning gain |
+| Hidden `.generated-*` staging folders, when present | Generation workspace or interrupted preparation | Inspect status and references before cleanup; a name alone does not prove it is safe to delete |
+| `dataset/splits/` | Notebook's current train/validation/test output | Rebuildable; use a frozen reference for comparable experiments |
+| `dataset/references/` and tracked `dataset/manifests/` | Named frozen bytes and their identities/reconstruction settings | Preserve references used by recorded experiments and the final model |
+
+New runs should reference shared datasets from `dataset/` and keep metrics,
+histories, checkpoints and logs under `results/`. Historical one-off campaigns
+also retain frozen data inside local results (including the large Adam
+protocol's source campaign). Keep those archives intact until a verified
+migration updates dependencies without rewriting historical evidence. Neither
+this guide nor a normal Git clone moves or restores those local files.
 
 The splitting stage of [the preparation notebook](../notebooks/prepare_dataset.ipynb)
 runs after [cleaning the data](#2-dataset-cleaning). It reads

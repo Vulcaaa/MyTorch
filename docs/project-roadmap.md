@@ -12,13 +12,13 @@ competencies also ask for justified choices, alternatives and measured impact.
 | Generating neural networks | Create a concrete network from configurable layers, initialization and seed | [Architecture](architecture.md#network-configuration), generator example in the [README](../README.md) |
 | Save file | Save, load, predict, then continue training; preserve Adam state where applicable | [Model format](architecture.md#saved-models-and-continuation), `tests/ModelSerializer.cpp`, `tests/Adam.cpp` |
 | Generic my_torch module | Numeric network independent of FEN; compiled computation plus Python tooling | [Component boundaries](architecture.md#components-and-data-flow), `src/neural/` |
-| Algorithm hyperparameters | Explain learning rate, batch size, epochs, optimizer and stopping rules | [Training](training.md), protocols in `configs/protocols/`, [reports](report/README.md) |
-| Model hyperparameters | Compare widths, hidden activations and initialization with a declared protocol | [Configuration](architecture.md#network-configuration), architecture/activation reports in the [report index](report/README.md) |
+| Algorithm hyperparameters | Explain learning rate, batch size, epochs, optimizer and stopping rules | [Measured setting choices](hyperparameters.md), [training](training.md), protocols in `configs/protocols/` |
+| Model hyperparameters | Compare widths, hidden activations and initialization with a declared protocol | [Model choices and alternatives](hyperparameters.md), [configuration](architecture.md#network-configuration) |
 | Overfitting | Separate updates from validation, inspect both loss curves, restore the best checkpoint | [Stopping policy](training.md#3-checkpoints-and-stopping), [comparison protocol](evaluation.md#comparison-protocol-v1) |
 | Choice justification | Explain the 777 inputs, class mapping and parameter choices using evidence | [Datasets](datasets.md), [outputs](output-encoding.md), experiment reports |
 | Alternative proposal | Compare a concrete alternative, such as augmentation, ReLU/Adam or BLAS, against a stated baseline | [Data transformations](datasets.md#color-mirror-augmentation), [reports](report/README.md), [CPU benchmark](../benchmarks/cpu_blas/README.md) |
 | Choice impact assessment | Assess quality by class, runtime, memory/model size, portability and data limitations | [Evaluation](evaluation.md), [data provenance](datasets.md#preparation-report-chess-v1), recorded benchmark conditions |
-| Documentation | Provide repeatable commands, visual benchmarks, retained failures and conclusions | [Guides](../README.md#documentation), [run records](evaluation.md#where-files-belong), [logs](logging.md) |
+| Documentation | Provide repeatable commands, visual benchmarks, retained failures and conclusions | [Trial/failure log](experiment-decisions.md), [reports](report/README.md), [run records](evaluation.md#where-files-belong) |
 | Parallelization / other bonuses | Show the actual backend, thread counts and measured impact; distinguish optional features from required behavior | [CPU backend](training.md#cpu-blas-backend), [measurements](../benchmarks/cpu_blas/results/linux-2026-11-07/README.md), CI workflow |
 
 Do not equate more threads with a speedup, a single seed with robustness, or a
@@ -36,6 +36,20 @@ and explain what they ruled out. Bonus credit remains the jury's decision.
 - Freeze final choices before final test evaluation. Historical reference test results already exist; do not describe that split as entirely unseen.
 - Check the delivered model and documented commands from a fresh checkout with only the declared dependencies.
 
-The current guides describe implemented behavior. Selecting the final model and
-writing the cross-experiment synthesis are separate closing tasks; the existing
-[dated reports](report/README.md) remain the evidence for completed experiments.
+## Remaining closing work
+
+- Finish the declared trials, then explicitly retain or replace the delivered
+  checkpoint. Update its provenance and final evaluation together.
+- Verify model loading, ordered predictions and documented reproduction steps
+  from a fresh checkout; keep the required local data available for the defense.
+- Verify CI covers explicit OpenBLAS and scalar builds; backend auto-detection
+  alone does not establish coverage of both paths.
+- Set the evaluation notebook to the chosen run and label its dataset role;
+  export the selected model's figures and rehearse the short demonstration.
+- If reporting inference latency or peak memory, measure them separately;
+  parameter count, file size and training time do not establish those costs.
+
+The [setting synthesis](hyperparameters.md) and [decision log](experiment-decisions.md)
+cover completed work; the [dated reports](report/README.md) remain the evidence.
+A release can package the final artifact but is optional and does not replace
+these delivery checks.

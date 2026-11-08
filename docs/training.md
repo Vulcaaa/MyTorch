@@ -13,6 +13,8 @@ uses it to execute reproducible protocols and collect results.
 | Understand backpropagation | [5. Neural calculations](#5-neural-calculations) |
 | Connect automated experiments | [6. Experiment runner](#6-experiment-runner) |
 | Find tests and limits | [7. Verification and limits](#7-verification-and-limits) |
+| Justify settings from measured results | [Model and training hyperparameters](hyperparameters.md) |
+| Understand unsuccessful trials and corrections | [Trial and failure log](experiment-decisions.md) |
 
 > **Validation is always used:** supply `--validation FILE` to keep existing
 > train/validation splits, or omit it to create an automatic 90/10 split from
@@ -672,4 +674,6 @@ for regenerating charts from recorded results without retraining.
 ## Experiment reports
 
 Training comparisons, measurements and interpretation are kept in the
-[experiment reports](report/README.md).
+[training performance history](report/training-history.md). It explains the
+progression from the first reference to the current candidates; the
+[report archive](report/README.md) retains each detailed protocol and measurement.

@@ -6,7 +6,7 @@
 | --- | --- |
 | `configs/networks/` | Network architecture and parameters |
 | `configs/protocols/` | YAML training and comparison protocols: data, initial model, budget, hypothesis |
-| `dataset/` | Shared datasets and frozen versions; never copied into results |
+| `dataset/` | Shared datasets and frozen versions; new runs reference these files rather than copying them |
 | `results/training/` | Standalone training or checkpoint continuation |
 | `results/evaluation/` | Standalone validation or final test evaluation |
 | `results/experiments/` | Controlled comparisons of configurations and seeds |
@@ -23,6 +23,12 @@ stay there; do not duplicate them under `training/` or `evaluation/`.
 Open **README.md first** in any result directory. No HTML reports, source-code
 snapshots, exported PNGs, or dataset-analysis directory are generated. Dataset
 analysis remains in its notebook and [dataset documentation](datasets.md).
+
+Historical one-off campaigns may keep frozen input snapshots under ignored
+`results/`. In particular, `train-large-relu-adam.yml` references retained local
+Adam-campaign data. Preserve those bytes and hashes until dependencies are
+verified; these are historical archives, not the directory pattern for new runs.
+See the [preparation inventory](datasets.md#why-there-are-several-preparation-directories).
 
 ## Network configuration
 

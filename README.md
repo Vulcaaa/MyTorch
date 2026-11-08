@@ -79,7 +79,10 @@ the Epitech repository.
 - [Architecture and configuration](docs/architecture.md): module boundaries, model format and design choices.
 - [Datasets](docs/datasets.md): 777-input encoding, frozen splits, color mirrors and generated positions.
 - [Training](docs/training.md), [evaluation](docs/evaluation.md) and [logs](docs/logging.md): commands and reproducibility.
-- [Experiment reports](docs/report/README.md) and [CPU benchmarks](benchmarks/cpu_blas/README.md): measurements and visual evidence.
+- [Hyperparameter choices](docs/hyperparameters.md): model versus training settings, measured alternatives and remaining decisions.
+- [Trial and failure log](docs/experiment-decisions.md): negative results, corrections and what the evidence supports.
+- [Training performance history](docs/report/training-history.md): experiments, measured gains, explanations and figures for the defense.
+- [Detailed experiment archive](docs/report/README.md) and [CPU benchmarks](benchmarks/cpu_blas/README.md): protocols and supporting evidence.
 - [Project requirements and defense checklist](docs/project-roadmap.md): competencies and where to find supporting evidence.
 
 Large datasets and most raw run artifacts remain local. Tracked manifests,

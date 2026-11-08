@@ -1,37 +1,85 @@
-# Training and evaluation reports
+# Training performance history and experiment archive
 
-Reports interpret recorded results. Portable measurements in `data/` and figures
-in `figures/` are versioned with these reports. Checkpoints, full histories, raw
-logs and frozen executables/data generally remain local in `models/` and
-`results/`; links into ignored artifacts require the local files. The selected
-large ReLU + Adam candidate is explicitly shared in `models/` with its README.
-The comparison notebook also requires those local result directories.
+**Start with the [training performance history](training-history.md).** It is the
+main defense reading path: starting point → controlled tuning → augmentation →
+activations/optimizer → remaining errors and delivery. Each stage explains the
+question, the measurements, their interpretation and the resulting decision,
+with selected figures. The archive below supplies the detailed evidence.
 
-| Date | Report | Main finding |
-| --- | --- | --- |
-| 2026-11-07 | [Reference checkpoints: epochs 100 and 338](2026-11-07-reference-checkpoints.md) | Continued training improves validation macro F1 by 9.69 percentage points |
-| 2026-11-07 | [Compact, reference and large](2026-11-07-three-models.md) | Reference retains the best validation macro F1; doubling its parameters adds no overall gain |
-| 2026-11-07 | [Batch-size screening: speed and early learning](2026-11-07-batch-size-screen.md) | Larger batches shorten epochs but learn more slowly per compute time at learning rate 0.01 |
-| 2026-11-07 | [Batch 128 with learning rate 0.04](2026-11-07-batch-learning-rate-screen.md) | Five epochs take 26% less compute time with similar early classification; later convergence remains untested |
-| 2026-11-07 | [Batch/LR follow-up: twenty epochs](2026-11-07-batch-learning-rate-followup.md) | Batch 128 / LR 0.08 uses 25.7% less epoch compute time and improves early validation F1 by 4.71 points; final convergence remains unmeasured |
-| 2026-11-07 | [Batch 32 / LR 0.02 control](2026-11-07-batch-learning-rate-control.md) | Retuning the smaller batch recovers quality; batch 128 remains faster but scores 1.23 F1 points lower at twenty epochs |
-| 2026-11-07 | [Matched 100-epoch comparison](2026-11-07-batch-learning-rate-100epochs.md) | Batch 128: 25.1% less epoch compute; -0.01 F1 points versus batch 32 at the 100-epoch horizon |
-| 2026-11-08 | [Selected batch-128 training](2026-11-08-reference-b128-lr008.md) | Validation macro F1 82.78%, +0.81 points versus the previous reference |
-| 2026-11-08 | [Seed robustness](2026-11-08-reference-seed-robustness.md) | Additional seeds 44–46: mean macro F1 82.28%, sample standard deviation 0.39 points |
-| 2026-11-08 | [Error analysis](2026-11-08-reference-error-analysis.md) | Check recall 77.36% on validation; shared errors and crowded Checkmate positions remain weaknesses |
-| 2026-11-08 | [Color-mirror augmentation](2026-11-08-color-mirror-augmentation.md) | Paired seeds 44–46: +4.91 pp macro F1; 2.69× historical epoch compute |
-| 2026-11-08 | [Augmented train versus validation](2026-11-08-augmented-train-validation.md) | Mean macro F1 90.92% train vs 87.20% validation; residual training errors and generalization gap |
-| 2026-11-08 | [SGD checkpoint continuation](2026-11-08-sgd-checkpoint-resume.md) | LR 0.008: 87.57% validation macro F1, +0.165 pp; both reduced-rate checkpoints selected at additional epoch 1 |
-| 2026-11-08 | [Hidden activations: sigmoid, tanh and ReLU over three seeds](2026-11-08-hidden-activations.md) | At 100 epochs, tanh and ReLU lead sigmoid by 3.8–4.3 macro-F1 points on every seed and are not separated from each other; ReLU + Xavier (82.28%) matches the sigmoid 500-epoch seed mean with about 8× fewer epochs |
-| 2026-11-08 | [ReLU on the color-mirror train: learning rate and seeds](2026-11-08-relu-color-mirror.md) | ReLU + Xavier at LR 0.16: 88.29% mean validation macro F1 on seeds 44–46 versus 87.20% for the augmented sigmoid, ahead on every seed, with 6.6× fewer updates to the checkpoint |
-| 2026-11-08 | [Label and error audit](2026-11-08-label-and-error-audit.md) | All 644,000 train and validation labels match the chess rules; the audited ReLU model reaches 92.66% on its own train, and 94% of validation errors are Check↔Checkmate or Nothing↔Check, concentrated on blocked lines and checks with few replies |
-| 2026-11-08 | [Adam optimizer](2026-11-08-adam-optimizer.md) | Larger ReLU + Adam: 89.25% accuracy / 88.58% macro F1 in 15.99 min; +0.51 accuracy points versus the small model on one seed |
+## Main findings
 
-## Training protocols
+- Continuing the first reference improves validation macro F1 from 72.28 to
+  81.96%; its original training metadata are incomplete.
+- A matched 100-epoch comparison supports batch 128 / LR 0.08 as a time-saving
+  setting: 25.1% less epoch compute, −0.01 F1 points versus batch 32 / LR 0.02.
+- Color-mirror augmentation improves mean F1 from 82.28 to 87.20% over three
+  paired seeds; the larger training-work budget is part of the result.
+- Tuned augmented ReLU/SGD reaches 88.29% mean F1 over three seeds. Large
+  ReLU/Adam reaches 88.58% on one seed, with no established robust superiority.
 
-The selected batch-128 run and the three additional seed runs are complete.
-Their protocol uses network 777 → 128 → 64 → 3, sigmoid/softmax, Xavier,
-learning rate 0.08, maximum 500 epochs, patience 20 and one thread.
-See [`train-reference-b128.yml`](../../configs/protocols/train-reference-b128.yml).
-The original reference protocol is retained for comparison. Reports distinguish
-that old baseline from the selected batch-128 checkpoints.
+These are validation development results with different experimental scopes,
+not a single controlled leaderboard. The delivered root model remains distinct
+from the shared Adam candidate. Check [current model provenance](2026-11-08-color-mirror-augmentation.md#delivered-model)
+and [candidate identity](../../models/README.md) before presenting a score.
+
+## Detailed reports by investigation
+
+The dates below are report dates. The history identifies the older initial
+training and continuation separately; it does not infer exact execution order
+between parallel investigations.
+
+### 1. Establish the reference and test capacity — 7 November
+
+| Report | Why it matters |
+| --- | --- |
+| [Epochs 100 and 338](2026-11-07-reference-checkpoints.md) | Initial learning, continuation, class gains and the older model's separate test result |
+| [Compact, reference and large](2026-11-07-three-models.md) | Capacity/quality compromise; unequal histories and changed-executable incident |
+
+### 2. Tune batch/LR, then verify the longer run — 7–8 November
+
+| Report | Role in the investigation |
+| --- | --- |
+| [Five-epoch batch screen](2026-11-07-batch-size-screen.md) | Faster epochs do not imply better learning per compute time |
+| [Batch 128 / LR 0.04](2026-11-07-batch-learning-rate-screen.md) | First attempt to recover learning with a larger batch |
+| [Neighbor LR screen and twenty epochs](2026-11-07-batch-learning-rate-followup.md) | Select LR 0.08 and compare against the original smaller-batch control |
+| [Stronger batch-32 / LR-0.02 control](2026-11-07-batch-learning-rate-control.md) | Qualifies the early gain: LR tuning also helps the smaller batch |
+| [Matched 100 epochs](2026-11-07-batch-learning-rate-100epochs.md) | Compare selected settings at a longer common horizon and against time |
+| [Full batch-128 run](2026-11-08-reference-b128-lr008.md) | Selected epoch 210, 82.78% F1 on tuning seed 43 |
+| [Additional seeds](2026-11-08-reference-seed-robustness.md) | Mean 82.28%, sample SD 0.39 pp over seeds 44–46 |
+
+### 3. Improve data and diagnose the plateau — 8 November
+
+| Report | Role in the investigation |
+| --- | --- |
+| [Reference error analysis](2026-11-08-reference-error-analysis.md) | Check recall and recurring error patterns |
+| [Color-mirror augmentation](2026-11-08-color-mirror-augmentation.md) | Paired gains, data integrity, class scores and increased training cost |
+| [Augmented train versus validation](2026-11-08-augmented-train-validation.md) | Residual training errors and a 3.72-point mean F1 gap |
+| [SGD continuation](2026-11-08-sgd-checkpoint-resume.md) | No gain at unchanged LR; small reduced-rate gains followed by overfitting |
+
+### 4. Change learning dynamics and revisit capacity — 8 November
+
+| Report | Role in the investigation |
+| --- | --- |
+| [Hidden activations and initialization](2026-11-08-hidden-activations.md) | Common-budget sigmoid/tanh/ReLU comparison over three seeds |
+| [Augmented ReLU rates and seeds](2026-11-08-relu-color-mirror.md) | LR tuning, repeated quality gain and fewer updates |
+| [Label and error audit](2026-11-08-label-and-error-audit.md) | Rules-based label agreement and difficult position patterns |
+| [Adam and larger ReLU network](2026-11-08-adam-optimizer.md) | Single-seed optimizer candidates, controlled width follow-up and overfitting |
+
+## Settings, decisions and retained evidence
+
+- [Hyperparameter guide](../hyperparameters.md): role, tested alternatives and
+  evidence for model/training settings; CLI defaults differ from later protocols.
+- [Trial and failure log](../experiment-decisions.md): unsuccessful trials,
+  corrections and decisions, with the original failed records preserved.
+- [CPU benchmarks](../../benchmarks/cpu_blas/README.md): execution efficiency
+  and numerical equivalence, separate from trained-model quality.
+
+Portable measurements in `data/` and figures in `figures/` are versioned.
+Full histories, raw logs, frozen executables/data and most checkpoints remain in
+local ignored `results/` and `models/`; a clone does not restore them. The
+comparison notebook needs those local runs. The explicitly shared Adam candidate
+is tracked with its [README](../../models/README.md).
+
+Dated reports retain their original conclusions and planned next steps. Those
+historical recommendations do not supersede current delivery provenance. Missing
+metadata stay missing; no new training or test evaluation was run for this history.

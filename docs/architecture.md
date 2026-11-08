@@ -64,6 +64,8 @@ choices to compare, not automatic improvements. Architecture, learning rate and
 optimizer interact, so changing several together measures a complete setting.
 See [training calculations](training.md#5-neural-calculations) for the formulas
 and [experiment reports](report/README.md) for observed outcomes.
+The [hyperparameter guide](hyperparameters.md) connects each setting to its
+tested alternatives and distinguishes the delivered model from later candidates.
 
 ## Saved models and continuation
 
