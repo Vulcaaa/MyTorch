@@ -987,13 +987,11 @@
    }
   }
  },
- "validation_accuracy_by_variant": {
-  "previous delivered sigmoid 128/64": 0.8806,
-  "color-mirror train, 256/128 ReLU + Adam (previous shared candidate)": 0.8925,
-  "x4 train + decay, adam-seed46, one view": 0.9289,
-  "x4 train + decay + dropout 0.1, seed 49, one view (delivered)": 0.9378,
-  "dropout-seed49, two views (original + color)": 0.9464,
-  "dropout-seed49, four views": 0.9505,
-  "adam-seed46 + adam-seed48, four views": 0.952
+ "validation_accuracy_by_step": {
+  "before: sigmoid 128/64, SGD": 0.8806,
+  "1: ReLU + Adam, 256/128": 0.8925,
+  "2: training data doubled (left-right mirror) + learning-rate decay, seed 46": 0.928949,
+  "3: + dropout 0.1, seed 49 (delivered)": 0.937824,
+  "4: + four views": 0.9505
  }
 }
