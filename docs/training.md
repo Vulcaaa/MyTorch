@@ -610,7 +610,7 @@ and `BLAS=none`, including finite differences, overflow/rollback, indexed
 batches and XOR. Additional tests compare batched loss with scalar predictions
 and batched gradients/updates with the mean of per-sample gradients across a
 256-position block boundary for all eight activation pairs. Gustave's activation
-experiments use macOS/Accelerate; their [report](report/2026-11-08-hidden-activations.md)
+experiments use macOS/Accelerate; their [report](report/2026-11-08-hidden-activations/README.md)
 records cross-platform random-number differences. A common seed does not imply
 identical initial weights or shuffles across C++ standard libraries.
 

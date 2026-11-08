@@ -40,39 +40,39 @@ between parallel investigations.
 
 | Report | Why it matters |
 | --- | --- |
-| [Epochs 100 and 338](2026-11-07-reference-checkpoints.md) | Initial learning, continuation, class gains and the older model's separate test result |
-| [Compact, reference and large](2026-11-07-three-models.md) | Capacity/quality compromise; unequal histories and changed-executable incident |
+| [Epochs 100 and 338](2026-11-07-reference-checkpoints/README.md) | Initial learning, continuation, class gains and the older model's separate test result |
+| [Compact, reference and large](2026-11-07-three-models/README.md) | Capacity/quality compromise; unequal histories and changed-executable incident |
 
 ### 2. Tune batch/LR, then verify the longer run — 7–8 November
 
 | Report | Role in the investigation |
 | --- | --- |
-| [Five-epoch batch screen](2026-11-07-batch-size-screen.md) | Faster epochs do not imply better learning per compute time |
-| [Batch 128 / LR 0.04](2026-11-07-batch-learning-rate-screen.md) | First attempt to recover learning with a larger batch |
-| [Neighbor LR screen and twenty epochs](2026-11-07-batch-learning-rate-followup.md) | Select LR 0.08 and compare against the original smaller-batch control |
-| [Stronger batch-32 / LR-0.02 control](2026-11-07-batch-learning-rate-control.md) | Qualifies the early gain: LR tuning also helps the smaller batch |
-| [Matched 100 epochs](2026-11-07-batch-learning-rate-100epochs.md) | Compare selected settings at a longer common horizon and against time |
-| [Full batch-128 run](2026-11-08-reference-b128-lr008.md) | Selected epoch 210, 82.78% F1 on tuning seed 43 |
-| [Additional seeds](2026-11-08-reference-seed-robustness.md) | Mean 82.28%, sample SD 0.39 pp over seeds 44–46 |
+| [Five-epoch batch screen](2026-11-07-batch-size-screen/README.md) | Faster epochs do not imply better learning per compute time |
+| [Batch 128 / LR 0.04](2026-11-07-batch-learning-rate-screen/README.md) | First attempt to recover learning with a larger batch |
+| [Neighbor LR screen and twenty epochs](2026-11-07-batch-learning-rate-followup/README.md) | Select LR 0.08 and compare against the original smaller-batch control |
+| [Stronger batch-32 / LR-0.02 control](2026-11-07-batch-learning-rate-control/README.md) | Qualifies the early gain: LR tuning also helps the smaller batch |
+| [Matched 100 epochs](2026-11-07-batch-learning-rate-100epochs/README.md) | Compare selected settings at a longer common horizon and against time |
+| [Full batch-128 run](2026-11-08-reference-b128-lr008/README.md) | Selected epoch 210, 82.78% F1 on tuning seed 43 |
+| [Additional seeds](2026-11-08-reference-seed-robustness/README.md) | Mean 82.28%, sample SD 0.39 pp over seeds 44–46 |
 
 ### 3. Improve data and diagnose the plateau — 8 November
 
 | Report | Role in the investigation |
 | --- | --- |
-| [Reference error analysis](2026-11-08-reference-error-analysis.md) | Check recall and recurring error patterns |
-| [Color-mirror augmentation](2026-11-08-color-mirror-augmentation.md) | Paired gains, data integrity, class scores and increased training cost |
-| [Augmented train versus validation](2026-11-08-augmented-train-validation.md) | Residual training errors and a 3.72-point mean F1 gap |
-| [SGD continuation](2026-11-08-sgd-checkpoint-resume.md) | No gain at unchanged LR; small reduced-rate gains followed by overfitting |
+| [Reference error analysis](2026-11-08-reference-error-analysis/README.md) | Check recall and recurring error patterns |
+| [Color-mirror augmentation](2026-11-08-color-mirror-augmentation/README.md) | Paired gains, data integrity, class scores and increased training cost |
+| [Augmented train versus validation](2026-11-08-augmented-train-validation/README.md) | Residual training errors and a 3.72-point mean F1 gap |
+| [SGD continuation](2026-11-08-sgd-checkpoint-resume/README.md) | No gain at unchanged LR; small reduced-rate gains followed by overfitting |
 | [Generated positions: 60k trial](2026-11-08-generated-60k/README.md) | +60k with mirrors: 88.15% macro F1 / 88.83% accuracy in 68m 54s; below the local large Adam candidate; intermediate mirrored dataset archived |
 
 ### 4. Change learning dynamics and revisit capacity — 8 November
 
 | Report | Role in the investigation |
 | --- | --- |
-| [Hidden activations and initialization](2026-11-08-hidden-activations.md) | Common-budget sigmoid/tanh/ReLU comparison over three seeds |
-| [Augmented ReLU rates and seeds](2026-11-08-relu-color-mirror.md) | LR tuning, repeated quality gain and fewer updates |
-| [Label and error audit](2026-11-08-label-and-error-audit.md) | Rules-based label agreement and difficult position patterns |
-| [Adam and larger ReLU network](2026-11-08-adam-optimizer.md) | Single-seed optimizer candidates, controlled width follow-up and overfitting |
+| [Hidden activations and initialization](2026-11-08-hidden-activations/README.md) | Common-budget sigmoid/tanh/ReLU comparison over three seeds |
+| [Augmented ReLU rates and seeds](2026-11-08-relu-color-mirror/README.md) | LR tuning, repeated quality gain and fewer updates |
+| [Label and error audit](2026-11-08-label-and-error-audit/README.md) | Rules-based label agreement and difficult position patterns |
+| [Adam and larger ReLU network](2026-11-08-adam-optimizer/README.md) | Single-seed optimizer candidates, controlled width follow-up and overfitting |
 
 ### 5. Deliver the final model — 8 November
 

@@ -79,7 +79,7 @@ controlled convergence benchmark or compare that duration with a fresh full run.
 The continued reference's test result is 81.49% macro F1 at epoch 338; that result
 belongs to this model only.
 
-Source: [reference checkpoint history and per-class results](2026-11-07-reference-checkpoints.md).
+Source: [reference checkpoint history and per-class results](2026-11-07-reference-checkpoints/README.md).
 
 ## 3. Testing capacity: more parameters did not fix the early sigmoid model
 
@@ -91,7 +91,7 @@ Source: [reference checkpoint history and per-class results](2026-11-07-referenc
 | 128 / 64 | 108,035 | 81.96% | 338 / 358, including continuation |
 | 256 / 128 | 232,451 | 81.84% | 324 / 344 |
 
-![Sigmoid models: quality versus capacity](figures/2026-11-07-three-models/quality-and-capacity.svg)
+![Sigmoid models: quality versus capacity](2026-11-07-three-models/quality-and-capacity.svg)
 
 **Read the figure.** The compact model removes 53.73% of the reference parameters
 but loses 2.19 F1 points. The large model has 2.15× the parameters without an
@@ -105,7 +105,7 @@ the compact/large runners detected an executable change. Independent evaluation
 with one frozen analyzer validates the saved-model comparison, not every earlier
 training step. The later Adam width experiment revisits capacity more directly.
 
-Source: [architecture comparison, curves and provenance incident](2026-11-07-three-models.md).
+Source: [architecture comparison, curves and provenance incident](2026-11-07-three-models/README.md).
 
 ## 4. Tuning batch and learning rate: the control changed our conclusion
 
@@ -140,7 +140,7 @@ for exactly 100 epochs, with the same frozen data, executable and one BLAS threa
 | Batch 32 / LR 0.02 | 1,007.192 s | 100 | 77.72% |
 | Batch 128 / LR 0.08 | 754.048 s | 99 | 77.71% |
 
-![Matched training loss against epochs and compute time](figures/2026-11-07-batch-learning-rate-100epochs/loss-versus-time.svg)
+![Matched training loss against epochs and compute time](2026-11-07-batch-learning-rate-100epochs/loss-versus-time.svg)
 
 **Read the figure.** The epoch axis shows learning per pass; the time axis shows
 what that learning costs. Batch 128 saves 25.1% epoch compute at this horizon
@@ -154,12 +154,12 @@ F1 in 1,642.55 seconds of epoch compute. Additional seeds 44–46 score
 excluded from that mean. This separates a favorable tuning result from the
 variability seen on additional initializations.
 
-Sources: [batch screen](2026-11-07-batch-size-screen.md),
-[LR screening and twenty epochs](2026-11-07-batch-learning-rate-followup.md),
-[stronger control](2026-11-07-batch-learning-rate-control.md),
-[100-epoch comparison](2026-11-07-batch-learning-rate-100epochs.md),
-[full run](2026-11-08-reference-b128-lr008.md),
-[seed repetition](2026-11-08-reference-seed-robustness.md).
+Sources: [batch screen](2026-11-07-batch-size-screen/README.md),
+[LR screening and twenty epochs](2026-11-07-batch-learning-rate-followup/README.md),
+[stronger control](2026-11-07-batch-learning-rate-control/README.md),
+[100-epoch comparison](2026-11-07-batch-learning-rate-100epochs/README.md),
+[full run](2026-11-08-reference-b128-lr008/README.md),
+[seed repetition](2026-11-08-reference-seed-robustness/README.md).
 
 ## 5. Improving the data: the largest repeated quality gain
 
@@ -177,7 +177,7 @@ maximum 500 epochs and the stopping policy remain fixed.
 | 45 | 82.48% | 87.27% | +4.79 pp |
 | 46 | 82.54% | 87.40% | +4.87 pp |
 
-![Augmentation gains by class over paired seeds](figures/2026-11-08-color-mirror-augmentation/class-metrics.svg)
+![Augmentation gains by class over paired seeds](2026-11-08-color-mirror-augmentation/class-metrics.svg)
 
 **Read the figure.** Every paired seed improves, with gains in every class.
 Mean F1 rises from 82.28 to 87.20%; mean Check recall rises from 76.95 to 83.35%.
@@ -189,7 +189,7 @@ original-data campaign. The result combines new symmetric examples and additiona
 optimization under the stopping policy; it does not isolate those two effects.
 Related mirrored positions also are not independent new observations.
 
-Source: [augmentation protocol, costs, integrity checks and curves](2026-11-08-color-mirror-augmentation.md).
+Source: [augmentation protocol, costs, integrity checks and curves](2026-11-08-color-mirror-augmentation/README.md).
 
 ## 6. Diagnosing the plateau: overfitting and errors, not just more epochs
 
@@ -214,8 +214,8 @@ give only a small gain, then validation worsens while train generally improves.
 Extra epochs alone are not supported by these trajectories. The 0.008 aggregate
 F1 gain also comes with slightly lower Check recall, so per-class metrics matter.
 
-Sources: [train/validation diagnostic](2026-11-08-augmented-train-validation.md),
-[continuation curves, recovery incident and class scores](2026-11-08-sgd-checkpoint-resume.md).
+Sources: [train/validation diagnostic](2026-11-08-augmented-train-validation/README.md),
+[continuation curves, recovery incident and class scores](2026-11-08-sgd-checkpoint-resume/README.md).
 
 ## 7. Changing learning dynamics: activations, then an appropriate LR
 
@@ -232,7 +232,7 @@ On augmented train, ReLU LR screening gives 86.22%, 86.75%, 87.80%, 88.47% and
 88.34% F1 at rates 0.02, 0.04, 0.08, 0.16 and 0.32. Lowering the rate did not
 solve the plateau; 0.16 is retained and tested on two additional seeds.
 
-![Augmented ReLU versus sigmoid over three seeds](figures/2026-11-08-relu-color-mirror/macro-f1-by-seed.svg)
+![Augmented ReLU versus sigmoid over three seeds](2026-11-08-relu-color-mirror/macro-f1-by-seed.svg)
 
 **Read the figure.** ReLU's mean is 88.29%, versus 87.20% for sigmoid, with
 gains of 1.07–1.13 points per seed. Checkpoints need 6.6× fewer updates on average.
@@ -240,8 +240,8 @@ This supports the complete tuned ReLU setting. Runs use macOS versus historical
 Linux sigmoid runs, so a shared seed does not guarantee identical trajectories
 and seconds cannot be compared directly.
 
-Sources: [activation/initialization comparison](2026-11-08-hidden-activations.md),
-[augmented ReLU rates and seeds](2026-11-08-relu-color-mirror.md).
+Sources: [activation/initialization comparison](2026-11-08-hidden-activations/README.md),
+[augmented ReLU rates and seeds](2026-11-08-relu-color-mirror/README.md).
 
 ## 8. Adam and capacity: a promising candidate with an early optimum
 
@@ -262,7 +262,7 @@ settings match. The larger network selects epoch 9 of 29.
 this setting, unlike the early sigmoid comparison. It does not help every
 class: Checkmate F1 is essentially unchanged (85.90 → 85.86%).
 
-![Small Adam run: training loss falls while validation rises after its optimum](figures/2026-11-08-adam-optimizer/loss.svg)
+![Small Adam run: training loss falls while validation rises after its optimum](2026-11-08-adam-optimizer/loss.svg)
 
 **Read the figure.** This curve belongs to the **small** Adam model. Continuing
 to reduce train loss after the validation minimum does not improve the retained
@@ -275,7 +275,7 @@ does not establish robust superiority. Earlier sigmoid/SGD and Adam timings also
 use different storage implementations: do not attribute their time ratio to the
 optimizer alone.
 
-Source: [Adam experiments and controlled width follow-up](2026-11-08-adam-optimizer.md).
+Source: [Adam experiments and controlled width follow-up](2026-11-08-adam-optimizer/README.md).
 
 ## 9. What remains difficult, and what is actually delivered
 
@@ -298,8 +298,8 @@ reported here. The test split already has historical reference scores: it is
 not a newly untouched holdout. Prepared generated-game datasets do not yet have
 a quality gain documented in this history.
 
-Sources: [error audit](2026-11-08-label-and-error-audit.md),
-[delivered provenance](2026-11-08-color-mirror-augmentation.md#delivered-model),
+Sources: [error audit](2026-11-08-label-and-error-audit/README.md),
+[delivered provenance](2026-11-08-color-mirror-augmentation/README.md#delivered-model),
 [candidate identity](../../models/README.md).
 
 ## 10. Presenting the evidence at the defense

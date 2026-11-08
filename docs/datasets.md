@@ -38,7 +38,7 @@ check, so castling rights do not change these three labels. Move counters are
 irrelevant to this classification, which has no draw class. This compact
 contract preserves the relevant board information, but a dense network must
 still learn interactions such as blocked attack lines and escape squares.
-The [label/error audit](report/2026-11-08-label-and-error-audit.md) investigates
+The [label/error audit](report/2026-11-08-label-and-error-audit/README.md) investigates
 these limits; full chess legality is not enforced by the encoder.
 
 This is a justified baseline, not a demonstrated optimal encoding. Adding an
@@ -380,7 +380,7 @@ These files reproduce the existing notebook outputs; no split algorithm changed.
 The original dataset was **provided by Epitech for this project**. It is used
 for training, evaluation and the defense in that educational context.
 Preparation checks FEN syntax and label format. A subsequent
-[rules-based audit](report/2026-11-08-label-and-error-audit.md) found all original
+[rules-based audit](report/2026-11-08-label-and-error-audit/README.md) found all original
 train and validation labels consistent with python-chess 1.11.2, while flagging
 9 train and 2 validation positions as invalid. It did not audit the test split.
 The frozen manifest records the limitations known at preparation time; see the
@@ -489,7 +489,7 @@ use that reference's `splits/` as the input.
 
 [`scripts/verify_augmentation.py`](../scripts/verify_augmentation.py) provides
 additional checks against the optional Python chess oracle and the production
-C++ encoder. The [augmentation report](report/2026-11-08-color-mirror-augmentation.md#augmentation-and-integrity)
+C++ encoder. The [augmentation report](report/2026-11-08-color-mirror-augmentation/README.md#augmentation-and-integrity)
 records the independent checks and measured outcomes. More rows also mean more
 updates per epoch; compare quality and total training cost, not epoch count alone.
 
@@ -798,6 +798,6 @@ Validation scores alone do not establish final test performance.
 
 | Find the evidence | Document |
 | --- | --- |
-| Label checks and detailed error patterns | [Label and error audit](report/2026-11-08-label-and-error-audit.md) |
+| Label checks and detailed error patterns | [Label and error audit](report/2026-11-08-label-and-error-audit/README.md) |
 | Experiments, including unsuccessful approaches | [Training and evaluation reports](report/README.md) |
 | Split, seed and final-test rules | [Evaluation protocol](evaluation.md#comparison-protocol-v1) |

@@ -179,8 +179,8 @@ validation labels** against chess rules and finds 100% agreement. It flags
 9 train and 2 validation positions as invalid under the oracle's validity checks;
 label agreement alone does not certify full legality or real-game coverage.
 
-Sources: [dataset guide](datasets.md), [augmentation report](report/2026-11-08-color-mirror-augmentation.md),
-[label audit](report/2026-11-08-label-and-error-audit.md).
+Sources: [dataset guide](datasets.md), [augmentation report](report/2026-11-08-color-mirror-augmentation/README.md),
+[label audit](report/2026-11-08-label-and-error-audit/README.md).
 
 ## 4. Evaluation protocol and how to read the results
 
@@ -242,7 +242,7 @@ Use each within-experiment comparison to justify its corresponding decision.
 | Reference: 777 → 128 → 64 → 3 | 108,035 | 82.57% | 81.96% |
 | Large: 777 → 256 → 128 → 3 | 232,451 | 82.36% | 81.84% |
 
-![Early sigmoid architecture comparison: validation quality and parameter count](report/figures/2026-11-07-three-models/quality-and-capacity.svg)
+![Early sigmoid architecture comparison: validation quality and parameter count](report/2026-11-07-three-models/quality-and-capacity.svg)
 
 **Read the figure:** compact loses 2.19 macro-F1 points for 53.73% fewer
 parameters. The large network has 2.15× the reference parameters without an
@@ -253,7 +253,7 @@ and the later ReLU + Adam width comparison has a different outcome.
 The compact/large runners flagged a changed analyzer during their historical
 training. Their saved checkpoints were subsequently evaluated with one frozen
 analyzer. That validates the prediction comparison, not the provenance of every
-training step. See [full architecture report](report/2026-11-07-three-models.md).
+training step. See [full architecture report](report/2026-11-07-three-models/README.md).
 
 ### A larger batch needs a suitable learning rate
 
@@ -266,7 +266,7 @@ restarted both configurations from identical seed-43 Xavier weights:
 | Batch 32 / LR 0.02 | 100 | 1,007.192 s | 100 | 78.13% | 77.72% |
 | Batch 128 / LR 0.08 | 100 | 754.048 s | 99 | 78.11% | 77.71% |
 
-![Matched batch/LR comparison: loss by epochs and compute time](report/figures/2026-11-07-batch-learning-rate-100epochs/loss-versus-time.svg)
+![Matched batch/LR comparison: loss by epochs and compute time](report/2026-11-07-batch-learning-rate-100epochs/loss-versus-time.svg)
 
 **Read the figure:** compare both the epoch axis and compute-time axis. Batch 128
 uses **25.1% less epoch compute** with a **−0.01 pp** checkpoint-F1 difference
@@ -278,8 +278,8 @@ The longer selected sigmoid configuration reaches **82.78% macro F1** on tuning
 seed 43. Additional seeds 44–46 give **82.28% ± 0.39 pp**, range 81.84–82.54%.
 The tuning seed is excluded from that mean.
 
-Sources: [100-epoch comparison](report/2026-11-07-batch-learning-rate-100epochs.md),
-[seed robustness](report/2026-11-08-reference-seed-robustness.md).
+Sources: [100-epoch comparison](report/2026-11-07-batch-learning-rate-100epochs/README.md),
+[seed robustness](report/2026-11-08-reference-seed-robustness/README.md).
 
 ## 7. Data augmentation: the largest repeated gain
 
@@ -293,7 +293,7 @@ activation, batch, LR and stopping settings remain fixed.
 | 46 | 82.54% | 87.40% | +4.87 pp |
 | **Mean ± sample SD** | **82.28% ± 0.39 pp** | **87.20% ± 0.25 pp** | **+4.91 pp mean** |
 
-![Color-mirror augmentation: class-by-class gains on paired seeds](report/figures/2026-11-08-color-mirror-augmentation/class-metrics.svg)
+![Color-mirror augmentation: class-by-class gains on paired seeds](report/2026-11-08-color-mirror-augmentation/class-metrics.svg)
 
 **Read the figure:** gains appear in every class, across all three seeds.
 Mean Check recall improves from **76.95% to 83.35%**. This is more persuasive
@@ -305,7 +305,7 @@ also reaches different stopping epochs. The result measures augmentation plus
 the existing stopping protocol; it does not isolate new information from extra
 optimization work. Timing baselines are historical, not interleaved measurements.
 
-Source: [paired augmentation report and numerical evidence](report/2026-11-08-color-mirror-augmentation.md).
+Source: [paired augmentation report and numerical evidence](report/2026-11-08-color-mirror-augmentation/README.md).
 
 ## 8. Activations and initialization: faster learning, then better quality
 
@@ -318,7 +318,7 @@ Source: [paired augmentation report and numerical evidence](report/2026-11-08-co
 | ReLU / Xavier | 82.28% ± 0.34 pp | 82.95% | 23.0 |
 | ReLU / He | 81.75% ± 0.76 pp | 82.40% | 23.0 |
 
-![Activation and initialization comparison: individual seeds and aggregate macro F1](report/figures/2026-11-08-hidden-activations/macro-f1-by-seed.svg)
+![Activation and initialization comparison: individual seeds and aggregate macro F1](report/2026-11-08-hidden-activations/macro-f1-by-seed.svg)
 
 **Read the figure:** every tanh/ReLU seed exceeds every sigmoid seed at this
 budget. The alternatives are not separated from each other under the report's
@@ -342,7 +342,7 @@ LR 0.16 was retained and evaluated on two additional seeds.
 | 46 | 87.40% | 88.47% | +1.07 pp |
 | **Mean ± sample SD** | **87.20% ± 0.25 pp** | **88.29% ± 0.22 pp** | **+1.09 pp mean** |
 
-![Augmented sigmoid and ReLU: validation macro F1 over three seeds](report/figures/2026-11-08-relu-color-mirror/macro-f1-by-seed.svg)
+![Augmented sigmoid and ReLU: validation macro F1 over three seeds](report/2026-11-08-relu-color-mirror/macro-f1-by-seed.svg)
 
 **Read the figure:** the lowest ReLU score is above the highest sigmoid score.
 ReLU selects epochs 35–42, against sigmoid's 227–281: **6.6× fewer updates to the
@@ -352,8 +352,8 @@ ReLU runs use Apple M5/Accelerate; sigmoid runs use Linux/OpenBLAS. C++ shuffle
 implementations differ across standard libraries, so equal seeds do not imply
 identical orders across those machines. Validation was reused for LR selection.
 
-Sources: [activation comparison](report/2026-11-08-hidden-activations.md),
-[augmented ReLU comparison](report/2026-11-08-relu-color-mirror.md).
+Sources: [activation comparison](report/2026-11-08-hidden-activations/README.md),
+[augmented ReLU comparison](report/2026-11-08-relu-color-mirror/README.md).
 
 ## 9. Optimizer and capacity follow-up
 
@@ -398,12 +398,12 @@ The small/large Adam timings are still single observations, not repeated timing
 benchmarks. Checkpoint byte size includes text serialization and optimizer state;
 it is not a measurement of peak RAM or inference latency.
 
-Source: [Adam and capacity report](report/2026-11-08-adam-optimizer.md),
-[portable metrics](report/data/2026-11-08-adam-optimizer.json).
+Source: [Adam and capacity report](report/2026-11-08-adam-optimizer/README.md),
+[portable metrics](report/2026-11-08-adam-optimizer/data.json).
 
 ## 10. Overfitting: what the curves prove
 
-![Small ReLU + Adam: training loss continues down after validation stops improving](report/figures/2026-11-08-adam-optimizer/loss.svg)
+![Small ReLU + Adam: training loss continues down after validation stops improving](report/2026-11-08-adam-optimizer/loss.svg)
 
 **How to explain this graph:** training loss measures fit to examples used for
 updates; validation loss measures fit to the separate selection set. When train
@@ -465,8 +465,8 @@ They support the hypothesis that dense square inputs make long-range blocking
 and legal-escape relationships harder to learn. They do not justify blaming
 label noise: all audited original train/validation labels match the oracle.
 
-Sources: [candidate confusion counts](report/data/2026-11-08-adam-optimizer.json),
-[rule and error audit](report/2026-11-08-label-and-error-audit.md).
+Sources: [candidate confusion counts](report/2026-11-08-adam-optimizer/data.json),
+[rule and error audit](report/2026-11-08-label-and-error-audit/README.md).
 
 ## 12. Delivered artifact versus experimental candidates
 
@@ -505,8 +505,8 @@ have repeated validation support. Large Adam is the highest individual recorded
 candidate score, with less repetition. This summary preserves the existing
 delivery; deciding and verifying a replacement is a separate finalization step.
 
-Sources: [delivered model provenance](report/2026-11-08-color-mirror-augmentation.md#delivered-model),
-[shared candidate](../models/README.md), [historical test report](report/2026-11-07-reference-checkpoints.md#separate-test-evaluation).
+Sources: [delivered model provenance](report/2026-11-08-color-mirror-augmentation/README.md#delivered-model),
+[shared candidate](../models/README.md), [historical test report](report/2026-11-07-reference-checkpoints/README.md#separate-test-evaluation).
 
 ## 13. Reproduction and retained evidence
 

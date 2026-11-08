@@ -70,12 +70,12 @@ for older models; it must not be described as never consulted.
 
 ### Supporting experiments
 
-- [Architecture comparison](report/2026-11-07-three-models.md) and
-  [matched batch/LR comparison](report/2026-11-07-batch-learning-rate-100epochs.md).
-- [Activation/initialization study](report/2026-11-08-hidden-activations.md),
-  [augmentation](report/2026-11-08-color-mirror-augmentation.md) and
-  [ReLU learning rates/seeds](report/2026-11-08-relu-color-mirror.md).
-- [Adam and capacity](report/2026-11-08-adam-optimizer.md),
+- [Architecture comparison](report/2026-11-07-three-models/README.md) and
+  [matched batch/LR comparison](report/2026-11-07-batch-learning-rate-100epochs/README.md).
+- [Activation/initialization study](report/2026-11-08-hidden-activations/README.md),
+  [augmentation](report/2026-11-08-color-mirror-augmentation/README.md) and
+  [ReLU learning rates/seeds](report/2026-11-08-relu-color-mirror/README.md).
+- [Adam and capacity](report/2026-11-08-adam-optimizer/README.md),
   [thread/BLAS benchmark](../benchmarks/cpu_blas/results/linux-2026-11-07/README.md)
   and [trial and failure log](experiment-decisions.md).
 
