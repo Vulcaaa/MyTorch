@@ -21,8 +21,6 @@ jobs:
         uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - name: Install C++ YAML dependency
-        run: sudo apt-get update && sudo apt-get install -y libyaml-cpp-dev
       - name: Compile
         run: make -j2
       - name: Install Python dependencies

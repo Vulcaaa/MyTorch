@@ -3,10 +3,7 @@ ANALYZER = my_torch_analyzer
 CXX = g++
 PYTHON = python3
 CONFIG ?= configs/protocols/compare-network-sizes.yml
-YAML_CPP_CFLAGS ?=
-YAML_CPP_LIBS ?= -lyaml-cpp
-LDLIBS += $(YAML_CPP_LIBS)
-CPPFLAGS = -Isrc -Isrc/chess/ -Isrc/neural/ -Iinclude $(YAML_CPP_CFLAGS) -MMD -MP
+CPPFLAGS = -Isrc -Isrc/chess/ -Isrc/neural/ -Iinclude -Ivendor/yaml-cpp/include -DYAML_CPP_STATIC_DEFINE -MMD -MP
 CXXFLAGS = -std=c++17 -Wall -Wextra -Werror -O8
 
 # BLAS=auto uses Accelerate on macOS, OpenBLAS via pkg-config on Linux,
@@ -46,7 +43,9 @@ CHESS_SRC = $(wildcard src/chess/*.cpp)
 LOGGING_SRC = $(wildcard src/logging/*.cpp)
 CHESS_OBJ = $(CHESS_SRC:src/%.cpp=$(BUILD_DIR)/%.o)
 LOGGING_OBJ = $(LOGGING_SRC:src/%.cpp=$(BUILD_DIR)/%.o)
-COMMON_OBJ = $(COMMON_SRC:src/%.cpp=$(BUILD_DIR)/%.o)
+YAML_SRC = $(wildcard vendor/yaml-cpp/src/*.cpp vendor/yaml-cpp/src/contrib/*.cpp)
+YAML_OBJ = $(YAML_SRC:vendor/yaml-cpp/src/%.cpp=$(BUILD_DIR)/yaml-cpp/%.o)
+COMMON_OBJ = $(COMMON_SRC:src/%.cpp=$(BUILD_DIR)/%.o) $(YAML_OBJ)
 GENERATOR_OBJ = $(GENERATOR_SRC:src/%.cpp=$(BUILD_DIR)/%.o)
 ANALYZER_OBJ = $(ANALYZER_SRC:src/%.cpp=$(BUILD_DIR)/%.o)
 TEST_SRC = $(wildcard tests/*.cpp)
@@ -61,6 +60,10 @@ $(GENERATOR): $(COMMON_OBJ) $(GENERATOR_OBJ) $(LOGGING_OBJ)
 
 $(ANALYZER): $(COMMON_OBJ) $(ANALYZER_OBJ) $(CHESS_OBJ) $(LOGGING_OBJ)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ $(LDLIBS) -o $@
+
+$(BUILD_DIR)/yaml-cpp/%.o: vendor/yaml-cpp/src/%.cpp
+	mkdir -p $(dir $@)
+	$(CXX) $(CPPFLAGS) -Ivendor/yaml-cpp/src $(filter-out -Werror,$(CXXFLAGS)) -c $< -o $@
 
 $(BUILD_DIR)/%.o: src/%.cpp
 	mkdir -p $(dir $@)

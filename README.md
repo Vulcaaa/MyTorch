@@ -15,8 +15,9 @@ backpropagation, checkpoints, and experiment integration.
 
 ## Build
 
-Requires GNU Make, a C++17 compiler (GCC by default), and `yaml-cpp`
-(`sudo apt-get install libyaml-cpp-dev` on Ubuntu/Debian). Python tools and tests
+Requires GNU Make and a C++17 compiler (GCC by default). The MIT-licensed
+[yaml-cpp sources](vendor/yaml-cpp/README.mytorch.md) are bundled and compiled
+with the project; no system yaml-cpp installation is needed. Python tools and tests
 require Python 3 and `python3 -m pip install -r requirements.txt`.
 Training uses Accelerate on macOS or OpenBLAS when detected on Linux, with a
 portable scalar fallback. See [CPU acceleration](docs/training.md#cpu-blas-backend)
