@@ -530,7 +530,7 @@ python3 scripts/experiment.py configs/protocols/train-generated-games.yml \
 
 ### Frozen training references
 
-Prepared data is retained as two separate references, each with copied held-outs
+Prepared data is retained as separate references, each with copied held-outs
 that are byte-identical to `chess-v1`. The generated-only training protocol
 above now uses the frozen files, not disposable `dataset/processed/` outputs.
 
@@ -538,7 +538,12 @@ above now uses the frozen files, not disposable `dataset/processed/` outputs.
 | --- | ---: | --- |
 | `chess-v1` | 572,445 | Original baseline. |
 | `chess-v1-generated-60k` | 632,445 | Original train + 15k Nothing, 20k Check, 25k Checkmate. |
-| `chess-v1-generated-60k-mirror` | 1,260,989 | The previous train + 628,544 admissible color mirrors, including mirrors of generated positions. |
+| `chess-v1-generated-120k-mirror` | 1,380,805 | Latest expanded generated train with color mirrors; not evaluated in the 60k trial. |
+
+`chess-v1-generated-60k-mirror` (1,260,989 rows) is archived: local dataset
+copies were removed after its completed experiment. Its manifest, protocol,
+model and measurements remain available. See the
+[experiment and retention decision](report/2026-11-08-generated-60k/README.md).
 
 Each reference lives under `dataset/references/NAME/`, with `splits/train.txt`,
 `splits/validation.txt`, `splits/test.txt` and retained provenance files.
@@ -552,7 +557,7 @@ Verify a frozen variant without the optional chess library:
 
 ```sh
 python3 -m scripts.freeze_dataset verify dataset/manifests/chess-v1-generated-60k.json
-python3 -m scripts.freeze_dataset verify dataset/manifests/chess-v1-generated-60k-mirror.json
+python3 -m scripts.freeze_dataset verify dataset/manifests/chess-v1-generated-120k-mirror.json
 ```
 
 Verification checks retained file hashes, class counts, unique model inputs,
@@ -560,7 +565,8 @@ split disjointness and unchanged held-outs. It does not require the disposable
 preparation outputs. `scripts.freeze_dataset freeze` creates a new reference
 from a prepared train and a parent manifest; existing references are refused.
 
-Train the mirrored variant with the same seed and optimization settings:
+Historical command for the completed 60k-mirror run (restore its archived
+dataset before rerunning; this does not train on the newer 120k variant):
 
 ```sh
 python3 scripts/experiment.py configs/protocols/train-generated-games-mirror.yml \

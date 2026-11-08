@@ -17,8 +17,8 @@ make
 ```
 
 [Training protocol](../configs/protocols/train-large-relu-adam.yml) ·
-[Comparison report](../docs/report/2026-11-08-adam-optimizer.md) ·
-[Portable metrics and provenance](../docs/report/data/2026-11-08-adam-optimizer.json).
+[Comparison report](../docs/report/2026-11-08-adam-optimizer/README.md) ·
+[Portable metrics and provenance](../docs/report/2026-11-08-adam-optimizer/data.json).
 The original local run is `results/training/2026-11-08-large-relu-adam-01/`.
 
 This candidate is shared for comparison; the delivered `../my_torch_network.nn`

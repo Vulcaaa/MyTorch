@@ -18,9 +18,9 @@ each on validation. The new delivered model keeps the first three:
 ## The four changes
 
 **① ReLU + Adam, network doubled.** Sigmoid shrinks the signal at each layer, so
-the network learns slowly ([activation comparison](2026-11-08-hidden-activations.md)).
+the network learns slowly ([activation comparison](2026-11-08-hidden-activations/README.md)).
 ReLU with Adam, then 256/128 neurons instead of 128/64, give +1.2 points
-([Adam report](2026-11-08-adam-optimizer.md)).
+([Adam report](2026-11-08-adam-optimizer/README.md)).
 
 **② Training data doubled.** The rules of chess are the same if the board is
 reflected left to right (a-file ↔ h-file): a check stays a check, a mate stays
