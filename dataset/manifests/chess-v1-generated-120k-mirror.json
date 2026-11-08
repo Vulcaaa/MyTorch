@@ -1,0 +1,234 @@
+{
+  "version": 1,
+  "kind": "derived-training",
+  "name": "chess-v1-generated-120k-mirror",
+  "storage": "dataset/references/chess-v1-generated-120k-mirror",
+  "base": {
+    "path": "dataset/manifests/chess-v1-generated-60k.json",
+    "sha256": "ef280f2cd754370e701c5df62e8ccac57055f6b1afe52e76acddca5e4e749d68",
+    "bytes": 4381
+  },
+  "sources": {
+    "train": {
+      "path": "dataset/processed/chess-v1-generated-120k-mirror/train.fen",
+      "sha256": "03f35cb1c61f648da93ef695ac1cb2ba6738cc5fb07dd46375bd44038d402bd2",
+      "bytes": 78772972
+    },
+    "validation": {
+      "path": "dataset/references/chess-v1-generated-60k/splits/validation.txt",
+      "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df",
+      "bytes": 4072085
+    },
+    "test": {
+      "path": "dataset/references/chess-v1-generated-60k/splits/test.txt",
+      "sha256": "a55710b1d4eba1257e87ff883b97769c3e8f16466eb7e9cb894cc62589f09ee8",
+      "bytes": 4070233
+    },
+    "generation-additions.fen": {
+      "path": "dataset/processed/chess-v1-generated-120k/additions.fen",
+      "sha256": "7ff97c2b4e64f4b099fe8ca346f7d8820eb4d8ba453bdd15157158d72d571ffd",
+      "bytes": 3447437
+    },
+    "generation-manifest.json": {
+      "path": "dataset/processed/chess-v1-generated-120k/manifest.json",
+      "sha256": "053fe678cea1ac0b9cc7ec5c671d8fba97ddfee4f44c3dcd42ff0ec71787c8e3",
+      "bytes": 3415
+    },
+    "generation-games.jsonl": {
+      "path": "dataset/processed/chess-v1-generated-120k/games.jsonl",
+      "sha256": "647645b0654d63aa87db1952752b05eabfe7cdd15b361ab9ef1fdc846d342cae",
+      "bytes": 165673424
+    },
+    "generation-train.fen": {
+      "path": "dataset/processed/chess-v1-generated-120k/train.fen",
+      "sha256": "c9f8d2a43599ed427346123eb38d4ae693a8cdb02848261d86ff6e7c8c1d6c57",
+      "bytes": 39472264
+    },
+    "generation-additions-source.csv": {
+      "path": "dataset/processed/chess-v1-generated-120k/additions-source.csv",
+      "sha256": "8efda8c17687f7cc3743285f5f7b1b29e8ef11d054edd65c4fae44ac42b62802",
+      "bytes": 983844
+    },
+    "mirror-additions.fen": {
+      "path": "dataset/processed/chess-v1-generated-120k-mirror/additions.fen",
+      "sha256": "bdc48a4ecfb6d1f56c8d0abf2aa88a06cd223c945af929ad6b8c16677bbc2006",
+      "bytes": 39300708
+    },
+    "mirror-manifest.json": {
+      "path": "dataset/processed/chess-v1-generated-120k-mirror/manifest.json",
+      "sha256": "95d6fa30a3213c2c2c874d424ed09a81cc216abe970a005d6367a731d62e5271",
+      "bytes": 3118
+    },
+    "mirror-additions-source-lines.csv": {
+      "path": "dataset/processed/chess-v1-generated-120k-mirror/additions-source-lines.csv",
+      "sha256": "6e995f6949acfd504e07f6b527c0425c209153a6f7534169bb230d0b09929f27",
+      "bytes": 9907548
+    },
+    "tool-clean_dataset.py": {
+      "path": "results/dataset-preparation/120k-mirror/tools/clean_dataset.py",
+      "sha256": "3843c3ec3e7fc89d82db09e51d03c439fea248d9260cd341e0b596c9a1e8148a",
+      "bytes": 7290
+    },
+    "tool-freeze_dataset.py": {
+      "path": "results/dataset-preparation/120k-mirror/tools/freeze_dataset.py",
+      "sha256": "b6eaa560d1b81566bda607da916533cb6be7d27226866f9623eb90a65d996cbe",
+      "bytes": 5481
+    },
+    "tool-generate_bounded.py": {
+      "path": "results/dataset-preparation/120k-mirror/tools/generate_bounded.py",
+      "sha256": "e34a93148be0a404ff7c1aa21271595682a6fc1cb22af8fb1c310b27a7657255",
+      "bytes": 15201
+    },
+    "tool-reference_dataset.py": {
+      "path": "results/dataset-preparation/120k-mirror/tools/reference_dataset.py",
+      "sha256": "75d3bae2da65dc0a6ceb1b5933b7b07c21447b9b2d8d918e28edfdad8141e44b",
+      "bytes": 14185
+    },
+    "tool-split_dataset.py": {
+      "path": "results/dataset-preparation/120k-mirror/tools/split_dataset.py",
+      "sha256": "a0352c10110d49e8a46d891b9c418d78043790292b5033daa56a8aa8661e17c5",
+      "bytes": 6044
+    },
+    "tool-generate_dataset.py": {
+      "path": "results/dataset-preparation/120k-mirror/tools/generate_dataset.py",
+      "sha256": "f44e90547ab63b11fa9f0fa0e609cc6b419af06f0889aa56c9ede025a67f3acb",
+      "bytes": 14927
+    },
+    "tool-augment_dataset.py": {
+      "path": "results/dataset-preparation/120k-mirror/tools/augment_dataset.py",
+      "sha256": "25851e8158b44a41be6d9f3853cbc5d64a8bfb2ab4f085762a67bea6d5c20eb3",
+      "bytes": 11008
+    },
+    "preparation-settings.json": {
+      "path": "results/dataset-preparation/120k-mirror/settings.json",
+      "sha256": "37736a5580529d670f5beb87ff2228c41dcc10e5963a07eb13044eafea50ad8f",
+      "bytes": 1787
+    },
+    "preparation.py": {
+      "path": "results/dataset-preparation/120k-mirror/run.py",
+      "sha256": "689df0cd6462d016acbbd05f8c0664ac24b2514bd13ecf46017b75a56db3e604",
+      "bytes": 4783
+    }
+  },
+  "policy": "Prepared train; unchanged base validation/test; unique model inputs across all splits.",
+  "artifacts": {
+    "train": {
+      "path": "splits/train.txt",
+      "sha256": "03f35cb1c61f648da93ef695ac1cb2ba6738cc5fb07dd46375bd44038d402bd2",
+      "bytes": 78772972,
+      "class_counts": {
+        "Nothing": 534249,
+        "Checkmate": 370387,
+        "Check": 476169
+      },
+      "rows": 1380805
+    },
+    "validation": {
+      "path": "splits/validation.txt",
+      "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df",
+      "bytes": 4072085,
+      "class_counts": {
+        "Check": 24813,
+        "Nothing": 29756,
+        "Checkmate": 16986
+      },
+      "rows": 71555
+    },
+    "test": {
+      "path": "splits/test.txt",
+      "sha256": "a55710b1d4eba1257e87ff883b97769c3e8f16466eb7e9cb894cc62589f09ee8",
+      "bytes": 4070233,
+      "class_counts": {
+        "Check": 24813,
+        "Checkmate": 16986,
+        "Nothing": 29756
+      },
+      "rows": 71555
+    },
+    "generation-additions.fen": {
+      "path": "provenance/generation-additions.fen",
+      "sha256": "7ff97c2b4e64f4b099fe8ca346f7d8820eb4d8ba453bdd15157158d72d571ffd",
+      "bytes": 3447437
+    },
+    "generation-manifest.json": {
+      "path": "provenance/generation-manifest.json",
+      "sha256": "053fe678cea1ac0b9cc7ec5c671d8fba97ddfee4f44c3dcd42ff0ec71787c8e3",
+      "bytes": 3415
+    },
+    "generation-games.jsonl": {
+      "path": "provenance/generation-games.jsonl",
+      "sha256": "647645b0654d63aa87db1952752b05eabfe7cdd15b361ab9ef1fdc846d342cae",
+      "bytes": 165673424
+    },
+    "generation-train.fen": {
+      "path": "provenance/generation-train.fen",
+      "sha256": "c9f8d2a43599ed427346123eb38d4ae693a8cdb02848261d86ff6e7c8c1d6c57",
+      "bytes": 39472264
+    },
+    "generation-additions-source.csv": {
+      "path": "provenance/generation-additions-source.csv",
+      "sha256": "8efda8c17687f7cc3743285f5f7b1b29e8ef11d054edd65c4fae44ac42b62802",
+      "bytes": 983844
+    },
+    "mirror-additions.fen": {
+      "path": "provenance/mirror-additions.fen",
+      "sha256": "bdc48a4ecfb6d1f56c8d0abf2aa88a06cd223c945af929ad6b8c16677bbc2006",
+      "bytes": 39300708
+    },
+    "mirror-manifest.json": {
+      "path": "provenance/mirror-manifest.json",
+      "sha256": "95d6fa30a3213c2c2c874d424ed09a81cc216abe970a005d6367a731d62e5271",
+      "bytes": 3118
+    },
+    "mirror-additions-source-lines.csv": {
+      "path": "provenance/mirror-additions-source-lines.csv",
+      "sha256": "6e995f6949acfd504e07f6b527c0425c209153a6f7534169bb230d0b09929f27",
+      "bytes": 9907548
+    },
+    "tool-clean_dataset.py": {
+      "path": "provenance/tool-clean_dataset.py",
+      "sha256": "3843c3ec3e7fc89d82db09e51d03c439fea248d9260cd341e0b596c9a1e8148a",
+      "bytes": 7290
+    },
+    "tool-freeze_dataset.py": {
+      "path": "provenance/tool-freeze_dataset.py",
+      "sha256": "b6eaa560d1b81566bda607da916533cb6be7d27226866f9623eb90a65d996cbe",
+      "bytes": 5481
+    },
+    "tool-generate_bounded.py": {
+      "path": "provenance/tool-generate_bounded.py",
+      "sha256": "e34a93148be0a404ff7c1aa21271595682a6fc1cb22af8fb1c310b27a7657255",
+      "bytes": 15201
+    },
+    "tool-reference_dataset.py": {
+      "path": "provenance/tool-reference_dataset.py",
+      "sha256": "75d3bae2da65dc0a6ceb1b5933b7b07c21447b9b2d8d918e28edfdad8141e44b",
+      "bytes": 14185
+    },
+    "tool-split_dataset.py": {
+      "path": "provenance/tool-split_dataset.py",
+      "sha256": "a0352c10110d49e8a46d891b9c418d78043790292b5033daa56a8aa8661e17c5",
+      "bytes": 6044
+    },
+    "tool-generate_dataset.py": {
+      "path": "provenance/tool-generate_dataset.py",
+      "sha256": "f44e90547ab63b11fa9f0fa0e609cc6b419af06f0889aa56c9ede025a67f3acb",
+      "bytes": 14927
+    },
+    "tool-augment_dataset.py": {
+      "path": "provenance/tool-augment_dataset.py",
+      "sha256": "25851e8158b44a41be6d9f3853cbc5d64a8bfb2ab4f085762a67bea6d5c20eb3",
+      "bytes": 11008
+    },
+    "preparation-settings.json": {
+      "path": "provenance/preparation-settings.json",
+      "sha256": "37736a5580529d670f5beb87ff2228c41dcc10e5963a07eb13044eafea50ad8f",
+      "bytes": 1787
+    },
+    "preparation.py": {
+      "path": "provenance/preparation.py",
+      "sha256": "689df0cd6462d016acbbd05f8c0664ac24b2514bd13ecf46017b75a56db3e604",
+      "bytes": 4783
+    }
+  }
+}
