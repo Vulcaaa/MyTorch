@@ -1,16 +1,14 @@
 # Recipe of the delivered my_torch_network.nn: ReLU + Adam with dropout and
 # learning-rate decay, on the color-mirror train doubled with left-right mirrors.
-# Build that train first (paths from the repository root):
-#   python3 scripts/mirror_files.py dataset/processed/chess-v1-color-mirror/train.fen \
-#     dataset/processed/chess-v1-mirror-x4/train.fen \
-#     --heldout dataset/references/chess-v1/splits/validation.txt dataset/references/chess-v1/splits/test.txt
+# Uses the frozen chess-v1-mirror-x4 reference; verify it first with
+#   python3 -m scripts.freeze_dataset verify dataset/manifests/chess-v1-mirror-x4.json
 # Run with one BLAS thread (VECLIB_MAXIMUM_THREADS=1 on macOS). Paths are relative to this file.
 version: 1
 hypothesis: Dropout 0.1 and learning-rate decay on the doubled train reach the delivered model's validation accuracy (93.78%).
 seeds: [49]
 datasets:
-  train: ../../dataset/processed/chess-v1-mirror-x4/train.fen
-  validation: ../../dataset/references/chess-v1/splits/validation.txt
+  train: ../../dataset/references/chess-v1-mirror-x4/splits/train.txt
+  validation: ../../dataset/references/chess-v1-mirror-x4/splits/validation.txt
 configurations:
   - name: relu-adam-dropout
     network: ../networks/basic-network.yml

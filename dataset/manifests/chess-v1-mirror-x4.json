@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "kind": "derived-training",
+  "name": "chess-v1-mirror-x4",
+  "storage": "dataset/references/chess-v1-mirror-x4",
+  "base": {
+    "path": "dataset/manifests/chess-v1.json",
+    "sha256": "dfc11570aeca279db9bbf11a97859cc04212800b1d18769fc993cd0284dc72e0",
+    "bytes": 7757
+  },
+  "sources": {
+    "train": {
+      "path": "dataset/processed/chess-v1-mirror-x4/train.fen",
+      "sha256": "b03123716029236ed8f285eb5959ffc40aad9b7ea377f0333d090869acabeb7e",
+      "bytes": 129668800
+    },
+    "validation": {
+      "path": "dataset/references/chess-v1/splits/validation.txt",
+      "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df",
+      "bytes": 4072085
+    },
+    "test": {
+      "path": "dataset/references/chess-v1/splits/test.txt",
+      "sha256": "a55710b1d4eba1257e87ff883b97769c3e8f16466eb7e9cb894cc62589f09ee8",
+      "bytes": 4070233
+    }
+  },
+  "policy": "Prepared train; unchanged base validation/test; unique model inputs across all splits.",
+  "artifacts": {
+    "train": {
+      "path": "splits/train.txt",
+      "sha256": "b03123716029236ed8f285eb5959ffc40aad9b7ea377f0333d090869acabeb7e",
+      "bytes": 129668800,
+      "class_counts": {
+        "Nothing": 945299,
+        "Checkmate": 539550,
+        "Check": 790925
+      },
+      "rows": 2275774
+    },
+    "validation": {
+      "path": "splits/validation.txt",
+      "sha256": "7628b12280cc1d83f7aa569483d757b127245d36e305e3f6325c03e75efa08df",
+      "bytes": 4072085,
+      "class_counts": {
+        "Check": 24813,
+        "Nothing": 29756,
+        "Checkmate": 16986
+      },
+      "rows": 71555
+    },
+    "test": {
+      "path": "splits/test.txt",
+      "sha256": "a55710b1d4eba1257e87ff883b97769c3e8f16466eb7e9cb894cc62589f09ee8",
+      "bytes": 4070233,
+      "class_counts": {
+        "Check": 24813,
+        "Checkmate": 16986,
+        "Nothing": 29756
+      },
+      "rows": 71555
+    }
+  }
+}

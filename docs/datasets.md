@@ -539,6 +539,7 @@ above now uses the frozen files, not disposable `dataset/processed/` outputs.
 | `chess-v1` | 572,445 | Original baseline. |
 | `chess-v1-generated-60k` | 632,445 | Original train + 15k Nothing, 20k Check, 25k Checkmate. |
 | `chess-v1-generated-120k-mirror` | 1,380,805 | Latest expanded generated train with color mirrors; not evaluated in the 60k trial. |
+| `chess-v1-mirror-x4` | 2,275,774 | The color-mirror train + 1,134,631 left-right mirrors ([section 7](#7-left-right-mirror-augmentation)); trains the delivered model. |
 
 `chess-v1-generated-60k-mirror` (1,260,989 rows) is archived: local dataset
 copies were removed after its completed experiment. Its manifest, protocol,
@@ -558,6 +559,7 @@ Verify a frozen variant without the optional chess library:
 ```sh
 python3 -m scripts.freeze_dataset verify dataset/manifests/chess-v1-generated-60k.json
 python3 -m scripts.freeze_dataset verify dataset/manifests/chess-v1-generated-120k-mirror.json
+python3 -m scripts.freeze_dataset verify dataset/manifests/chess-v1-mirror-x4.json
 ```
 
 Verification checks retained file hashes, class counts, unique model inputs,
@@ -650,6 +652,14 @@ python3 scripts/mirror_files.py dataset/processed/chess-v1-color-mirror/train.fe
 | Nothing | 945,299 | 471,024 |
 | Check | 790,925 | 394,740 |
 | Checkmate | 539,550 | 268,867 |
+
+The output is frozen as `chess-v1-mirror-x4`
+([manifest](../dataset/manifests/chess-v1-mirror-x4.json)):
+
+```sh
+python3 -m scripts.freeze_dataset freeze chess-v1-mirror-x4 \
+  --train dataset/processed/chess-v1-mirror-x4/train.fen
+```
 
 Original rows come first and are unchanged; mirrors follow in source order.
 Side to move stays balanced (1,137,882 White, 1,137,892 Black). The output
