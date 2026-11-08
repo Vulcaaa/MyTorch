@@ -8,9 +8,10 @@ With --mirror-views, every member is added four times: as trained, and reading
 the left-right mirror, the color mirror and both mirrors of the position. A view
 only permutes first-layer input columns (and flips the side-to-move input), so
 the merged network averages the predictions on all four symmetric positions.
+--views selects a subset, for example `--views original,color`.
 
 Usage:
-    python3 scripts/merge_networks.py OUTPUT MODEL [MODEL ...] [--mirror-views]
+    python3 scripts/merge_networks.py OUTPUT MODEL [MODEL ...] [--mirror-views | --views LIST]
 """
 
 from __future__ import annotations
@@ -20,6 +21,8 @@ import json
 from pathlib import Path
 
 SQUARES, PIECES, TURN, EN_PASSANT = 64, 12, 768, 769
+VIEWS = {"original": (False, False), "file": (True, False),
+         "color": (False, True), "both": (True, True)}
 
 
 def view_index(index: int, file_flip: bool, color_flip: bool) -> int:
@@ -93,17 +96,20 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("output", type=Path)
     parser.add_argument("models", type=Path, nargs="+")
-    parser.add_argument("--mirror-views", action="store_true")
+    parser.add_argument("--mirror-views", action="store_true", help="all four views")
+    parser.add_argument("--views", default="original",
+                        help="comma-separated subset of " + ",".join(VIEWS))
     parser.add_argument("--digits", type=int, default=7, help="significant digits kept")
     args = parser.parse_args()
+    views = list(VIEWS) if args.mirror_views else args.views.split(",")
+    if not views or any(view not in VIEWS for view in views):
+        raise SystemExit("--views takes a comma-separated subset of " + ",".join(VIEWS))
     members = []
     for path in args.models:
         model = json.loads(path.read_text())
         model.pop("optimizer_state", None)
-        members.append(model)
-        if args.mirror_views:
-            members += [mirror_view(model, True, False), mirror_view(model, False, True),
-                        mirror_view(model, True, True)]
+        members += [model if view == "original" else mirror_view(model, *VIEWS[view])
+                    for view in views]
     merged = merge(members, args.digits)
     args.output.write_text(json.dumps(merged, separators=(",", ":")))
     print(args.output, merged["config"]["layers"])
